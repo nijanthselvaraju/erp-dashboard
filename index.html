@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ERP Development Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #222537;
+      --border: #2e3146;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --text: #e8eaf0;
+      --muted: #7c82a0;
+      --open: #f59e0b;
+      --open-bg: #2a1f06;
+      --high: #ef4444;
+      --high-bg: #2a0a0a;
+      --medium: #f59e0b;
+      --medium-bg: #2a1f06;
+      --low: #3b82f6;
+      --low-bg: #0a1a2a;
+      --notstarted: #6b7280;
+      --inprogress: #10b981;
+      --done: #22c55e;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 14px;
+      color: white;
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 1px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .last-updated {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .view-sheet-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+
+    .view-sheet-btn:hover { opacity: 0.85; }
+
+    .view-sheet-btn svg { width: 14px; height: 14px; }
+
+    /* MAIN */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 32px 32px 64px;
+    }
+
+    /* STATS ROW */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 14px 14px 0 0;
+    }
+
+    .stat-card.total::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .stat-card.open::before { background: var(--open); }
+    .stat-card.high::before { background: var(--high); }
+    .stat-card.medium::before { background: var(--medium); }
+    .stat-card.low::before { background: var(--low); }
+    .stat-card.notstarted::before { background: var(--notstarted); }
+
+    .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1;
+    }
+
+    .stat-card.total .stat-value { color: var(--accent2); }
+    .stat-card.open .stat-value { color: var(--open); }
+    .stat-card.high .stat-value { color: var(--high); }
+    .stat-card.medium .stat-value { color: var(--medium); }
+    .stat-card.low .stat-value { color: var(--low); }
+    .stat-card.notstarted .stat-value { color: var(--notstarted); }
+
+    .stat-desc {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* SECTION HEADER */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      margin-top: 32px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+    }
+
+    /* FILTERS */
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+      border-color: var(--accent);
+      color: var(--accent2);
+      background: rgba(108, 99, 255, 0.1);
+    }
+
+    /* MODULE BREAKDOWN */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .module-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .module-card:hover { border-color: var(--accent); }
+    .module-card.active { border-color: var(--accent); background: rgba(108,99,255,0.07); }
+
+    .module-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .module-bar-track {
+      height: 6px;
+      background: var(--border);
+      border-radius: 4px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .module-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 4px;
+      transition: width 0.6s cubic-bezier(.4,0,.2,1);
+    }
+
+    .module-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* TABLE */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .table-top {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .search-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--muted); }
+
+    .result-count {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    thead th:hover { color: var(--text); }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+      cursor: pointer;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+
+    td {
+      padding: 12px 16px;
+      vertical-align: middle;
+    }
+
+    .ref-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent2);
+      background: rgba(108,99,255,0.12);
+      padding: 3px 8px;
+      border-radius: 5px;
+      white-space: nowrap;
+    }
+
+    .title-cell {
+      font-weight: 500;
+      color: var(--text);
+      max-width: 260px;
+    }
+
+    .title-cell .module-tag {
+      display: inline-block;
+      font-size: 10px;
+      background: var(--surface2);
+      color: var(--muted);
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .title-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; display: block; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    .badge.status-open { background: var(--open-bg); color: var(--open); }
+    .badge.priority-high { background: var(--high-bg); color: var(--high); }
+    .badge.priority-medium { background: var(--medium-bg); color: var(--medium); }
+    .badge.priority-low { background: var(--low-bg); color: var(--low); }
+    .badge.dev-notstarted { background: #1a1d27; color: var(--notstarted); border: 1px solid var(--border); }
+    .badge.dev-inprogress { background: #0a2a1a; color: var(--inprogress); }
+    .badge.dev-done { background: #0a2a0a; color: var(--done); }
+
+    .date-cell {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .assignee {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 640px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 28px 32px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .modal-ref {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--accent2);
+      margin-bottom: 6px;
+    }
+
+    .modal-title { font-size: 18px; font-weight: 700; }
+
+    .modal-close {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-left: 16px;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    .modal-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .modal-desc {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #c0c4d4;
+      margin-bottom: 20px;
+    }
+
+    .modal-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field-item { display: flex; flex-direction: column; gap: 3px; }
+    .field-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); }
+    .field-value { font-size: 13px; font-weight: 500; }
+
+    /* EMPTY */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+
+    .empty-state svg { margin-bottom: 12px; opacity: 0.4; }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 768px) {
+      header { padding: 0 16px; }
+      main { padding: 20px 16px 48px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .modal-fields { grid-template-columns: 1fr; }
+      .logo-sub { display: none; }
+      td:nth-child(5), th:nth-child(5),
+      td:nth-child(6), th:nth-child(6),
+      td:nth-child(7), th:nth-child(7) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">ERP</div>
+    <div>
+      <div class="logo-text">Dev Tracker</div>
+      <div class="logo-sub">VBEDU · Development Dashboard</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="last-updated" id="lastUpdated"></span>
+    <a class="view-sheet-btn" href="https://docs.google.com/spreadsheets/d/1pRpFxQRcjX0cPCh6SyRzEUj5NLW8BIXv7Cly9n_X_70/edit?usp=sharing" target="_blank">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      View Sheet
+    </a>
+  </div>
+</header>
+
+<main>
+  <!-- STATS -->
+  <div class="stats-grid" id="statsGrid"></div>
+
+  <!-- MODULE BREAKDOWN -->
+  <div class="section-header">
+    <div class="section-title">By Module</div>
+    <button class="filter-btn active" id="clearModuleFilter" onclick="clearModuleFilter()">All Modules</button>
+  </div>
+  <div class="module-grid" id="moduleGrid"></div>
+
+  <!-- TABLE -->
+  <div class="section-header">
+    <div class="section-title">All Requests</div>
+    <div class="filters" id="priorityFilters"></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-top">
+      <input class="search-input" type="text" id="searchInput" placeholder="Search by title, ref, module…" oninput="renderTable()"/>
+      <span class="result-count" id="resultCount"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('refNo')">Ref No ↕</th>
+            <th onclick="sortBy('title')">Title ↕</th>
+            <th onclick="sortBy('priority')">Priority ↕</th>
+            <th onclick="sortBy('status')">Status ↕</th>
+            <th onclick="sortBy('developerStatus')">Dev Status ↕</th>
+            <th onclick="sortBy('date')">Date ↕</th>
+            <th onclick="sortBy('developedBy')">Assigned To ↕</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal"></div>
+</div>
+
+<footer>ERP Development Tracker · VBEDU · Data from Google Sheets</footer>
+
+<script>
+const RAW_DATA = [
+  {sl:1,app:"REQ",refNo:"REQ-1",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Student Name",description:'Some student names are being displayed as "N/A" in the enquiry records. Please refer to the VBA – Porur Campus for reference.',status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:2,app:"REQ",refNo:"REQ-2",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Date Format",description:"Please ensure that the date format is consistent across the entire system. All date filters and displayed date values in every module should follow the DD-MM-YYYY format.",status:"Open",priority:"Low",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:3,app:"REQ",refNo:"REQ-3",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Created At",description:'Please ensure that the "Created At" field is displayed with both the date and time, using the date format DD-MM-YYYY consistently across the system.',status:"Open",priority:"Low",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:4,app:"REQ",refNo:"REQ-4",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Config",description:"The Enquiry Configuration page is currently not available within the Enquiry module. Please make the Configuration dropdown dynamic and provide an Enquiry Configuration page.",status:"Open",priority:"Medium",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:5,app:"REQ",refNo:"REQ-5",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Export",description:"The Export, Generate PDF, and Print functionalities are currently not working in the Enquiry module.",status:"Open",priority:"Medium",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:6,app:"REQ",refNo:"REQ-6",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Filter",description:"Please improve the Date Between filter with a Clear option, fix duplicate Clear buttons, and ensure all courses are listed in the Course dropdown.",status:"Open",priority:"Medium",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:7,app:"REQ",refNo:"REQ-7",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Add Enquiry/Duplicate Fields",description:"In the Add Enquiry screen, some field values are appearing twice/duplicated while creating a new enquiry.",status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:8,app:"REQ",refNo:"REQ-8",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Add Enquiry/Additional Fields",description:"Some important enquiry fields are currently missing from the Add Enquiry form, including Previous Institution, Father's Name, Mother's Name, Address, and more.",status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:9,app:"REQ",refNo:"REQ-9",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Enquiry Number",description:"The Enquiry Number/Series should continue sequentially from the last completed enquiry number rather than restarting or using a duplicate number.",status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:10,app:"REQ",refNo:"REQ-10",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Enquiry Arrow",description:"For Closed enquiries, the Convert to Registration option is currently not working. It should redirect to the Registration → Show page.",status:"Open",priority:"Low",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:11,app:"REQ",refNo:"REQ-11",date:"22-08-2026",module:"Enquiry",title:"Enquiry - UI Crash",description:'When "Select All" is selected and then the three-dot menu is clicked, the UI crashes and horizontal scroll is lost.',status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:12,app:"REQ",refNo:"REQ-12",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Delete",description:"Authorized users are currently unable to delete enquiries from the Enquiry module.",status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:13,app:"REQ",refNo:"REQ-13",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Enquiry No/Sort By",description:"New enquiries should always appear at the top of the list, sorted in descending order by Enquiry Number or Created At.",status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:14,app:"REQ",refNo:"REQ-14",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Follow Up",description:'When entering follow-up details for an enquiry, an "Unexpected Token" error is displayed.',status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:15,app:"REQ",refNo:"REQ-15",date:"22-08-2026",module:"Enquiry",title:"Enquiry - Convert to Registration",description:'Unable to convert an enquiry into a registration. The system displays a "Failed to convert enquiry" error.',status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:16,app:"REQ",refNo:"REQ-16",date:"22-08-2026",module:"ERP",title:"ERP - Student/Employee Search",description:"When entering a Student Admission Number, the cursor moves to the beginning. The clear button also redirects to the Dashboard instead of staying on the same page.",status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:17,app:"REQ",refNo:"REQ-17",date:"24-08-2026",module:"ERP",title:"ERP - Login Page/User Credentials",description:'Please add a "Remember Me" option to the login page so users do not have to re-enter credentials each time.',status:"Open",priority:"Medium",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:18,app:"REQ",refNo:"REQ-18",date:"24-08-2026",module:"Student",title:"Student - Registration/Show",description:"When clicking Registration → Show, the page is not opening.",status:"Open",priority:"Medium",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:19,app:"REQ",refNo:"REQ-19",date:"25-08-2026",module:"Student",title:"Student - Registration/Fields",description:"Some fields are not displayed when a registration record is opened. Fields like Period, Date of Birth, Father's Name, and Mother's Name should be visible by default.",status:"Open",priority:"Medium",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:20,app:"REQ",refNo:"REQ-20",date:"25-08-2026",module:"Student",title:"Student - Registration/Delete",description:"Registration should be deletable only when the registration fee has not been paid. Once paid, the Delete option should be removed.",status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:21,app:"REQ",refNo:"REQ-21",date:"25-08-2026",module:"Student",title:"Student - Registration/Edit",description:"When editing a registration and saving, the page does not proceed to the next section or return to the Registration page.",status:"Open",priority:"Medium",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:22,app:"REQ",refNo:"REQ-22",date:"25-08-2026",module:"Student",title:"Student - Registration/UI Collapse",description:'When the user selects "Select All" and clicks the three-dot menu, the UI collapses. The same issue occurs in Student → Students.',status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:23,app:"REQ",refNo:"REQ-23",date:"25-08-2026",module:"Student",title:"Student – Students/Search",description:"Currently unable to search for students by Admission Number or Student Name from anywhere in the ERP.",status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:24,app:"REQ",refNo:"REQ-24",date:"25-08-2026",module:"Student",title:"Student – Multiple Student/Batch Change",description:"An option is needed to change the Batch for multiple students at once with history tracking.",status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:25,app:"REQ",refNo:"REQ-25",date:"25-08-2026",module:"Finance",title:"Finance – Fee Structure/Duplicate",description:"A Duplicate option for Fee Structures is required. When duplicated, all details should be copied and the user can modify required fields.",status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:26,app:"REQ",refNo:"REQ-26",date:"25-08-2026",module:"ERP",title:"ERP - School/Add School/Sync/Config",description:"The Super Admin should be able to add a new school/campus and clone module configurations from an existing campus.",status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+  {sl:27,app:"REQ",refNo:"REQ-27",date:"25-08-2026",module:"ERP",title:"ERP - School/Access",description:"The School section should allow assigning multiple school access to employees with role and permissions. The School page is also loading very slowly.",status:"Open",priority:"High",devStage:"Development",developerStatus:"Not Started",submittedBy:"Nijanthan S",developedBy:"Devi Priya",portal:"VBEDU"},
+];
+
+let activeModule = null;
+let activePriority = null;
+let sortKey = 'sl';
+let sortDir = 1;
+
+function getPriorityClass(p) {
+  if (!p) return '';
+  const m = p.toLowerCase();
+  if (m === 'high') return 'priority-high';
+  if (m === 'medium') return 'priority-medium';
+  if (m === 'low') return 'priority-low';
+  return '';
+}
+
+function getDevClass(d) {
+  if (!d) return '';
+  const m = d.toLowerCase();
+  if (m.includes('not started')) return 'dev-notstarted';
+  if (m.includes('progress')) return 'dev-inprogress';
+  if (m.includes('done') || m.includes('complete')) return 'dev-done';
+  return 'dev-notstarted';
+}
+
+function buildStats() {
+  const total = RAW_DATA.length;
+  const open = RAW_DATA.filter(r => r.status === 'Open').length;
+  const high = RAW_DATA.filter(r => r.priority === 'High').length;
+  const medium = RAW_DATA.filter(r => r.priority === 'Medium').length;
+  const low = RAW_DATA.filter(r => r.priority === 'Low').length;
+  const notStarted = RAW_DATA.filter(r => r.developerStatus === 'Not Started').length;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card total"><div class="stat-label">Total Requests</div><div class="stat-value">${total}</div><div class="stat-desc">All development items</div></div>
+    <div class="stat-card open"><div class="stat-label">Open</div><div class="stat-value">${open}</div><div class="stat-desc">Pending resolution</div></div>
+    <div class="stat-card high"><div class="stat-label">High Priority</div><div class="stat-value">${high}</div><div class="stat-desc">Needs immediate attention</div></div>
+    <div class="stat-card medium"><div class="stat-label">Medium Priority</div><div class="stat-value">${medium}</div><div class="stat-desc">Moderate urgency</div></div>
+    <div class="stat-card low"><div class="stat-label">Low Priority</div><div class="stat-value">${low}</div><div class="stat-desc">Nice to have</div></div>
+    <div class="stat-card notstarted"><div class="stat-label">Not Started</div><div class="stat-value">${notStarted}</div><div class="stat-desc">Development pending</div></div>
+  `;
+}
+
+function buildModules() {
+  const modules = {};
+  RAW_DATA.forEach(r => {
+    if (!modules[r.module]) modules[r.module] = { total: 0, high: 0 };
+    modules[r.module].total++;
+    if (r.priority === 'High') modules[r.module].high++;
+  });
+  const max = Math.max(...Object.values(modules).map(m => m.total));
+  const html = Object.entries(modules).map(([name, data]) => `
+    <div class="module-card ${activeModule === name ? 'active' : ''}" onclick="filterModule('${name}')">
+      <div class="module-name">${name}</div>
+      <div class="module-bar-track"><div class="module-bar-fill" style="width:${(data.total/max*100).toFixed(0)}%"></div></div>
+      <div class="module-meta"><span>${data.total} request${data.total > 1 ? 's' : ''}</span><span style="color:var(--high)">${data.high} high</span></div>
+    </div>
+  `).join('');
+  document.getElementById('moduleGrid').innerHTML = html;
+}
+
+function buildPriorityFilters() {
+  const priorities = ['High', 'Medium', 'Low'];
+  const html = priorities.map(p => `
+    <button class="filter-btn ${activePriority === p ? 'active' : ''}" onclick="filterPriority('${p}')">${p}</button>
+  `).join('');
+  document.getElementById('priorityFilters').innerHTML = html;
+}
+
+function filterModule(name) {
+  activeModule = activeModule === name ? null : name;
+  buildModules();
+  renderTable();
+}
+
+function clearModuleFilter() {
+  activeModule = null;
+  buildModules();
+  renderTable();
+}
+
+function filterPriority(p) {
+  activePriority = activePriority === p ? null : p;
+  buildPriorityFilters();
+  renderTable();
+}
+
+function sortBy(key) {
+  if (sortKey === key) sortDir *= -1;
+  else { sortKey = key; sortDir = 1; }
+  renderTable();
+}
+
+function getFiltered() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  return RAW_DATA.filter(r => {
+    if (activeModule && r.module !== activeModule) return false;
+    if (activePriority && r.priority !== activePriority) return false;
+    if (q && !r.title.toLowerCase().includes(q) && !r.refNo.toLowerCase().includes(q) && !r.module.toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a, b) => {
+    let va = a[sortKey] || '', vb = b[sortKey] || '';
+    if (sortKey === 'sl') return (a.sl - b.sl) * sortDir;
+    return va.localeCompare(vb) * sortDir;
+  });
+}
+
+function renderTable() {
+  const data = getFiltered();
+  document.getElementById('resultCount').textContent = `${data.length} of ${RAW_DATA.length}`;
+  if (data.length === 0) {
+    document.getElementById('tableBody').innerHTML = `
+      <tr><td colspan="7">
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <div>No requests match your filters.</div>
+        </div>
+      </td></tr>`;
+    return;
+  }
+  document.getElementById('tableBody').innerHTML = data.map((r, i) => `
+    <tr onclick="openModal(${r.sl - 1})">
+      <td><span class="ref-badge">${r.refNo}</span></td>
+      <td class="title-cell">
+        <div class="module-tag">${r.module}</div>
+        <span class="title-text">${r.title}</span>
+      </td>
+      <td><span class="badge ${getPriorityClass(r.priority)}">${r.priority}</span></td>
+      <td><span class="badge status-open">${r.status}</span></td>
+      <td><span class="badge ${getDevClass(r.developerStatus)}">${r.developerStatus}</span></td>
+      <td class="date-cell">${r.date}</td>
+      <td class="assignee">${r.developedBy}</td>
+    </tr>
+  `).join('');
+}
+
+function openModal(idx) {
+  const r = RAW_DATA[idx];
+  document.getElementById('modal').innerHTML = `
+    <div class="modal-header">
+      <div>
+        <div class="modal-ref">${r.refNo} · ${r.module}</div>
+        <div class="modal-title">${r.title}</div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('modalOverlay').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-meta">
+      <span class="badge ${getPriorityClass(r.priority)}">${r.priority} Priority</span>
+      <span class="badge status-open">${r.status}</span>
+      <span class="badge ${getDevClass(r.developerStatus)}">${r.developerStatus}</span>
+    </div>
+    <div class="modal-desc">${r.description}</div>
+    <div class="modal-fields">
+      <div class="field-item"><span class="field-label">Submitted By</span><span class="field-value">${r.submittedBy}</span></div>
+      <div class="field-item"><span class="field-label">Developed By</span><span class="field-value">${r.developedBy}</span></div>
+      <div class="field-item"><span class="field-label">Date Raised</span><span class="field-value" style="font-family:monospace">${r.date}</span></div>
+      <div class="field-item"><span class="field-label">Portal</span><span class="field-value">${r.portal}</span></div>
+      <div class="field-item"><span class="field-label">Dev Stage</span><span class="field-value">${r.devStage}</span></div>
+      <div class="field-item"><span class="field-label">App</span><span class="field-value">${r.app}</span></div>
+    </div>
+  `;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('modalOverlay').classList.remove('open');
+});
+
+// Last updated
+const now = new Date();
+document.getElementById('lastUpdated').textContent = 'Updated ' + now.toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
+
+buildStats();
+buildModules();
+buildPriorityFilters();
+renderTable();
+</script>
+</body>
+</html>
