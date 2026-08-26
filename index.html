@@ -6,72 +6,58 @@
   <title>ERP Development Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 
-    /* ── THEME TOKENS ── */
     :root {
-      --bg:       #0f1117; --surface:  #1a1d27; --surface2: #222537;
-      --border:   #2e3146; --text:     #e8eaf0;  --muted:    #7c82a0;
-      --accent:   #6c63ff; --accent2:  #a78bfa;
-      --shadow:   0 4px 24px rgba(0,0,0,.4);
-
-      --open:        #f59e0b; --open-bg:        rgba(245,158,11,.13);
-      --onhold:      #a78bfa; --onhold-bg:      rgba(167,139,250,.13);
-      --closed:      #22c55e; --closed-bg:      rgba(34,197,94,.13);
-      --cancelled:   #6b7280; --cancelled-bg:   rgba(107,114,128,.13);
-      --low:         #3b82f6; --low-bg:         rgba(59,130,246,.13);
-      --medium:      #f59e0b; --medium-bg:      rgba(245,158,11,.13);
-      --high:        #ef4444; --high-bg:        rgba(239,68,68,.13);
-      --critical:    #ff0055; --critical-bg:    rgba(255,0,85,.13);
-      --notstarted:  #6b7280; --notstarted-bg:  rgba(107,114,128,.13);
-      --inprogress:  #10b981; --inprogress-bg:  rgba(16,185,129,.13);
-      --incomplete:  #f59e0b; --incomplete-bg:  rgba(245,158,11,.13);
-      --completed:   #22c55e; --completed-bg:   rgba(34,197,94,.13);
-      --deferred:    #a78bfa; --deferred-bg:    rgba(167,139,250,.13);
-      --devstage:    #6b7280; --devstage-bg:    rgba(107,114,128,.13);
-      --testing:     #3b82f6; --testing-bg:     rgba(59,130,246,.13);
-      --readydeploy: #10b981; --readydeploy-bg: rgba(16,185,129,.13);
-      --deployed:    #22c55e; --deployed-bg:    rgba(34,197,94,.13);
-      --stale:       #f59e0b; --stale-bg:       rgba(245,158,11,.08);
+      --bg:#0f1117; --surface:#1a1d27; --surface2:#222537;
+      --border:#2e3146; --text:#e8eaf0; --muted:#7c82a0;
+      --accent:#6c63ff; --accent2:#a78bfa;
+      --shadow:0 4px 24px rgba(0,0,0,.4);
+      --open:#f59e0b;       --open-bg:rgba(245,158,11,.13);
+      --onhold:#a78bfa;     --onhold-bg:rgba(167,139,250,.13);
+      --closed:#22c55e;     --closed-bg:rgba(34,197,94,.13);
+      --cancelled:#6b7280;  --cancelled-bg:rgba(107,114,128,.13);
+      --low:#3b82f6;        --low-bg:rgba(59,130,246,.13);
+      --medium:#f59e0b;     --medium-bg:rgba(245,158,11,.13);
+      --high:#ef4444;       --high-bg:rgba(239,68,68,.13);
+      --critical:#ff0055;   --critical-bg:rgba(255,0,85,.13);
+      --notstarted:#6b7280; --notstarted-bg:rgba(107,114,128,.13);
+      --inprogress:#10b981; --inprogress-bg:rgba(16,185,129,.13);
+      --incomplete:#f59e0b; --incomplete-bg:rgba(245,158,11,.13);
+      --completed:#22c55e;  --completed-bg:rgba(34,197,94,.13);
+      --deferred:#a78bfa;   --deferred-bg:rgba(167,139,250,.13);
+      --devstage:#6b7280;   --devstage-bg:rgba(107,114,128,.13);
+      --testing:#3b82f6;    --testing-bg:rgba(59,130,246,.13);
+      --readydeploy:#10b981;--readydeploy-bg:rgba(16,185,129,.13);
+      --deployed:#22c55e;   --deployed-bg:rgba(34,197,94,.13);
+      --stale:#f59e0b;      --stale-bg:rgba(245,158,11,.08);
     }
-
     [data-theme="light"] {
-      --bg:       #f4f5f9; --surface:  #ffffff; --surface2: #f0f1f7;
-      --border:   #dde0ef; --text:     #1a1d27;  --muted:    #6b7280;
-      --shadow:   0 4px 24px rgba(0,0,0,.08);
-      --open-bg:        rgba(245,158,11,.1);
-      --onhold-bg:      rgba(167,139,250,.1);
-      --closed-bg:      rgba(34,197,94,.1);
-      --cancelled-bg:   rgba(107,114,128,.1);
-      --low-bg:         rgba(59,130,246,.1);
-      --medium-bg:      rgba(245,158,11,.1);
-      --high-bg:        rgba(239,68,68,.1);
-      --critical-bg:    rgba(255,0,85,.1);
-      --notstarted-bg:  rgba(107,114,128,.1);
-      --inprogress-bg:  rgba(16,185,129,.1);
-      --incomplete-bg:  rgba(245,158,11,.1);
-      --completed-bg:   rgba(34,197,94,.1);
-      --deferred-bg:    rgba(167,139,250,.1);
-      --devstage-bg:    rgba(107,114,128,.1);
-      --testing-bg:     rgba(59,130,246,.1);
-      --readydeploy-bg: rgba(16,185,129,.1);
-      --deployed-bg:    rgba(34,197,94,.1);
-      --stale-bg:       rgba(245,158,11,.07);
+      --bg:#f4f5f9; --surface:#ffffff; --surface2:#f0f1f7;
+      --border:#dde0ef; --text:#1a1d27; --muted:#6b7280;
+      --shadow:0 4px 24px rgba(0,0,0,.08);
+      --open-bg:rgba(245,158,11,.1); --onhold-bg:rgba(167,139,250,.1);
+      --closed-bg:rgba(34,197,94,.1); --cancelled-bg:rgba(107,114,128,.1);
+      --low-bg:rgba(59,130,246,.1); --medium-bg:rgba(245,158,11,.1);
+      --high-bg:rgba(239,68,68,.1); --critical-bg:rgba(255,0,85,.1);
+      --notstarted-bg:rgba(107,114,128,.1); --inprogress-bg:rgba(16,185,129,.1);
+      --incomplete-bg:rgba(245,158,11,.1); --completed-bg:rgba(34,197,94,.1);
+      --deferred-bg:rgba(167,139,250,.1); --devstage-bg:rgba(107,114,128,.1);
+      --testing-bg:rgba(59,130,246,.1); --readydeploy-bg:rgba(16,185,129,.1);
+      --deployed-bg:rgba(34,197,94,.1); --stale-bg:rgba(245,158,11,.07);
     }
 
-    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; transition: background .25s, color .25s; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; transition:background .25s,color .25s; }
 
-    /* ── HEADER ── */
+    /* HEADER */
     header {
       background:var(--surface); border-bottom:1px solid var(--border);
-      padding:0 32px; height:64px;
-      display:flex; align-items:center; justify-content:space-between;
+      padding:0 32px; height:64px; display:flex; align-items:center; justify-content:space-between;
       position:sticky; top:0; z-index:200; box-shadow:var(--shadow);
     }
     .logo { display:flex; align-items:center; gap:12px; }
     .logo-icon {
-      width:36px; height:36px;
-      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      width:36px; height:36px; background:linear-gradient(135deg,var(--accent),var(--accent2));
       border-radius:10px; display:flex; align-items:center; justify-content:center;
       font-family:'JetBrains Mono',monospace; font-weight:600; font-size:14px; color:#fff;
     }
@@ -79,24 +65,20 @@
     .logo-sub  { font-size:11px; color:var(--muted); margin-top:1px; }
     .header-right { display:flex; align-items:center; gap:10px; }
     .last-updated { font-size:12px; color:var(--muted); font-family:'JetBrains Mono',monospace; }
-
     .theme-toggle {
-      width:36px; height:36px; border-radius:9px;
-      background:var(--surface2); border:1px solid var(--border);
-      color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center;
-      font-size:16px; transition:all .15s;
+      width:36px; height:36px; border-radius:9px; background:var(--surface2);
+      border:1px solid var(--border); color:var(--muted); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:16px; transition:all .15s;
     }
     .theme-toggle:hover { color:var(--text); border-color:var(--accent); }
-
     .view-sheet-btn {
-      display:flex; align-items:center; gap:8px;
-      background:var(--accent); color:#fff; text-decoration:none;
-      padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; transition:opacity .2s;
+      display:flex; align-items:center; gap:8px; background:var(--accent); color:#fff;
+      text-decoration:none; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; transition:opacity .2s;
     }
     .view-sheet-btn:hover { opacity:.85; }
     .view-sheet-btn svg { width:14px; height:14px; }
 
-    /* ── MONTH BAR ── */
+    /* MONTH BAR */
     #monthBar {
       background:var(--surface); border-bottom:1px solid var(--border);
       padding:10px 32px; display:flex; align-items:center; gap:8px;
@@ -104,16 +86,37 @@
     }
     .bar-label { font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); font-weight:600; margin-right:4px; white-space:nowrap; }
     .pill-btn {
-      background:var(--surface2); border:1px solid var(--border);
-      color:var(--muted); padding:5px 14px; border-radius:20px;
-      font-size:12px; font-weight:500; cursor:pointer; transition:all .15s; font-family:'Inter',sans-serif;
+      background:var(--surface2); border:1px solid var(--border); color:var(--muted);
+      padding:5px 14px; border-radius:20px; font-size:12px; font-weight:500;
+      cursor:pointer; transition:all .15s; font-family:'Inter',sans-serif;
     }
     .pill-btn:hover,.pill-btn.active { border-color:var(--accent); color:var(--accent2); background:rgba(108,99,255,.1); }
 
-    /* ── MAIN ── */
+    /* TAB STRIP */
+    .tab-strip {
+      display:flex; gap:4px; padding:18px 32px 0;
+      border-bottom:1px solid var(--border); background:var(--bg);
+    }
+    .tab-btn {
+      display:flex; align-items:center; gap:8px;
+      padding:10px 22px; border-radius:10px 10px 0 0;
+      font-size:13px; font-weight:600; cursor:pointer;
+      border:1px solid transparent; border-bottom:none;
+      background:transparent; color:var(--muted);
+      transition:all .15s; font-family:'Inter',sans-serif;
+      position:relative; bottom:-1px;
+    }
+    .tab-btn:hover { color:var(--text); background:var(--surface2); }
+    .tab-btn.active {
+      background:var(--surface); color:var(--accent2);
+      border-color:var(--border); border-bottom-color:var(--surface);
+    }
+    .tab-btn .tab-icon { font-size:15px; }
+
+    /* MAIN */
     main { max-width:1440px; margin:0 auto; padding:28px 32px 64px; }
 
-    /* ── LOADING ── */
+    /* LOADING */
     #loadingState {
       display:flex; flex-direction:column; align-items:center;
       justify-content:center; gap:14px; padding:100px 24px; color:var(--muted); font-size:14px;
@@ -125,20 +128,14 @@
     @keyframes spin { to { transform:rotate(360deg); } }
     #dashboardContent { display:none; }
 
-    /* ── STAT BAR ── */
-    .stat-bar {
-      display:grid; grid-template-columns:repeat(6,1fr);
-      gap:14px; margin-bottom:24px;
-    }
+    /* STAT BAR */
+    .stat-bar { display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin-bottom:24px; }
     .stat-card {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:12px; padding:16px 18px; position:relative; overflow:hidden;
-      transition: box-shadow .15s;
+      background:var(--surface); border:1px solid var(--border); border-radius:12px;
+      padding:16px 18px; position:relative; overflow:hidden; transition:box-shadow .15s;
     }
-    .stat-card:hover { box-shadow: 0 0 0 1px var(--accent); }
-    .stat-card::before {
-      content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:12px 12px 0 0;
-    }
+    .stat-card:hover { box-shadow:0 0 0 1px var(--accent); }
+    .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:12px 12px 0 0; }
     .stat-card.sc-total::before    { background:linear-gradient(90deg,var(--accent),var(--accent2)); }
     .stat-card.sc-open::before     { background:var(--open); }
     .stat-card.sc-highcrit::before { background:linear-gradient(90deg,var(--high),var(--critical)); }
@@ -155,27 +152,21 @@
     .stat-card.sc-ready .stat-value    { color:var(--readydeploy); }
     .stat-desc { font-size:11px; color:var(--muted); margin-top:5px; }
 
-    /* ── MATRIX GRID ── */
-    .matrix-grid {
-      display:grid; grid-template-columns:1fr 1fr;
-      gap:18px; margin-bottom:24px;
-    }
+    /* TAB PANELS */
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    /* MATRIX GRID */
+    .matrix-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px; }
     .matrix-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
-    .matrix-card-header {
-      padding:13px 18px 11px; border-bottom:1px solid var(--border);
-      display:flex; align-items:center;
-    }
+    .matrix-card-header { padding:13px 18px 11px; border-bottom:1px solid var(--border); display:flex; align-items:center; }
     .matrix-card-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); }
-    .matrix-card-total {
-      margin-left:auto; font-family:'JetBrains Mono',monospace;
-      font-size:11px; color:var(--accent2);
-      background:rgba(108,99,255,.12); padding:2px 8px; border-radius:4px;
-    }
+    .matrix-card-total { margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent2); background:rgba(108,99,255,.12); padding:2px 8px; border-radius:4px; }
     .matrix-table-wrap { overflow-x:auto; }
     .matrix-table { width:100%; border-collapse:collapse; font-size:12px; }
     .matrix-table thead th {
-      padding:8px 12px; text-align:center;
-      font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:var(--muted);
+      padding:8px 12px; text-align:center; font-size:10px; font-weight:600;
+      text-transform:uppercase; letter-spacing:.5px; color:var(--muted);
       background:var(--surface2); border-bottom:1px solid var(--border); white-space:nowrap;
     }
     .matrix-table thead th:first-child { text-align:left; }
@@ -188,13 +179,8 @@
     .matrix-table td.dc { cursor:pointer; }
     .matrix-table td.dc:hover .cp:not(.zero) { transform:scale(1.1); }
 
-    /* count pill */
-    .cp {
-      display:inline-flex; align-items:center; justify-content:center;
-      min-width:26px; padding:3px 7px; border-radius:10px;
-      font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600;
-      transition:transform .1s;
-    }
+    /* COUNT PILLS */
+    .cp { display:inline-flex; align-items:center; justify-content:center; min-width:26px; padding:3px 7px; border-radius:10px; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; transition:transform .1s; }
     .cp.zero { color:var(--border); background:transparent; font-family:'Inter',sans-serif; font-size:12px; }
     .cp-total      { background:rgba(108,99,255,.12); color:var(--accent2); }
     .cp-open       { background:var(--open-bg);        color:var(--open); }
@@ -215,65 +201,37 @@
     .cp-rdeploy    { background:var(--readydeploy-bg);  color:var(--readydeploy); }
     .cp-deployed   { background:var(--deployed-bg);     color:var(--deployed); }
 
-    /* ── ACTIVE FILTER CHIPS ── */
+    /* ACTIVE FILTER CHIPS */
     #activeFilters { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
     #activeFilters:empty { display:none; }
-    .filter-chip {
-      display:inline-flex; align-items:center; gap:6px;
-      background:rgba(108,99,255,.15); border:1px solid rgba(108,99,255,.35);
-      color:var(--accent2); padding:4px 10px 4px 12px; border-radius:20px; font-size:11px; font-weight:600;
-    }
+    .filter-chip { display:inline-flex; align-items:center; gap:6px; background:rgba(108,99,255,.15); border:1px solid rgba(108,99,255,.35); color:var(--accent2); padding:4px 10px 4px 12px; border-radius:20px; font-size:11px; font-weight:600; }
     .filter-chip button { background:none; border:none; color:var(--accent2); cursor:pointer; font-size:14px; line-height:1; padding:0; display:flex; align-items:center; }
     .filter-chip button:hover { color:var(--text); }
-    .clear-all-btn {
-      background:none; border:1px solid var(--border); color:var(--muted);
-      padding:4px 12px; border-radius:20px; font-size:11px; cursor:pointer; font-family:'Inter',sans-serif; transition:all .15s;
-    }
+    .clear-all-btn { background:none; border:1px solid var(--border); color:var(--muted); padding:4px 12px; border-radius:20px; font-size:11px; cursor:pointer; font-family:'Inter',sans-serif; transition:all .15s; }
     .clear-all-btn:hover { border-color:var(--accent); color:var(--accent2); }
 
-    /* ── TABLE SECTION HEADER ── */
+    /* SECTION HEADER */
     .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
     .section-title  { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); }
     .section-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-
-    /* stale week selector */
     .stale-selector { display:flex; align-items:center; gap:6px; }
     .stale-label { font-size:11px; color:var(--muted); font-weight:500; white-space:nowrap; }
-    .week-btn {
-      background:var(--surface2); border:1px solid var(--border);
-      color:var(--muted); padding:4px 10px; border-radius:16px;
-      font-size:11px; font-weight:600; cursor:pointer; transition:all .15s; font-family:'Inter',sans-serif;
-    }
+    .week-btn { background:var(--surface2); border:1px solid var(--border); color:var(--muted); padding:4px 10px; border-radius:16px; font-size:11px; font-weight:600; cursor:pointer; transition:all .15s; font-family:'Inter',sans-serif; }
     .week-btn:hover { border-color:var(--stale); color:var(--stale); }
     .week-btn.active { border-color:var(--stale); color:var(--stale); background:var(--stale-bg); }
-
-    /* priority filter pills */
     .filters { display:flex; gap:6px; flex-wrap:wrap; }
-    .filter-btn {
-      background:var(--surface2); border:1px solid var(--border);
-      color:var(--muted); padding:5px 14px; border-radius:20px;
-      font-size:12px; font-weight:500; cursor:pointer; transition:all .15s; font-family:'Inter',sans-serif;
-    }
+    .filter-btn { background:var(--surface2); border:1px solid var(--border); color:var(--muted); padding:5px 14px; border-radius:20px; font-size:12px; font-weight:500; cursor:pointer; transition:all .15s; font-family:'Inter',sans-serif; }
     .filter-btn:hover,.filter-btn.active { border-color:var(--accent); color:var(--accent2); background:rgba(108,99,255,.1); }
 
-    /* ── TABLE ── */
+    /* TABLE */
     .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
     .table-top  { padding:13px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
-    .search-input {
-      flex:1; background:var(--bg); border:1px solid var(--border); border-radius:8px;
-      padding:8px 14px; color:var(--text); font-size:13px; font-family:'Inter',sans-serif; outline:none; transition:border-color .15s;
-    }
+    .search-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 14px; color:var(--text); font-size:13px; font-family:'Inter',sans-serif; outline:none; transition:border-color .15s; }
     .search-input:focus { border-color:var(--accent); }
     .search-input::placeholder { color:var(--muted); }
     .result-count { font-size:12px; color:var(--muted); font-family:'JetBrains Mono',monospace; white-space:nowrap; }
-
     table { width:100%; border-collapse:collapse; font-size:13px; }
-    thead th {
-      padding:10px 16px; text-align:left; font-size:11px; font-weight:600;
-      text-transform:uppercase; letter-spacing:.6px; color:var(--muted);
-      border-bottom:1px solid var(--border); background:var(--surface2);
-      cursor:pointer; user-select:none; white-space:nowrap;
-    }
+    thead th { padding:10px 16px; text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); border-bottom:1px solid var(--border); background:var(--surface2); cursor:pointer; user-select:none; white-space:nowrap; }
     thead th:hover { color:var(--text); }
     tbody tr { border-bottom:1px solid var(--border); transition:background .1s; cursor:pointer; }
     tbody tr:last-child { border-bottom:none; }
@@ -281,29 +239,12 @@
     tbody tr.stale-row { background:var(--stale-bg); }
     tbody tr.stale-row:hover { background:rgba(245,158,11,.13); }
     td { padding:10px 16px; vertical-align:middle; }
-
-    .ref-badge {
-      font-family:'JetBrains Mono',monospace; font-size:11px;
-      color:var(--accent2); background:rgba(108,99,255,.12);
-      padding:3px 8px; border-radius:5px; white-space:nowrap;
-    }
+    .ref-badge { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent2); background:rgba(108,99,255,.12); padding:3px 8px; border-radius:5px; white-space:nowrap; }
     .title-cell { font-weight:500; max-width:260px; }
-    .module-tag {
-      display:inline-block; font-size:10px; background:var(--surface2);
-      color:var(--muted); padding:2px 7px; border-radius:4px; margin-bottom:3px; font-weight:500;
-    }
+    .module-tag { display:inline-block; font-size:10px; background:var(--surface2); color:var(--muted); padding:2px 7px; border-radius:4px; margin-bottom:3px; font-weight:500; }
     .title-text { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px; display:block; }
-    .stale-tag {
-      display:inline-flex; align-items:center; gap:3px;
-      font-size:10px; font-weight:600; color:var(--stale);
-      background:var(--stale-bg); border:1px solid rgba(245,158,11,.25);
-      padding:1px 6px; border-radius:4px; margin-left:6px; white-space:nowrap;
-    }
-
-    .badge {
-      display:inline-flex; align-items:center; padding:3px 10px;
-      border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap;
-    }
+    .stale-tag { display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:600; color:var(--stale); background:var(--stale-bg); border:1px solid rgba(245,158,11,.25); padding:1px 6px; border-radius:4px; margin-left:6px; white-space:nowrap; }
+    .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
     .badge.status-open      { background:var(--open-bg);       color:var(--open); }
     .badge.status-onhold    { background:var(--onhold-bg);     color:var(--onhold); }
     .badge.status-closed    { background:var(--closed-bg);     color:var(--closed); }
@@ -317,39 +258,59 @@
     .badge.dev-incomplete   { background:var(--incomplete-bg);  color:var(--incomplete); }
     .badge.dev-completed    { background:var(--completed-bg);   color:var(--completed); }
     .badge.dev-deferred     { background:var(--deferred-bg);    color:var(--deferred); }
-
     .date-cell { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); white-space:nowrap; }
     .assignee  { font-size:12px; color:var(--muted); white-space:nowrap; }
-
-    /* ── EMPTY STATE ── */
     .empty-state { text-align:center; padding:48px 24px; color:var(--muted); }
     .empty-state svg { margin-bottom:12px; opacity:.4; }
 
-    /* ── MODAL ── */
-    .modal-overlay {
-      display:none; position:fixed; inset:0; background:rgba(0,0,0,.65);
-      z-index:300; align-items:center; justify-content:center; padding:24px;
+    /* CHARTS TAB */
+    .charts-grid-full { margin-bottom:20px; }
+    .charts-grid-half { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    .chart-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+    .chart-card-header { padding:14px 20px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .chart-card-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); }
+    .chart-legend { display:flex; gap:14px; }
+    .legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); }
+    .legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .chart-body { padding:20px; }
+    .chart-canvas-wrap { position:relative; }
+
+    /* SVG CHART STYLES */
+    .chart-svg { width:100%; overflow:visible; }
+    .bar-opened { fill:var(--open); opacity:.85; transition:opacity .15s; }
+    .bar-closed  { fill:var(--closed); opacity:.85; transition:opacity .15s; }
+    .bar-opened:hover,.bar-closed:hover { opacity:1; }
+    .bar-dev { fill:var(--accent2); opacity:.85; transition:opacity .15s; }
+    .bar-dev:hover { opacity:1; }
+
+    /* tooltip */
+    .chart-tooltip {
+      position:fixed; background:var(--surface); border:1px solid var(--border);
+      border-radius:8px; padding:8px 12px; font-size:12px; pointer-events:none;
+      z-index:500; display:none; box-shadow:var(--shadow); white-space:nowrap;
     }
+    .chart-tooltip .tt-label { color:var(--muted); font-size:11px; margin-bottom:4px; }
+    .chart-tooltip .tt-row   { display:flex; align-items:center; gap:8px; margin-top:2px; }
+    .chart-tooltip .tt-dot   { width:8px; height:8px; border-radius:50%; }
+    .chart-tooltip .tt-val   { font-weight:700; font-family:'JetBrains Mono',monospace; }
+
+    /* trend badge */
+    .trend-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:3px 9px; border-radius:10px; }
+    .trend-up   { background:rgba(239,68,68,.15);  color:var(--high); }
+    .trend-down { background:rgba(34,197,94,.15);  color:var(--closed); }
+    .trend-eq   { background:rgba(107,114,128,.15);color:var(--muted); }
+
+    /* MODAL */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:300; align-items:center; justify-content:center; padding:24px; }
     .modal-overlay.open { display:flex; }
-    .modal {
-      background:var(--surface); border:1px solid var(--border); border-radius:16px;
-      max-width:640px; width:100%; max-height:82vh; overflow-y:auto; padding:28px 32px;
-      box-shadow:var(--shadow);
-    }
+    .modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; max-width:640px; width:100%; max-height:82vh; overflow-y:auto; padding:28px 32px; box-shadow:var(--shadow); }
     .modal-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
     .modal-ref    { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--accent2); margin-bottom:6px; }
     .modal-title  { font-size:18px; font-weight:700; }
-    .modal-close  {
-      background:var(--surface2); border:1px solid var(--border); color:var(--muted);
-      width:32px; height:32px; border-radius:8px; font-size:18px; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-left:16px;
-    }
+    .modal-close  { background:var(--surface2); border:1px solid var(--border); color:var(--muted); width:32px; height:32px; border-radius:8px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-left:16px; }
     .modal-close:hover { color:var(--text); }
     .modal-meta   { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
-    .modal-desc   {
-      background:var(--bg); border:1px solid var(--border); border-radius:10px;
-      padding:16px; font-size:13px; line-height:1.7; color:var(--muted); margin-bottom:18px;
-    }
+    .modal-desc   { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:16px; font-size:13px; line-height:1.7; color:var(--muted); margin-bottom:18px; }
     .modal-fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     .field-item   { display:flex; flex-direction:column; gap:3px; }
     .field-label  { font-size:10px; text-transform:uppercase; letter-spacing:.7px; color:var(--muted); }
@@ -357,13 +318,12 @@
 
     footer { text-align:center; padding:24px; font-size:12px; color:var(--muted); border-top:1px solid var(--border); }
 
-    /* ── RESPONSIVE ── */
     @media (max-width:1100px) { .stat-bar { grid-template-columns:repeat(3,1fr); } }
-    @media (max-width:900px)  { .matrix-grid { grid-template-columns:1fr; } }
+    @media (max-width:900px)  { .matrix-grid,.charts-grid-half { grid-template-columns:1fr; } }
     @media (max-width:768px)  {
       header { padding:0 16px; } #monthBar { padding:10px 16px; } main { padding:16px 16px 48px; }
-      .stat-bar { grid-template-columns:repeat(2,1fr); } .modal-fields { grid-template-columns:1fr; }
-      .logo-sub { display:none; }
+      .tab-strip { padding:12px 16px 0; } .stat-bar { grid-template-columns:repeat(2,1fr); }
+      .modal-fields { grid-template-columns:1fr; } .logo-sub { display:none; }
       td:nth-child(6),th:nth-child(6),td:nth-child(7),th:nth-child(7) { display:none; }
     }
   </style>
@@ -395,6 +355,16 @@
   <div id="monthBtns" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
 </div>
 
+<!-- TAB STRIP -->
+<div class="tab-strip">
+  <button class="tab-btn active" id="tab-dashboard" onclick="switchTab('dashboard')">
+    <span class="tab-icon">📋</span> Dashboard
+  </button>
+  <button class="tab-btn" id="tab-charts" onclick="switchTab('charts')">
+    <span class="tab-icon">📈</span> Charts
+  </button>
+</div>
+
 <main>
   <div id="loadingState">
     <div class="spinner"></div>
@@ -403,59 +373,115 @@
 
   <div id="dashboardContent">
 
-    <!-- STAT BAR -->
+    <!-- STAT BAR — always shown on both tabs -->
     <div class="stat-bar" id="statBar"></div>
 
-    <!-- 3×2 MATRIX GRID -->
-    <div class="matrix-grid">
-      <div class="matrix-card" id="mxStatus"></div>
-      <div class="matrix-card" id="mxPriority"></div>
-      <div class="matrix-card" id="mxStage"></div>
-      <div class="matrix-card" id="mxDevStatus"></div>
-      <div class="matrix-card" id="mxDeveloper"></div>
-      <div class="matrix-card" id="mxMonth"></div>
-    </div>
+    <!-- TAB 1: DASHBOARD -->
+    <div class="tab-panel active" id="panel-dashboard">
+      <div class="matrix-grid">
+        <div class="matrix-card" id="mxStatus"></div>
+        <div class="matrix-card" id="mxPriority"></div>
+        <div class="matrix-card" id="mxStage"></div>
+        <div class="matrix-card" id="mxDevStatus"></div>
+        <div class="matrix-card" id="mxDeveloper"></div>
+        <div class="matrix-card" id="mxMonth"></div>
+      </div>
 
-    <!-- ACTIVE FILTER CHIPS -->
-    <div id="activeFilters"></div>
+      <div id="activeFilters"></div>
 
-    <!-- TABLE SECTION -->
-    <div class="section-header">
-      <div class="section-title">All Requests</div>
-      <div class="section-controls">
-        <div class="stale-selector">
-          <span class="stale-label">⚠ Stale after:</span>
-          <div id="weekBtns" style="display:flex;gap:4px;"></div>
+      <div class="section-header">
+        <div class="section-title">All Requests</div>
+        <div class="section-controls">
+          <div class="stale-selector">
+            <span class="stale-label">⚠ Stale after:</span>
+            <div id="weekBtns" style="display:flex;gap:4px;"></div>
+          </div>
+          <div class="filters" id="priorityFilters"></div>
         </div>
-        <div class="filters" id="priorityFilters"></div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-top">
+          <input class="search-input" type="text" id="searchInput" placeholder="Search by title, ref, module…" oninput="renderTable()"/>
+          <span class="result-count" id="resultCount"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th onclick="sortBy('refNo')">Ref ↕</th>
+                <th onclick="sortBy('title')">Title ↕</th>
+                <th onclick="sortBy('priority')">Priority ↕</th>
+                <th onclick="sortBy('status')">Status ↕</th>
+                <th onclick="sortBy('developerStatus')">Dev Status ↕</th>
+                <th onclick="sortBy('date')">Date ↕</th>
+                <th onclick="sortBy('developedBy')">Assigned To ↕</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <div class="table-wrap">
-      <div class="table-top">
-        <input class="search-input" type="text" id="searchInput" placeholder="Search by title, ref, module…" oninput="renderTable()"/>
-        <span class="result-count" id="resultCount"></span>
+    <!-- TAB 2: CHARTS -->
+    <div class="tab-panel" id="panel-charts">
+
+      <!-- WEEK TREND — full width -->
+      <div class="charts-grid-full chart-card" style="margin-bottom:18px;">
+        <div class="chart-card-header">
+          <span class="chart-card-title">📅 Week-by-Week Trend — Opened vs Closed</span>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span class="trend-badge" id="trendBadge"></span>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--open)"></div>Opened</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--closed)"></div>Closed</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-body">
+          <div class="chart-canvas-wrap" id="weekChartWrap"></div>
+        </div>
       </div>
-      <div style="overflow-x:auto">
-        <table>
-          <thead>
-            <tr>
-              <th onclick="sortBy('refNo')">Ref ↕</th>
-              <th onclick="sortBy('title')">Title ↕</th>
-              <th onclick="sortBy('priority')">Priority ↕</th>
-              <th onclick="sortBy('status')">Status ↕</th>
-              <th onclick="sortBy('developerStatus')">Dev Status ↕</th>
-              <th onclick="sortBy('date')">Date ↕</th>
-              <th onclick="sortBy('developedBy')">Assigned To ↕</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
+
+      <div class="charts-grid-half">
+        <!-- DEVELOPER WORKLOAD -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <span class="chart-card-title">👤 Developer Workload — Open Requests</span>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div>Open</div>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="chart-canvas-wrap" id="devChartWrap"></div>
+          </div>
+        </div>
+
+        <!-- MODULE STATUS STACKED -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <span class="chart-card-title">📦 Module Breakdown — by Status</span>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--open)"></div>Open</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--onhold)"></div>On Hold</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--closed)"></div>Closed</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--cancelled)"></div>Cancelled</div>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="chart-canvas-wrap" id="moduleChartWrap"></div>
+          </div>
+        </div>
       </div>
-    </div>
+
+    </div><!-- /panel-charts -->
 
   </div><!-- /dashboardContent -->
 </main>
+
+<!-- TOOLTIP -->
+<div class="chart-tooltip" id="chartTooltip"></div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
@@ -465,131 +491,112 @@
 <footer>ERP Development Tracker · VBEDU · Live data from Google Sheets</footer>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────────────────
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1pRpFxQRcjX0cPCh6SyRzEUj5NLW8BIXv7Cly9n_X_70/export?format=csv&gid=0";
 
-// ── MATRIX DEFINITIONS ───────────────────────────────────────────────────
 const MATRICES = {
-  status:    { title:'Request Status',    rowField:'module',          colField:'status',          cols:[{k:'Open',l:'Open',p:'cp-open'},{k:'On Hold',l:'On Hold',p:'cp-onhold'},{k:'Closed',l:'Closed',p:'cp-closed'},{k:'Cancelled',l:'Cancelled',p:'cp-cancelled'}] },
-  priority:  { title:'Priority',          rowField:'module',          colField:'priority',         cols:[{k:'Low',l:'Low',p:'cp-low'},{k:'Medium',l:'Medium',p:'cp-medium'},{k:'High',l:'High',p:'cp-high'},{k:'Critical',l:'Critical',p:'cp-critical'}] },
-  stage:     { title:'Development Stage', rowField:'module',          colField:'devStage',         cols:[{k:'Development',l:'Development',p:'cp-devstage'},{k:'Testing',l:'Testing',p:'cp-testing'},{k:'Ready to deploy',l:'Ready to Deploy',p:'cp-rdeploy'},{k:'Deployed',l:'Deployed',p:'cp-deployed'}] },
-  devStatus: { title:'Developer Status',  rowField:'module',          colField:'developerStatus',  cols:[{k:'Not Started',l:'Not Started',p:'cp-notstarted'},{k:'In Progress',l:'In Progress',p:'cp-inprogress'},{k:'Incomplete',l:'Incomplete',p:'cp-incomplete'},{k:'Completed',l:'Completed',p:'cp-completed'},{k:'Deferred',l:'Deferred',p:'cp-deferred'}] },
-  developer: { title:'Developer Workload',rowField:'developedBy',     colField:'status',           cols:[{k:'Open',l:'Open',p:'cp-open'},{k:'On Hold',l:'On Hold',p:'cp-onhold'},{k:'Closed',l:'Closed',p:'cp-closed'},{k:'Cancelled',l:'Cancelled',p:'cp-cancelled'}] },
-  month:     { title:'Month-wise Status', rowField:'_monthKey',       colField:'status',           cols:[{k:'Open',l:'Open',p:'cp-open'},{k:'On Hold',l:'On Hold',p:'cp-onhold'},{k:'Closed',l:'Closed',p:'cp-closed'},{k:'Cancelled',l:'Cancelled',p:'cp-cancelled'}] },
+  status:    { title:'Request Status',    rowField:'module',      colField:'status',         cols:[{k:'Open',l:'Open',p:'cp-open'},{k:'On Hold',l:'On Hold',p:'cp-onhold'},{k:'Closed',l:'Closed',p:'cp-closed'},{k:'Cancelled',l:'Cancelled',p:'cp-cancelled'}] },
+  priority:  { title:'Priority',          rowField:'module',      colField:'priority',        cols:[{k:'Low',l:'Low',p:'cp-low'},{k:'Medium',l:'Medium',p:'cp-medium'},{k:'High',l:'High',p:'cp-high'},{k:'Critical',l:'Critical',p:'cp-critical'}] },
+  stage:     { title:'Development Stage', rowField:'module',      colField:'devStage',        cols:[{k:'Development',l:'Development',p:'cp-devstage'},{k:'Testing',l:'Testing',p:'cp-testing'},{k:'Ready to deploy',l:'Ready to Deploy',p:'cp-rdeploy'},{k:'Deployed',l:'Deployed',p:'cp-deployed'}] },
+  devStatus: { title:'Developer Status',  rowField:'module',      colField:'developerStatus', cols:[{k:'Not Started',l:'Not Started',p:'cp-notstarted'},{k:'In Progress',l:'In Progress',p:'cp-inprogress'},{k:'Incomplete',l:'Incomplete',p:'cp-incomplete'},{k:'Completed',l:'Completed',p:'cp-completed'},{k:'Deferred',l:'Deferred',p:'cp-deferred'}] },
+  developer: { title:'Developer Workload',rowField:'developedBy', colField:'status',          cols:[{k:'Open',l:'Open',p:'cp-open'},{k:'On Hold',l:'On Hold',p:'cp-onhold'},{k:'Closed',l:'Closed',p:'cp-closed'},{k:'Cancelled',l:'Cancelled',p:'cp-cancelled'}] },
+  month:     { title:'Month-wise Status', rowField:'_monthKey',   colField:'status',          cols:[{k:'Open',l:'Open',p:'cp-open'},{k:'On Hold',l:'On Hold',p:'cp-onhold'},{k:'Closed',l:'Closed',p:'cp-closed'},{k:'Cancelled',l:'Cancelled',p:'cp-cancelled'}] },
 };
 
-// ── STATE ─────────────────────────────────────────────────────────────────
-let RAW_DATA       = [];
-let activeMonth    = 'All';
-let activeCell     = null;   // {rowField,rowVal,colField,colVal,label}
-let activePriority = null;
-let staleWeeks     = 2;
-let sortKey        = 'sl';
-let sortDir        = 1;
+let RAW_DATA=[], activeMonth='All', activeCell=null, activePriority=null, staleWeeks=2, sortKey='sl', sortDir=1, activeTab='dashboard';
 
-// ── THEME ─────────────────────────────────────────────────────────────────
+// THEME
 function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('themeToggle').textContent = t === 'dark' ? '🌙' : '☀️';
-  try { localStorage.setItem('erp-theme', t); } catch(e){}
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('themeToggle').textContent=t==='dark'?'🌙':'☀️';
+  try{localStorage.setItem('erp-theme',t);}catch(e){}
+  if(RAW_DATA.length) buildAllCharts();
 }
-function toggleTheme() {
-  applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-}
-(function() {
-  try { const s = localStorage.getItem('erp-theme'); if (s) applyTheme(s); } catch(e){}
-})();
+function toggleTheme(){applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');}
+(function(){try{const s=localStorage.getItem('erp-theme');if(s)applyTheme(s);}catch(e){}})();
 
-// ── CSV PARSER ────────────────────────────────────────────────────────────
+// TAB SWITCH
+function switchTab(tab) {
+  activeTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  if(tab==='charts') buildAllCharts();
+}
+
+// CSV PARSER
 function parseLine(line) {
-  const cols=[]; let cur='', inQ=false;
-  for (let i=0;i<line.length;i++) {
+  const cols=[]; let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
     const ch=line[i];
-    if (ch==='"') { if(inQ&&line[i+1]==='"'){cur+='"';i++;} else inQ=!inQ; }
-    else if (ch===','&&!inQ) { cols.push(cur.trim()); cur=''; }
+    if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(ch===','&&!inQ){cols.push(cur.trim());cur='';}
     else cur+=ch;
   }
   cols.push(cur.trim()); return cols;
 }
-function parseCSV(text) {
+function parseCSV(text){
   const lines=text.trim().split(/\r?\n/);
-  if (lines.length<2) return [];
+  if(lines.length<2)return[];
   const headers=parseLine(lines[0]).map(h=>h.toLowerCase().replace(/\s+/g,' ').trim());
-  function get(cols,...keys) {
-    for (const k of keys) { const i=headers.indexOf(k.toLowerCase()); if(i!==-1&&cols[i]!==undefined) return (cols[i]||'').replace(/^"|"$/g,'').trim(); }
-    return '';
-  }
+  function get(cols,...keys){for(const k of keys){const i=headers.indexOf(k.toLowerCase());if(i!==-1&&cols[i]!==undefined)return(cols[i]||'').replace(/^"|"$/g,'').trim();}return'';}
   return lines.slice(1).map((line,i)=>{
-    if (!line.trim()) return null;
+    if(!line.trim())return null;
     const cols=parseLine(line);
     const dateStr=get(cols,'date','date raised','created at');
-    return {
-      sl:i+1, app:get(cols,'app')||'REQ',
-      refNo:   get(cols,'ref no','ref','refno','reference')||('REQ-'+(i+1)),
-      date:    dateStr,
-      _monthKey: toMonthKey(dateStr),
-      module:  get(cols,'module'),
-      title:   get(cols,'title'),
-      description: get(cols,'description','desc'),
-      status:  get(cols,'status'),
-      priority:get(cols,'priority'),
+    return{sl:i+1,app:get(cols,'app')||'REQ',refNo:get(cols,'ref no','ref','refno','reference')||('REQ-'+(i+1)),
+      date:dateStr,_monthKey:toMonthKey(dateStr),_weekKey:toWeekKey(dateStr),
+      module:get(cols,'module'),title:get(cols,'title'),description:get(cols,'description','desc'),
+      status:get(cols,'status'),priority:get(cols,'priority'),
       devStage:get(cols,'development stage','dev stage','devstage','stage'),
       developerStatus:get(cols,'developer status','dev status','developerstatus'),
       submittedBy:get(cols,'submitted by','submittedby','raised by'),
       developedBy:get(cols,'developed by','developedby','assigned to','assignee')||'Unassigned',
-      portal:  get(cols,'portal'),
-    };
+      portal:get(cols,'portal'),};
   }).filter(r=>r&&r.title);
 }
 
-// ── DATE HELPERS ─────────────────────────────────────────────────────────
-function toMonthKey(dateStr) {
-  if (!dateStr) return null;
-  let d;
-  if (/^\d{2}[-\/]\d{2}[-\/]\d{4}$/.test(dateStr)) {
-    const p=dateStr.split(/[-\/]/); d=new Date(p[2]+'-'+p[1]+'-'+p[0]);
-  } else { d=new Date(dateStr); }
-  if (isNaN(d)) return null;
+// DATE HELPERS
+function toMonthKey(s){
+  if(!s)return null;
+  let d; if(/^\d{2}[-\/]\d{2}[-\/]\d{4}$/.test(s)){const p=s.split(/[-\/]/);d=new Date(p[2]+'-'+p[1]+'-'+p[0]);}else d=new Date(s);
+  if(isNaN(d))return null;
   return d.toLocaleDateString('en-GB',{month:'short',year:'numeric'});
 }
-function daysSince(dateStr) {
-  if (!dateStr) return null;
-  let d;
-  if (/^\d{2}[-\/]\d{2}[-\/]\d{4}$/.test(dateStr)) {
-    const p=dateStr.split(/[-\/]/); d=new Date(p[2]+'-'+p[1]+'-'+p[0]);
-  } else { d=new Date(dateStr); }
-  if (isNaN(d)) return null;
+function toWeekKey(s){
+  if(!s)return null;
+  let d; if(/^\d{2}[-\/]\d{2}[-\/]\d{4}$/.test(s)){const p=s.split(/[-\/]/);d=new Date(p[2]+'-'+p[1]+'-'+p[0]);}else d=new Date(s);
+  if(isNaN(d))return null;
+  // Monday of the week
+  const day=d.getDay(); const diff=d.getDate()-(day===0?6:day-1);
+  const mon=new Date(d.setDate(diff));
+  return mon.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+}
+function daysSince(s){
+  if(!s)return null;
+  let d; if(/^\d{2}[-\/]\d{2}[-\/]\d{4}$/.test(s)){const p=s.split(/[-\/]/);d=new Date(p[2]+'-'+p[1]+'-'+p[0]);}else d=new Date(s);
+  if(isNaN(d))return null;
   return Math.floor((Date.now()-d.getTime())/(1000*60*60*24));
 }
-function isStale(r) {
-  if (r.status!=='Open' || r.developerStatus!=='Not Started') return false;
-  const days=daysSince(r.date);
-  return days!==null && days>=(staleWeeks*7);
+function isStale(r){
+  if(r.status!=='Open'||r.developerStatus!=='Not Started')return false;
+  const days=daysSince(r.date); return days!==null&&days>=(staleWeeks*7);
 }
 
-// ── FILTERED DATA ─────────────────────────────────────────────────────────
-function getMonthFiltered() {
-  if (activeMonth==='All') return RAW_DATA;
-  return RAW_DATA.filter(r=>r._monthKey===activeMonth);
-}
-function getFiltered() {
+// FILTERED DATA
+function getMonthFiltered(){if(activeMonth==='All')return RAW_DATA;return RAW_DATA.filter(r=>r._monthKey===activeMonth);}
+function getFiltered(){
   const q=(document.getElementById('searchInput').value||'').toLowerCase().trim();
   return getMonthFiltered().filter(r=>{
-    if (activeCell) {
-      if (r[activeCell.rowField]!==activeCell.rowVal) return false;
-      if (r[activeCell.colField]!==activeCell.colVal) return false;
-    }
-    if (activePriority && r.priority!==activePriority) return false;
-    if (q && !r.title.toLowerCase().includes(q) && !r.refNo.toLowerCase().includes(q) && !r.module.toLowerCase().includes(q)) return false;
+    if(activeCell&&(r[activeCell.rowField]!==activeCell.rowVal||r[activeCell.colField]!==activeCell.colVal))return false;
+    if(activePriority&&r.priority!==activePriority)return false;
+    if(q&&!r.title.toLowerCase().includes(q)&&!r.refNo.toLowerCase().includes(q)&&!r.module.toLowerCase().includes(q))return false;
     return true;
-  }).sort((a,b)=>{
-    if (sortKey==='sl') return (a.sl-b.sl)*sortDir;
-    return (a[sortKey]||'').localeCompare(b[sortKey]||'')*sortDir;
-  });
+  }).sort((a,b)=>{if(sortKey==='sl')return(a.sl-b.sl)*sortDir;return(a[sortKey]||'').localeCompare(b[sortKey]||'')*sortDir;});
 }
 
-// ── STAT BAR ──────────────────────────────────────────────────────────────
-function buildStatBar() {
+// STAT BAR
+function buildStatBar(){
   const d=getMonthFiltered();
   const total=d.length;
   const open=d.filter(r=>r.status==='Open').length;
@@ -598,199 +605,263 @@ function buildStatBar() {
   const development=d.filter(r=>r.devStage==='Development').length;
   const ready=d.filter(r=>r.devStage==='Ready to deploy').length;
   document.getElementById('statBar').innerHTML=
-    sc('sc-total',   'Total Requests', total,    'All development items')+
-    sc('sc-open',    'Open',           open,     'Pending resolution')+
-    sc('sc-highcrit','High + Critical', highCrit,'Active — Open or On Hold')+
-    sc('sc-notstart','Not Started',    notStarted,'Development pending')+
+    sc('sc-total',   'Total Requests', total,      'All development items')+
+    sc('sc-open',    'Open',           open,       'Pending resolution')+
+    sc('sc-highcrit','High + Critical', highCrit,  'Active — Open or On Hold')+
+    sc('sc-notstart','Not Started',    notStarted, 'Development pending')+
     sc('sc-dev',     'In Development', development,'Actively being built')+
-    sc('sc-ready',   'Ready to Deploy',ready,    'Waiting to go live');
+    sc('sc-ready',   'Ready to Deploy',ready,      'Waiting to go live');
 }
-function sc(cls,label,val,desc) {
-  return '<div class="stat-card '+cls+'"><div class="stat-label">'+label+'</div><div class="stat-value">'+val+'</div><div class="stat-desc">'+desc+'</div></div>';
-}
+function sc(cls,label,val,desc){return'<div class="stat-card '+cls+'"><div class="stat-label">'+label+'</div><div class="stat-value">'+val+'</div><div class="stat-desc">'+desc+'</div></div>';}
 
-// ── BUILD MATRIX ──────────────────────────────────────────────────────────
-function buildMatrix(containerId, key) {
+// MONTH BAR
+function buildMonthBar(){
+  const months=['All']; const seen=new Set();
+  RAW_DATA.forEach(r=>{if(r._monthKey&&!seen.has(r._monthKey)){seen.add(r._monthKey);months.push(r._monthKey);}});
+  document.getElementById('monthBtns').innerHTML=months.map(m=>'<button class="pill-btn '+(activeMonth===m?'active':'')+'" onclick="setMonth(\''+m+'\')">'+m+'</button>').join('');
+}
+function setMonth(m){activeMonth=m;activeCell=null;activePriority=null;buildMonthBar();buildStatBar();buildAllMatrices();buildPriorityFilters();renderActiveFilters();renderTable();if(activeTab==='charts')buildAllCharts();}
+
+// MATRIX
+function buildMatrix(cid,key){
   const def=MATRICES[key];
   const data=getMonthFiltered();
-
-  // get unique row values
   const rowVals=[...new Set(data.map(r=>r[def.rowField]).filter(Boolean))].sort();
-
-  // tally
-  const counts={}, colTotals={};
-  let grand=0;
+  const counts={},colTotals={}; let grand=0;
   def.cols.forEach(c=>{colTotals[c.k]=0;});
-  rowVals.forEach(rv=>{
-    counts[rv]={};
-    def.cols.forEach(c=>{counts[rv][c.k]=0;});
-  });
-  data.forEach(r=>{
-    const rv=r[def.rowField]; if(!rv) return;
-    def.cols.forEach(c=>{
-      if(r[def.colField]===c.k){counts[rv][c.k]++;colTotals[c.k]++;grand++;}
-    });
-  });
-  const rowTotals={};
-  rowVals.forEach(rv=>{rowTotals[rv]=def.cols.reduce((s,c)=>s+counts[rv][c.k],0);});
-
-  function pill(n,p) {
-    if(n===0) return '<span class="cp zero">—</span>';
-    return '<span class="cp '+p+'">'+n+'</span>';
-  }
-
+  rowVals.forEach(rv=>{counts[rv]={};def.cols.forEach(c=>{counts[rv][c.k]=0;});});
+  data.forEach(r=>{const rv=r[def.rowField];if(!rv)return;def.cols.forEach(c=>{if(r[def.colField]===c.k){counts[rv][c.k]++;colTotals[c.k]++;grand++;}});});
+  const rowTotals={};rowVals.forEach(rv=>{rowTotals[rv]=def.cols.reduce((s,c)=>s+counts[rv][c.k],0);});
+  function pill(n,p){if(n===0)return'<span class="cp zero">—</span>';return'<span class="cp '+p+'">'+n+'</span>';}
   const thCols=def.cols.map(c=>'<th style="min-width:78px">'+c.l+'</th>').join('');
-
   const bodyRows=rowVals.map(rv=>{
     const cells=def.cols.map(c=>{
       const isAct=activeCell&&activeCell.rowField===def.rowField&&activeCell.rowVal===rv&&activeCell.colField===def.colField&&activeCell.colVal===c.k;
-      return '<td class="dc"'+(isAct?' style="background:rgba(108,99,255,.1)"':'')+' onclick="setCellFilter(\''+def.rowField+'\',\''+rv.replace(/'/g,"\\'")  +'\',\''+def.colField+'\',\''+c.k.replace(/'/g,"\\'")+'\',\''+rv.replace(/'/g,"\\'")+' · '+c.l+'\')">'+pill(counts[rv][c.k],c.p)+'</td>';
+      return'<td class="dc"'+(isAct?' style="background:rgba(108,99,255,.1)"':'')+' onclick="setCellFilter(\''+def.rowField+'\',\''+rv.replace(/'/g,"\\'")+'\',\''+def.colField+'\',\''+c.k.replace(/'/g,"\\'")+'\',\''+rv.replace(/'/g,"\\'")+' · '+c.l+'\')">'+pill(counts[rv][c.k],c.p)+'</td>';
     }).join('');
-    return '<tr><td>'+rv+'</td><td>'+pill(rowTotals[rv],'cp-total')+'</td>'+cells+'</tr>';
+    return'<tr><td>'+rv+'</td><td>'+pill(rowTotals[rv],'cp-total')+'</td>'+cells+'</tr>';
   }).join('');
-
   const totalCells=def.cols.map(c=>'<td>'+pill(colTotals[c.k],c.p)+'</td>').join('');
+  document.getElementById(cid).innerHTML=
+    '<div class="matrix-card-header"><span class="matrix-card-title">'+def.title+'</span><span class="matrix-card-total">'+grand+' total</span></div>'+
+    '<div class="matrix-table-wrap"><table class="matrix-table"><thead><tr>'+
+      '<th style="min-width:110px">'+(def.rowField==='_monthKey'?'Month':def.rowField==='developedBy'?'Developer':'Module')+'</th>'+
+      '<th style="min-width:56px">Total</th>'+thCols+'</tr></thead>'+
+    '<tbody>'+bodyRows+'<tr class="total-row"><td>Total</td><td>'+pill(grand,'cp-total')+'</td>'+totalCells+'</tr></tbody></table></div>';
+}
+function buildAllMatrices(){['status','priority','stage','devStatus','developer','month'].forEach((k,i)=>buildMatrix(['mxStatus','mxPriority','mxStage','mxDevStatus','mxDeveloper','mxMonth'][i],k));}
 
-  document.getElementById(containerId).innerHTML=
-    '<div class="matrix-card-header">'+
-      '<span class="matrix-card-title">'+def.title+'</span>'+
-      '<span class="matrix-card-total">'+grand+' total</span>'+
-    '</div>'+
-    '<div class="matrix-table-wrap"><table class="matrix-table">'+
-      '<thead><tr><th style="min-width:110px">'+(def.rowField==='_monthKey'?'Month':def.rowField==='developedBy'?'Developer':'Module')+'</th>'+
-        '<th style="min-width:56px">Total</th>'+thCols+'</tr></thead>'+
-      '<tbody>'+bodyRows+
-        '<tr class="total-row"><td>Total</td><td>'+pill(grand,'cp-total')+'</td>'+totalCells+'</tr>'+
-      '</tbody></table></div>';
-}
+// WEEK FILTER
+function buildWeekBtns(){document.getElementById('weekBtns').innerHTML=[1,2,3,4,5].map(w=>'<button class="week-btn '+(staleWeeks===w?'active':'')+'" onclick="setStaleWeeks('+w+')">'+w+'W</button>').join('');}
+function setStaleWeeks(w){staleWeeks=w;buildWeekBtns();renderTable();}
 
-function buildAllMatrices() {
-  buildMatrix('mxStatus',    'status');
-  buildMatrix('mxPriority',  'priority');
-  buildMatrix('mxStage',     'stage');
-  buildMatrix('mxDevStatus', 'devStatus');
-  buildMatrix('mxDeveloper', 'developer');
-  buildMatrix('mxMonth',     'month');
+// CELL / PRIORITY FILTER
+function setCellFilter(rf,rv,cf,cv,label){
+  if(activeCell&&activeCell.rowField===rf&&activeCell.rowVal===rv&&activeCell.colField===cf&&activeCell.colVal===cv){activeCell=null;}
+  else{activeCell={rowField:rf,rowVal:rv,colField:cf,colVal:cv,label};}
+  buildAllMatrices();renderActiveFilters();renderTable();
 }
+function buildPriorityFilters(){document.getElementById('priorityFilters').innerHTML=['Critical','High','Medium','Low'].map(p=>'<button class="filter-btn '+(activePriority===p?'active':'')+'" onclick="filterPriority(\''+p+'\')">'+p+'</button>').join('');}
+function filterPriority(p){activePriority=activePriority===p?null:p;buildPriorityFilters();renderActiveFilters();renderTable();}
 
-// ── MONTH BAR ─────────────────────────────────────────────────────────────
-function buildMonthBar() {
-  const months=['All'];
-  const seen=new Set();
-  RAW_DATA.forEach(r=>{ if(r._monthKey&&!seen.has(r._monthKey)){seen.add(r._monthKey);months.push(r._monthKey);} });
-  document.getElementById('monthBtns').innerHTML=months.map(m=>
-    '<button class="pill-btn '+(activeMonth===m?'active':'')+'" onclick="setMonth(\''+m+'\')">'+m+'</button>'
-  ).join('');
-}
-function setMonth(m) {
-  activeMonth=m; activeCell=null; activePriority=null;
-  buildMonthBar(); buildStatBar(); buildAllMatrices(); buildPriorityFilters(); renderActiveFilters(); renderTable();
-}
-
-// ── WEEK SELECTOR ─────────────────────────────────────────────────────────
-function buildWeekBtns() {
-  document.getElementById('weekBtns').innerHTML=[1,2,3,4,5].map(w=>
-    '<button class="week-btn '+(staleWeeks===w?'active':'')+'" onclick="setStaleWeeks('+w+')">'+w+'W</button>'
-  ).join('');
-}
-function setStaleWeeks(w) { staleWeeks=w; buildWeekBtns(); renderTable(); }
-
-// ── CELL FILTER ───────────────────────────────────────────────────────────
-function setCellFilter(rowField, rowVal, colField, colVal, label) {
-  if (activeCell&&activeCell.rowField===rowField&&activeCell.rowVal===rowVal&&activeCell.colField===colField&&activeCell.colVal===colVal) {
-    activeCell=null;
-  } else {
-    activeCell={rowField,rowVal,colField,colVal,label};
-  }
-  buildAllMatrices(); renderActiveFilters(); renderTable();
-}
-
-// ── PRIORITY FILTER ───────────────────────────────────────────────────────
-function buildPriorityFilters() {
-  document.getElementById('priorityFilters').innerHTML=
-    ['Critical','High','Medium','Low'].map(p=>
-      '<button class="filter-btn '+(activePriority===p?'active':'')+'" onclick="filterPriority(\''+p+'\')">'+p+'</button>'
-    ).join('');
-}
-function filterPriority(p) {
-  activePriority=activePriority===p?null:p;
-  buildPriorityFilters(); renderActiveFilters(); renderTable();
-}
-
-// ── ACTIVE FILTER CHIPS ───────────────────────────────────────────────────
+// ACTIVE FILTER CHIPS
 window._clears=[];
-function renderActiveFilters() {
+function renderActiveFilters(){
   const chips=[];
-  if (activeMonth!=='All') chips.push({l:activeMonth, fn:()=>setMonth('All')});
-  if (activeCell)          chips.push({l:activeCell.label, fn:()=>{activeCell=null;buildAllMatrices();renderActiveFilters();renderTable();}});
-  if (activePriority)      chips.push({l:'Priority: '+activePriority, fn:()=>{activePriority=null;buildPriorityFilters();renderActiveFilters();renderTable();}});
+  if(activeMonth!=='All')chips.push({l:activeMonth,fn:()=>setMonth('All')});
+  if(activeCell)chips.push({l:activeCell.label,fn:()=>{activeCell=null;buildAllMatrices();renderActiveFilters();renderTable();}});
+  if(activePriority)chips.push({l:'Priority: '+activePriority,fn:()=>{activePriority=null;buildPriorityFilters();renderActiveFilters();renderTable();}});
   window._clears=chips.map(c=>c.fn);
   const el=document.getElementById('activeFilters');
-  if (!chips.length){el.innerHTML='';return;}
-  el.innerHTML=chips.map((c,i)=>
-    '<span class="filter-chip">'+c.l+'<button onclick="window._clears['+i+']()" title="Remove">×</button></span>'
-  ).join('')+'<button class="clear-all-btn" onclick="clearAll()">Clear all</button>';
+  if(!chips.length){el.innerHTML='';return;}
+  el.innerHTML=chips.map((c,i)=>'<span class="filter-chip">'+c.l+'<button onclick="window._clears['+i+']()" title="Remove">×</button></span>').join('')+'<button class="clear-all-btn" onclick="clearAll()">Clear all</button>';
 }
-function clearAll() {
-  activeMonth='All';activeCell=null;activePriority=null;
-  buildMonthBar();buildStatBar();buildAllMatrices();buildPriorityFilters();renderActiveFilters();renderTable();
-}
+function clearAll(){activeMonth='All';activeCell=null;activePriority=null;buildMonthBar();buildStatBar();buildAllMatrices();buildPriorityFilters();renderActiveFilters();renderTable();}
 
-// ── TABLE ─────────────────────────────────────────────────────────────────
-function sortBy(k) { if(sortKey===k)sortDir*=-1; else{sortKey=k;sortDir=1;} renderTable(); }
+// TABLE
+function sortBy(k){if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1;}renderTable();}
+function getPriorityCls(p){if(!p)return'';return{critical:'priority-critical',high:'priority-high',medium:'priority-medium',low:'priority-low'}[p.toLowerCase()]||'';}
+function getStatusCls(s){if(!s)return'';return{'open':'status-open','on hold':'status-onhold','closed':'status-closed','cancelled':'status-cancelled'}[s.toLowerCase()]||'status-open';}
+function getDevCls(d){if(!d)return'';return{'not started':'dev-notstarted','in progress':'dev-inprogress','incomplete':'dev-incomplete','completed':'dev-completed','deferred':'dev-deferred'}[d.toLowerCase()]||'dev-notstarted';}
 
-function getPriorityCls(p) {
-  if(!p)return'';
-  return{critical:'priority-critical',high:'priority-high',medium:'priority-medium',low:'priority-low'}[p.toLowerCase()]||'';
-}
-function getStatusCls(s) {
-  if(!s)return'';
-  return{'open':'status-open','on hold':'status-onhold','closed':'status-closed','cancelled':'status-cancelled'}[s.toLowerCase()]||'status-open';
-}
-function getDevCls(d) {
-  if(!d)return'';
-  return{'not started':'dev-notstarted','in progress':'dev-inprogress','incomplete':'dev-incomplete','completed':'dev-completed','deferred':'dev-deferred'}[d.toLowerCase()]||'dev-notstarted';
-}
-
-function renderTable() {
+function renderTable(){
   const data=getFiltered();
   document.getElementById('resultCount').textContent=data.length+' of '+RAW_DATA.length;
-  if (!data.length) {
-    document.getElementById('tableBody').innerHTML=
-      '<tr><td colspan="7"><div class="empty-state">'+
-        '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>'+
-        '<div>No requests match your filters.</div></div></td></tr>';
-    return;
-  }
+  if(!data.length){document.getElementById('tableBody').innerHTML='<tr><td colspan="7"><div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><div>No requests match your filters.</div></div></td></tr>';return;}
   document.getElementById('tableBody').innerHTML=data.map(r=>{
-    const stale=isStale(r);
-    const days=daysSince(r.date);
+    const stale=isStale(r);const days=daysSince(r.date);
     const staleTag=stale?'<span class="stale-tag">⚠ '+(days>0?days+'d':'stale')+'</span>':'';
-    return '<tr class="'+(stale?'stale-row':'')+'" onclick="openModal('+(r.sl-1)+')">'+
+    return'<tr class="'+(stale?'stale-row':'')+'" onclick="openModal('+(r.sl-1)+')">'+
       '<td><span class="ref-badge">'+r.refNo+'</span></td>'+
       '<td class="title-cell"><div class="module-tag">'+r.module+'</div><span class="title-text">'+r.title+'</span>'+staleTag+'</td>'+
       '<td><span class="badge '+getPriorityCls(r.priority)+'">'+r.priority+'</span></td>'+
       '<td><span class="badge '+getStatusCls(r.status)+'">'+r.status+'</span></td>'+
       '<td><span class="badge '+getDevCls(r.developerStatus)+'">'+r.developerStatus+'</span></td>'+
       '<td class="date-cell">'+r.date+'</td>'+
-      '<td class="assignee">'+r.developedBy+'</td>'+
-    '</tr>';
+      '<td class="assignee">'+r.developedBy+'</td></tr>';
   }).join('');
 }
 
-// ── MODAL ────────────────────────────────────────────────────────────────
-function openModal(idx) {
-  const r=RAW_DATA[idx];
-  const stale=isStale(r);
-  const days=daysSince(r.date);
+// ── CHARTS ───────────────────────────────────────────────────────────────
+
+// Get CSS variable value
+function cssVar(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim();}
+
+// Tooltip
+const tt=document.getElementById('chartTooltip');
+function showTT(e,html){tt.innerHTML=html;tt.style.display='block';moveTT(e);}
+function moveTT(e){tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-10)+'px';}
+function hideTT(){tt.style.display='none';}
+
+// CHART 1: Week-by-week grouped bars
+function buildWeekChart(){
+  const data=getMonthFiltered();
+  // collect all weeks in order
+  const weekMap={};
+  data.forEach(r=>{if(!r._weekKey)return;if(!weekMap[r._weekKey])weekMap[r._weekKey]={opened:0,closed:0};weekMap[r._weekKey].opened++;if(r.status==='Closed')weekMap[r._weekKey].closed++;});
+  const weeks=Object.keys(weekMap);
+  if(!weeks.length){document.getElementById('weekChartWrap').innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">No date data available.</div>';return;}
+
+  const last8=weeks.slice(-10); // show last 10 weeks max
+  const maxVal=Math.max(...last8.map(w=>Math.max(weekMap[w].opened,weekMap[w].closed)),1);
+
+  // trend badge: compare last 2 weeks
+  if(last8.length>=2){
+    const lw=weekMap[last8[last8.length-1]];const pw=weekMap[last8[last8.length-2]];
+    const diff=lw.opened-lw.closed;
+    const badge=document.getElementById('trendBadge');
+    if(diff>0){badge.className='trend-badge trend-up';badge.textContent='↑ Backlog growing';}
+    else if(diff<0){badge.className='trend-badge trend-down';badge.textContent='↓ Backlog shrinking';}
+    else{badge.className='trend-badge trend-eq';badge.textContent='= Balanced';}
+  }
+
+  const W=900,H=220,padL=32,padR=16,padT=16,padB=48;
+  const chartW=W-padL-padR,chartH=H-padT-padB;
+  const colW=chartW/last8.length;
+  const barW=Math.min(colW*0.35,28);
+  const gap=4;
+  const scaleY=n=>(chartH-(n/maxVal)*chartH);
+
+  // grid lines
+  const gridLines=[0,.25,.5,.75,1].map(f=>{
+    const y=padT+scaleY(f*maxVal);
+    const val=Math.round(f*maxVal);
+    return'<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="'+cssVar('--border')+'" stroke-width="1"/>'+
+      '<text x="'+(padL-4)+'" y="'+(y+4)+'" text-anchor="end" font-size="10" fill="'+cssVar('--muted')+'">'+val+'</text>';
+  }).join('');
+
+  const bars=last8.map((wk,i)=>{
+    const d=weekMap[wk];
+    const cx=padL+colW*i+colW/2;
+    const openH=Math.max((d.opened/maxVal)*chartH,0);
+    const closedH=Math.max((d.closed/maxVal)*chartH,0);
+    const openY=padT+chartH-openH;
+    const closedY=padT+chartH-closedH;
+    const openX=cx-barW-gap/2;
+    const closedX=cx+gap/2;
+    const label=wk.replace(' ','&nbsp;');
+    return'<rect class="bar-opened" x="'+openX+'" y="'+openY+'" width="'+barW+'" height="'+Math.max(openH,1)+'" rx="3"'+
+        ' onmouseenter="showTT(event,\'<div class=tt-label>Week of '+wk+'</div><div class=tt-row><div class=tt-dot style=background:var(--open)></div><span>Opened</span><span class=tt-val>'+d.opened+'</span></div><div class=tt-row><div class=tt-dot style=background:var(--closed)></div><span>Closed</span><span class=tt-val>'+d.closed+'</span></div>\')" onmousemove="moveTT(event)" onmouseleave="hideTT()"/>'+
+      '<rect class="bar-closed" x="'+closedX+'" y="'+closedY+'" width="'+barW+'" height="'+Math.max(closedH,1)+'" rx="3"'+
+        ' onmouseenter="showTT(event,\'<div class=tt-label>Week of '+wk+'</div><div class=tt-row><div class=tt-dot style=background:var(--open)></div><span>Opened</span><span class=tt-val>'+d.opened+'</span></div><div class=tt-row><div class=tt-dot style=background:var(--closed)></div><span>Closed</span><span class=tt-val>'+d.closed+'</span></div>\')" onmousemove="moveTT(event)" onmouseleave="hideTT()"/>'+
+      '<text x="'+cx+'" y="'+(padT+chartH+16)+'" text-anchor="middle" font-size="10" fill="'+cssVar('--muted')+'">'+label+'</text>';
+  }).join('');
+
+  document.getElementById('weekChartWrap').innerHTML=
+    '<svg class="chart-svg" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+
+      gridLines+bars+
+      '<line x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+(padT+chartH)+'" stroke="'+cssVar('--border')+'" stroke-width="1"/>'+
+      '<line x1="'+padL+'" y1="'+(padT+chartH)+'" x2="'+(W-padR)+'" y2="'+(padT+chartH)+'" stroke="'+cssVar('--border')+'" stroke-width="1"/>'+
+    '</svg>';
+}
+
+// CHART 2: Developer workload horizontal bars
+function buildDevChart(){
+  const data=getMonthFiltered();
+  const devCounts={};
+  data.filter(r=>r.status==='Open'||r.status==='On Hold').forEach(r=>{devCounts[r.developedBy]=(devCounts[r.developedBy]||0)+1;});
+  const devs=Object.entries(devCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(!devs.length){document.getElementById('devChartWrap').innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">No open requests.</div>';return;}
+  const maxVal=Math.max(...devs.map(d=>d[1]),1);
+  const rowH=36,padL=110,padR=40,padT=8;
+  const W=500,chartW=W-padL-padR;
+  const H=padT+devs.length*rowH+8;
+
+  const bars=devs.map(([dev,count],i)=>{
+    const y=padT+i*rowH;
+    const bw=Math.max((count/maxVal)*chartW,2);
+    const name=dev.length>14?dev.slice(0,13)+'…':dev;
+    return'<text x="'+(padL-8)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-size="11" fill="'+cssVar('--text')+'">'+name+'</text>'+
+      '<rect class="bar-dev" x="'+padL+'" y="'+(y+6)+'" width="'+bw+'" height="'+(rowH-14)+'" rx="4"'+
+        ' onmouseenter="showTT(event,\'<div class=tt-label>'+dev+'</div><div class=tt-row><div class=tt-dot style=background:var(--accent2)></div><span>Active Requests</span><span class=tt-val>'+count+'</span></div>\')" onmousemove="moveTT(event)" onmouseleave="hideTT()"/>'+
+      '<text x="'+(padL+bw+6)+'" y="'+(y+rowH/2+4)+'" font-size="11" font-weight="600" fill="'+cssVar('--accent2')+'">'+count+'</text>';
+  }).join('');
+
+  document.getElementById('devChartWrap').innerHTML=
+    '<svg class="chart-svg" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+
+      '<line x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+H+'" stroke="'+cssVar('--border')+'" stroke-width="1"/>'+
+      bars+'</svg>';
+}
+
+// CHART 3: Module stacked bar
+function buildModuleChart(){
+  const data=getMonthFiltered();
+  const statuses=['Open','On Hold','Closed','Cancelled'];
+  const colors=[cssVar('--open'),cssVar('--onhold'),cssVar('--closed'),cssVar('--cancelled')];
+  const modules=[...new Set(data.map(r=>r.module).filter(Boolean))].sort();
+  if(!modules.length){document.getElementById('moduleChartWrap').innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">No data.</div>';return;}
+
+  const counts={};
+  modules.forEach(m=>{counts[m]={};statuses.forEach(s=>{counts[m][s]=0;});});
+  data.forEach(r=>{if(counts[r.module]&&r.status in counts[r.module])counts[r.module][r.status]++;});
+  const totals=modules.map(m=>statuses.reduce((s,st)=>s+counts[m][st],0));
+  const maxTotal=Math.max(...totals,1);
+
+  const colW=80,padL=24,padR=16,padT=16,padB=48;
+  const W=padL+modules.length*colW+padR;
+  const H=240,chartH=H-padT-padB;
+
+  const bars=modules.map((m,mi)=>{
+    const cx=padL+mi*colW+colW/2;
+    const barW=Math.min(colW*0.55,40);
+    let curY=padT+chartH;
+    const segs=statuses.map((st,si)=>{
+      const n=counts[m][st];
+      const h=Math.max((n/maxTotal)*chartH,0);
+      const seg=n>0?'<rect x="'+(cx-barW/2)+'" y="'+(curY-h)+'" width="'+barW+'" height="'+h+'" fill="'+colors[si]+'" opacity="0.85" rx="'+(si===statuses.length-1?'3':'0')+'" style="cursor:pointer"'+
+        ' onmouseenter="showTT(event,\'<div class=tt-label>'+m+'</div><div class=tt-row><div class=tt-dot style=background:'+colors[si]+'></div><span>'+st+'</span><span class=tt-val>'+n+'</span></div>\')" onmousemove="moveTT(event)" onmouseleave="hideTT()"/>':'';
+      curY-=h;return seg;
+    }).join('');
+    const name=m.length>8?m.slice(0,7)+'…':m;
+    return segs+'<text x="'+cx+'" y="'+(padT+chartH+16)+'" text-anchor="middle" font-size="11" fill="'+cssVar('--muted')+'">'+name+'</text>'+
+      '<text x="'+cx+'" y="'+(padT+chartH+30)+'" text-anchor="middle" font-size="10" fill="'+cssVar('--muted')+'">'+totals[mi]+'</text>';
+  }).join('');
+
+  // grid
+  const grid=[0,.25,.5,.75,1].map(f=>{
+    const y=padT+(1-f)*chartH;
+    return'<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="'+cssVar('--border')+'" stroke-width="1" stroke-dasharray="3,3"/>'+
+      '<text x="'+(padL-4)+'" y="'+(y+4)+'" text-anchor="end" font-size="9" fill="'+cssVar('--muted')+'">'+Math.round(f*maxTotal)+'</text>';
+  }).join('');
+
+  document.getElementById('moduleChartWrap').innerHTML=
+    '<svg class="chart-svg" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+
+      grid+bars+
+      '<line x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+(padT+chartH)+'" stroke="'+cssVar('--border')+'" stroke-width="1"/>'+
+      '<line x1="'+padL+'" y1="'+(padT+chartH)+'" x2="'+(W-padR)+'" y2="'+(padT+chartH)+'" stroke="'+cssVar('--border')+'" stroke-width="1"/>'+
+    '</svg>';
+}
+
+function buildAllCharts(){buildWeekChart();buildDevChart();buildModuleChart();}
+
+// MODAL
+function openModal(idx){
+  const r=RAW_DATA[idx];const stale=isStale(r);const days=daysSince(r.date);
   document.getElementById('modal').innerHTML=
-    '<div class="modal-header">'+
-      '<div>'+
-        '<div class="modal-ref">'+r.refNo+' · '+r.module+'</div>'+
-        '<div class="modal-title">'+r.title+(stale?'&nbsp;<span class="stale-tag">⚠ '+days+'d stale</span>':'')+'</div>'+
-      '</div>'+
-      '<button class="modal-close" onclick="document.getElementById(\'modalOverlay\').classList.remove(\'open\')">×</button>'+
-    '</div>'+
+    '<div class="modal-header"><div>'+
+      '<div class="modal-ref">'+r.refNo+' · '+r.module+'</div>'+
+      '<div class="modal-title">'+r.title+(stale?'&nbsp;<span class="stale-tag">⚠ '+days+'d stale</span>':'')+'</div>'+
+    '</div><button class="modal-close" onclick="document.getElementById(\'modalOverlay\').classList.remove(\'open\')">×</button></div>'+
     '<div class="modal-meta">'+
       '<span class="badge '+getPriorityCls(r.priority)+'">'+r.priority+' Priority</span>'+
       '<span class="badge '+getStatusCls(r.status)+'">'+r.status+'</span>'+
@@ -807,32 +878,22 @@ function openModal(idx) {
     '</div>';
   document.getElementById('modalOverlay').classList.add('open');
 }
-function closeModal(e) { if(e.target===document.getElementById('modalOverlay')) document.getElementById('modalOverlay').classList.remove('open'); }
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.getElementById('modalOverlay').classList.remove('open'); });
+function closeModal(e){if(e.target===document.getElementById('modalOverlay'))document.getElementById('modalOverlay').classList.remove('open');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('modalOverlay').classList.remove('open');});
 
-// ── LOAD DATA ────────────────────────────────────────────────────────────
-async function loadData() {
-  try {
+// LOAD
+async function loadData(){
+  try{
     const res=await fetch(SHEET_CSV_URL);
-    if (!res.ok) throw new Error('HTTP '+res.status);
+    if(!res.ok)throw new Error('HTTP '+res.status);
     const text=await res.text();
     RAW_DATA=parseCSV(text);
-    if (!RAW_DATA.length) throw new Error('No data rows found. Check sheet tab and column headers.');
-
-    document.getElementById('lastUpdated').textContent=
-      'Updated '+new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
-
+    if(!RAW_DATA.length)throw new Error('No data rows found. Check sheet tab and column headers.');
+    document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
     document.getElementById('loadingState').style.display='none';
     document.getElementById('dashboardContent').style.display='block';
-
-    buildMonthBar();
-    buildStatBar();
-    buildAllMatrices();
-    buildPriorityFilters();
-    buildWeekBtns();
-    renderActiveFilters();
-    renderTable();
-  } catch(err) {
+    buildMonthBar();buildStatBar();buildAllMatrices();buildPriorityFilters();buildWeekBtns();renderActiveFilters();renderTable();
+  }catch(err){
     document.getElementById('loadingState').innerHTML=
       '<div style="text-align:center;color:var(--high)">'+
         '<div style="font-size:32px;margin-bottom:10px">⚠️</div>'+
@@ -844,7 +905,6 @@ async function loadData() {
     console.error('Sheet load error:',err);
   }
 }
-
 loadData();
 </script>
 </body>
