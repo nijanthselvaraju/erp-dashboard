@@ -593,14 +593,14 @@ function buildStatBar() {
   const d=getMonthFiltered();
   const total=d.length;
   const open=d.filter(r=>r.status==='Open').length;
-  const highCrit=d.filter(r=>r.priority==='High'||r.priority==='Critical').length;
+  const highCrit=d.filter(r=>(r.priority==='High'||r.priority==='Critical')&&(r.status==='Open'||r.status==='On Hold')).length;
   const notStarted=d.filter(r=>r.developerStatus==='Not Started').length;
   const development=d.filter(r=>r.devStage==='Development').length;
   const ready=d.filter(r=>r.devStage==='Ready to deploy').length;
   document.getElementById('statBar').innerHTML=
     sc('sc-total',   'Total Requests', total,    'All development items')+
     sc('sc-open',    'Open',           open,     'Pending resolution')+
-    sc('sc-highcrit','High + Critical', highCrit,'Needs immediate action')+
+    sc('sc-highcrit','High + Critical', highCrit,'Active — Open or On Hold')+
     sc('sc-notstart','Not Started',    notStarted,'Development pending')+
     sc('sc-dev',     'In Development', development,'Actively being built')+
     sc('sc-ready',   'Ready to Deploy',ready,    'Waiting to go live');
