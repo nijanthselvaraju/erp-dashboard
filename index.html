@@ -266,6 +266,15 @@
     /* MODULE TAG on cards — no empty box */
     .kanban-module{display:inline-block;font-size:10px;background:var(--surface2);color:var(--muted);padding:2px 7px;border-radius:4px;margin-bottom:4px;font-weight:500;}
 
+    /* DEV STAGE TAG on cards — clickable */
+    .kanban-stage{display:inline-block;font-size:10px;background:var(--surface2);border:1px solid var(--border);color:var(--accent2);padding:2px 8px;border-radius:4px;margin-bottom:4px;font-weight:600;cursor:pointer;transition:all .15s;}
+    .kanban-stage:hover{border-color:var(--accent);background:rgba(108,99,255,.1);}
+    .kanban-stage-empty{color:var(--muted);font-style:italic;border-style:dashed;}
+
+    /* PRIORITY BADGE — clickable */
+    .kanban-priority-badge{cursor:pointer;transition:opacity .15s;}
+    .kanban-priority-badge:hover{opacity:.75;}
+
     /* IDENTITY GATE */
     .gate-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;align-items:center;justify-content:center;padding:24px;}
     .gate-overlay.open{display:flex;}
@@ -740,6 +749,46 @@ function cycleStatus(refNo,currentStatus,event){
   updateStatusOnBoard(refNo,next);
 }
 
+// PRIORITY BADGE click - cycles High→Critical→Low→Medium→High
+function cyclePriority(refNo,currentPriority,event){
+  event.stopPropagation();
+  if(boardIsGuest){alert('Sign in to update priority.');return;}
+  const order=['High','Critical','Low','Medium'];
+  const idx=order.indexOf(currentPriority);
+  const next=order[(idx===-1?0:idx+1)%order.length];
+  updatePriorityOnBoard(refNo,next);
+}
+
+async function updatePriorityOnBoard(refNo,newPriority){
+  const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
+  const old=r.priority;
+  r.priority=newPriority; // optimistic
+  buildBoard();
+  try{
+    await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:newPriority,author:boardUser,title:r.title,app:r.app})});
+  }catch(e){r.priority=old;buildBoard();alert('Failed to update priority.');}
+}
+
+// DEV STAGE TAG click - cycles through stages
+const DEV_STAGES=['Development','Testing','Ready to deploy','Deployed (Staging)','On Hold','Deployed (Prod)'];
+function cycleDevStage(refNo,currentStage,event){
+  event.stopPropagation();
+  if(boardIsGuest){alert('Sign in to update dev stage.');return;}
+  const idx=DEV_STAGES.indexOf(currentStage);
+  const next=DEV_STAGES[(idx===-1?0:idx+1)%DEV_STAGES.length];
+  updateDevStageOnBoard(refNo,next);
+}
+
+async function updateDevStageOnBoard(refNo,newStage){
+  const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
+  const old=r.devStage;
+  r.devStage=newStage; // optimistic
+  buildBoard();
+  try{
+    await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:newStage,author:boardUser,title:r.title,app:r.app})});
+  }catch(e){r.devStage=old;buildBoard();alert('Failed to update dev stage.');}
+}
+
 async function updateStatusOnBoard(refNo,newStatus){
   const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
   const oldStatus=r.status;
@@ -782,7 +831,7 @@ function buildBoard(){
       const stale=isStale(r);const days=daysSince(r.date);
       const sc_cls=r.status==='Closed'?'sc-closed':r.status==='Cancelled'?'sc-cancelled':'sc-open';
       const sc_sym=r.status==='Closed'?'✓':r.status==='Cancelled'?'✕':'';
-      const modTag=r.module?'<div class="kanban-module">'+r.module+'</div>':'';
+      const stageTag=r.devStage?'<div class="kanban-stage" onclick="cycleDevStage(\''+r.refNo+'\',\''+r.devStage.replace(/'/g,"\\'")+'\',event)" title="Dev Stage: '+r.devStage+' (click to change)">'+r.devStage+'</div>':'<div class="kanban-stage kanban-stage-empty" onclick="cycleDevStage(\''+r.refNo+'\',\'\',event)" title="Set dev stage">— stage —</div>';
       return'<div class="kanban-card" data-ref="'+r.refNo+'" draggable="true"'+
         ' ondragstart="onDragStart(event,\''+r.refNo+'\',\''+st+'\')"'+
         ' ondragend="onDragEnd(event)"'+
@@ -790,11 +839,11 @@ function buildBoard(){
         '<div class="kanban-card-top">'+
           '<span class="kanban-ref">'+r.refNo+'</span>'+
           '<div style="display:flex;align-items:center;gap:6px;">'+
-            (r.priority?'<span class="badge '+getPriorityCls(r.priority)+'">'+r.priority+'</span>':'')+
+            (r.priority?'<span class="badge '+getPriorityCls(r.priority)+' kanban-priority-badge" onclick="cyclePriority(\''+r.refNo+'\',\''+r.priority+'\',event)" title="Priority: '+r.priority+' (click to change)">'+r.priority+'</span>':'<span class="badge kanban-priority-badge priority-low" onclick="cyclePriority(\''+r.refNo+'\',\'\',event)" title="Set priority">—</span>')+
             '<div class="status-circle '+sc_cls+'" onclick="cycleStatus(\''+r.refNo+'\',\''+r.status+'\',event)" title="Status: '+r.status+' (click to change)">'+sc_sym+'</div>'+
           '</div>'+
         '</div>'+
-        modTag+
+        stageTag+
         '<div class="kanban-title">'+r.title+'</div>'+
         '<div class="kanban-meta">'+
           '<span class="kanban-assignee">👤 '+r.developedBy+'</span>'+
