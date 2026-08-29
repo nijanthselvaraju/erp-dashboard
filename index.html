@@ -823,7 +823,7 @@ function openTicketModal(refNo){
     '<div class="status-update-row">'+
       '<span class="status-update-label">Update Status:</span>'+
       '<select class="status-select" id="ticketStatusSelect">'+statusOpts+'</select>'+
-      '<button class="update-btn" id="updateStatusBtn" onclick="submitStatusUpdate(\''+refNo+'\')">Update</button>'+
+      '<button class="update-btn" id="updateStatusBtn" onclick="submitStatusUpdate(this.dataset.ref)" data-ref="'+refNo.replace(/"/g,'&quot;')+'">Update</button>'+
       '<span class="update-msg" id="updateMsg"></span>'+
     '</div>':
     '<div class="status-update-row"><span class="readonly-notice">👁 Guest — read only</span></div>'):
@@ -979,16 +979,37 @@ function buildAllCharts(){buildWeekChart();buildDevChart();buildModuleChart();}
 // ── LOAD ──────────────────────────────────────────────────
 async function loadData(){
   try{
-    const res=await fetch(SHEET_CSV_URL);if(!res.ok)throw new Error('HTTP '+res.status);
-    const text=await res.text();RAW_DATA=parseCSV(text);
-    if(!RAW_DATA.length)throw new Error('No data rows found.');
+    const res=await fetch(SHEET_CSV_URL,{redirect:'follow'});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const text=await res.text();
+    // Detect if Google redirected to a login/error HTML page instead of CSV
+    if(text.trim().startsWith('<')){
+      throw new Error('Google Sheets returned an HTML page instead of CSV. Please ensure the sheet is shared as "Anyone with the link → Viewer" and the link is published (File → Share → Publish to web → CSV).');
+    }
+    RAW_DATA=parseCSV(text);
+    if(!RAW_DATA.length)throw new Error('No data rows found. Check that your sheet has the correct column headers.');
     document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
     document.getElementById('loadingState').style.display='none';
     document.getElementById('dashboardContent').style.display='block';
     buildMonthBar();buildStatBar();buildAllMatrices();buildPriorityFilters();buildWeekBtns();renderActiveFilters();renderTable();
   }catch(err){
-    document.getElementById('loadingState').innerHTML='<div style="text-align:center;color:var(--high)"><div style="font-size:32px;margin-bottom:10px">⚠️</div><div style="font-size:14px">Could not load data from Google Sheets.</div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+err.message+'</div><button onclick="loadData()" style="margin-top:16px;background:var(--accent);color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:13px;">Retry</button></div>';
-    console.error(err);
+    const isShareErr=err.message.includes('HTML page');
+    document.getElementById('loadingState').innerHTML=
+      '<div style="text-align:center;color:var(--high);max-width:420px;margin:auto">'+
+        '<div style="font-size:32px;margin-bottom:10px">⚠️</div>'+
+        '<div style="font-size:14px;font-weight:600;">Could not load data from Google Sheets</div>'+
+        '<div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6;">'+err.message+'</div>'+
+        (isShareErr?
+          '<div style="font-size:11px;color:var(--muted);margin-top:12px;background:var(--surface2);padding:12px;border-radius:8px;text-align:left;line-height:1.8;">'+
+            '<strong>Steps to fix:</strong><br>'+
+            '1. Open your Google Sheet<br>'+
+            '2. Click <strong>File → Share → Publish to web</strong><br>'+
+            '3. Set to <strong>Entire Document → CSV</strong> and click Publish<br>'+
+            '4. Also go to <strong>Share → Anyone with the link → Viewer</strong>'+
+          '</div>':'')+
+        '<button onclick="loadData()" style="margin-top:16px;background:var(--accent);color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:13px;">↻ Retry</button>'+
+      '</div>';
+    console.error('loadData error:',err);
   }
 }
 loadData();
