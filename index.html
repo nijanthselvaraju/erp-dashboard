@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
-<head >
+<head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ERP Development Dashboard</title>
@@ -731,7 +731,7 @@ function applyBoardUser(){
   hdr.style.display='flex';
 }
 
-// STATUS CIRCLE click — cycles Open→Closed→Cancelled→Open
+// STATUS CIRCLE click - cycles Open→Closed→Cancelled→Open
 function cycleStatus(refNo,currentStatus,event){
   event.stopPropagation();
   if(boardIsGuest){alert('Sign in to update status.');return;}
@@ -750,7 +750,7 @@ async function updateStatusOnBoard(refNo,newStatus){
   }catch(e){r.status=oldStatus;buildBoard();alert('Failed to update status.');}
 }
 
-// DRAG & DROP — updates Developer Status
+// DRAG & DROP - updates Developer Status
 function onDragStart(e,refNo,devStatus){
   dragSrcRefNo=refNo;dragSrcStatus=devStatus;
   e.dataTransfer.effectAllowed='move';
