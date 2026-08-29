@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ERP Dashboard</title>
+  <title>ERP Development Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -618,7 +618,7 @@ function buildStatBar(){
   const rdy=d.filter(r=>r.devStage==='Ready to deploy').length;
   document.getElementById('statBar').innerHTML=
     sc('sc-total','Total Requests',total,'All development items')+sc('sc-open','Open',open,'Pending resolution')+
-    sc('sc-highcrit','High + Critical',hc,'Active - Open or On Hold')+sc('sc-notstart','Not Started',ns,'Development pending')+
+    sc('sc-highcrit','High + Critical',hc,'Active — Open or On Hold')+sc('sc-notstart','Not Started',ns,'Development pending')+
     sc('sc-dev','In Development',dev,'Actively being built')+sc('sc-ready','Ready to Deploy',rdy,'Waiting to go live');
 }
 function sc(cls,label,val,desc){return'<div class="stat-card '+cls+'"><div class="stat-label">'+label+'</div><div class="stat-value">'+val+'</div><div class="stat-desc">'+desc+'</div></div>';}
@@ -640,7 +640,7 @@ function buildMatrix(cid,key){
   rowVals.forEach(rv=>{counts[rv]={};def.cols.forEach(c=>{counts[rv][c.k]=0;});});
   data.forEach(r=>{const rv=r[def.rowField];if(!rv)return;def.cols.forEach(c=>{if(r[def.colField]===c.k){counts[rv][c.k]++;colTotals[c.k]++;grand++;}});});
   const rowTotals={};rowVals.forEach(rv=>{rowTotals[rv]=def.cols.reduce((s,c)=>s+counts[rv][c.k],0);});
-  function pill(n,p){if(n===0)return'<span class="cp zero">&mdash;</span>';return'<span class="cp '+p+'">'+n+'</span>';}
+  function pill(n,p){if(n===0)return'<span class="cp zero">—</span>';return'<span class="cp '+p+'">'+n+'</span>';}
   const bodyRows=rowVals.map(rv=>{
     const cells=def.cols.map(c=>{const isAct=activeCell&&activeCell.rowField===def.rowField&&activeCell.rowVal===rv&&activeCell.colField===def.colField&&activeCell.colVal===c.k;return'<td class="dc"'+(isAct?' style="background:rgba(108,99,255,.1)"':'')+' onclick="setCellFilter(\''+def.rowField+'\',\''+rv.replace(/'/g,"\\'")+'\',\''+def.colField+'\',\''+c.k.replace(/'/g,"\\'")+'\',\''+rv.replace(/'/g,"\\'")+' · '+c.l+'\')">'+pill(counts[rv][c.k],c.p)+'</td>';}).join('');
     return'<tr><td>'+rv+'</td><td>'+pill(rowTotals[rv],'cp-total')+'</td>'+cells+'</tr>';
@@ -731,7 +731,7 @@ function applyBoardUser(){
   hdr.style.display='flex';
 }
 
-// STATUS CIRCLE click - cycles Open→Closed→Cancelled→Open
+// STATUS CIRCLE click — cycles Open→Closed→Cancelled→Open
 function cycleStatus(refNo,currentStatus,event){
   event.stopPropagation();
   if(boardIsGuest){alert('Sign in to update status.');return;}
@@ -750,7 +750,7 @@ async function updateStatusOnBoard(refNo,newStatus){
   }catch(e){r.status=oldStatus;buildBoard();alert('Failed to update status.');}
 }
 
-// DRAG & DROP - updates Developer Status
+// DRAG & DROP — updates Developer Status
 function onDragStart(e,refNo,devStatus){
   dragSrcRefNo=refNo;dragSrcStatus=devStatus;
   e.dataTransfer.effectAllowed='move';
@@ -823,10 +823,10 @@ function openTicketModal(refNo){
     '<div class="status-update-row">'+
       '<span class="status-update-label">Update Status:</span>'+
       '<select class="status-select" id="ticketStatusSelect">'+statusOpts+'</select>'+
-      '<button class="update-btn" id="updateStatusBtn" onclick="submitStatusUpdate(this.dataset.ref)" data-ref="'+refNo.replace(/"/g,'&quot;')+'">Update</button>'+
+      '<button class="update-btn" id="updateStatusBtn" onclick="submitStatusUpdate(\''+refNo+'\')">Update</button>'+
       '<span class="update-msg" id="updateMsg"></span>'+
     '</div>':
-    '<div class="status-update-row"><span class="readonly-notice">&#128065; Guest &mdash; read only</span></div>'):
+    '<div class="status-update-row"><span class="readonly-notice">👁 Guest — read only</span></div>'):
     '');
 
   document.getElementById('ticketModal').innerHTML=
@@ -843,10 +843,10 @@ function openTicketModal(refNo){
       '</div>'+
       '<div class="modal-desc">'+(r.description||'No description provided.')+'</div>'+
       '<div class="modal-fields">'+
-        '<div class="field-item"><span class="field-label">Submitted By</span><span class="field-value">'+(r.submittedBy||'&mdash;')+'</span></div>'+
+        '<div class="field-item"><span class="field-label">Submitted By</span><span class="field-value">'+(r.submittedBy||'—')+'</span></div>'+
         '<div class="field-item"><span class="field-label">Developed By</span><span class="field-value">'+r.developedBy+'</span></div>'+
-        '<div class="field-item"><span class="field-label">Date Raised</span><span class="field-value" style="font-family:monospace">'+(r.date||'&mdash;')+'</span></div>'+
-        '<div class="field-item"><span class="field-label">Dev Stage</span><span class="field-value">'+(r.devStage||'&mdash;')+'</span></div>'+
+        '<div class="field-item"><span class="field-label">Date Raised</span><span class="field-value" style="font-family:monospace">'+(r.date||'—')+'</span></div>'+
+        '<div class="field-item"><span class="field-label">Dev Stage</span><span class="field-value">'+(r.devStage||'—')+'</span></div>'+
       '</div>'+
     '</div>'+
     statusRow+
@@ -861,7 +861,7 @@ function openTicketModal(refNo){
           '<div class="comment-submit-row"><span class="commenting-as">As <strong>'+boardUser+'</strong></span><button class="post-btn" id="postCommentBtn" onclick="submitComment(\''+refNo+'\',\''+r.title.replace(/'/g,"\\'")+'\')">Post Comment →</button></div>'+
           '<div class="post-msg" id="postMsg"></div>'+
         '</div>':
-        '<div style="text-align:center;padding:12px;color:var(--muted);font-size:12px;">'+(isBoard?'&#128065; Guest &mdash; read only':'Open Board tab to comment.')+'</div>')+
+        '<div style="text-align:center;padding:12px;color:var(--muted);font-size:12px;">'+(isBoard?'👁 Guest — read only':'Open Board tab to comment.')+'</div>')+
     '</div>';
 
   document.getElementById('modalOverlay').classList.add('open');
@@ -979,18 +979,16 @@ function buildAllCharts(){buildWeekChart();buildDevChart();buildModuleChart();}
 // ── LOAD ──────────────────────────────────────────────────
 async function loadData(){
   try{
-    const res=await fetch(SHEET_CSV_URL,{redirect:'follow'});if(!res.ok)throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    if(text.trim().startsWith('<'))throw new Error('Google returned HTML instead of CSV. Share the sheet: File > Share > Anyone with the link > Viewer, AND Publish to web > CSV.');
-    RAW_DATA=parseCSV(text);
-    if(!RAW_DATA.length)throw new Error('No data rows found. Check column headers.');
+    const res=await fetch(SHEET_CSV_URL);if(!res.ok)throw new Error('HTTP '+res.status);
+    const text=await res.text();RAW_DATA=parseCSV(text);
+    if(!RAW_DATA.length)throw new Error('No data rows found.');
     document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
     document.getElementById('loadingState').style.display='none';
     document.getElementById('dashboardContent').style.display='block';
     buildMonthBar();buildStatBar();buildAllMatrices();buildPriorityFilters();buildWeekBtns();renderActiveFilters();renderTable();
   }catch(err){
-    document.getElementById('loadingState').innerHTML='<div style="text-align:center;color:var(--high);max-width:420px;margin:auto"><div style="font-size:32px;margin-bottom:10px">&#9888;&#65039;</div><div style="font-size:14px;font-weight:600;">Could not load data from Google Sheets</div><div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6;">'+err.message+'</div><button onclick="loadData()" style="margin-top:16px;background:var(--accent);color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:13px;">Retry</button></div>';
-    console.error('loadData error:',err);
+    document.getElementById('loadingState').innerHTML='<div style="text-align:center;color:var(--high)"><div style="font-size:32px;margin-bottom:10px">⚠️</div><div style="font-size:14px">Could not load data from Google Sheets.</div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+err.message+'</div><button onclick="loadData()" style="margin-top:16px;background:var(--accent);color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:13px;">Retry</button></div>';
+    console.error(err);
   }
 }
 loadData();
