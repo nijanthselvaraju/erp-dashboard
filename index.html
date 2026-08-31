@@ -230,7 +230,7 @@
     .board-user-badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--accent2);}
     .board-user-badge.guest{color:var(--muted);}
     .board-cols-wrap{display:flex;gap:14px;overflow-x:auto;align-items:flex-start;padding-bottom:8px;}
-    .board-col{background:var(--surface2);border:1px solid var(--border);border-radius:12px;min-width:240px;max-width:280px;flex:1;display:flex;flex-direction:column;transition:border-color .2s;height:720px;}
+    .board-col{background:var(--surface2);border:1px solid var(--border);border-radius:12px;min-width:240px;max-width:280px;flex:1;display:flex;flex-direction:column;transition:border-color .2s;height:580px;}
     .board-col.drag-over{border-color:var(--accent);background:rgba(108,99,255,.07);}
     .board-col-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;}
     .board-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
@@ -602,14 +602,19 @@ function parseLine(l){const c=[];let cur='',q=false;for(let i=0;i<l.length;i++){
 function parseCSV(text){
   const lines=text.trim().split(/\r?\n/);if(lines.length<2)return[];
   const headers=parseLine(lines[0]).map(h=>h.toLowerCase().replace(/\s+/g,' ').trim());
+  console.log('[ERP] CSV headers detected:',headers); // debug
   function get(cols,...keys){for(const k of keys){const i=headers.indexOf(k.toLowerCase());if(i!==-1&&cols[i]!==undefined)return(cols[i]||'').replace(/^"|"$/g,'').trim();}return'';}
+  // Try several possible module column names
+  const moduleKey=['module','modules','mod','category','app module'].find(k=>headers.includes(k))||null;
+  console.log('[ERP] Module column key resolved to:',moduleKey);
   return lines.slice(1).map((line,i)=>{
     if(!line.trim())return null;
     const cols=parseLine(line);
     const ds=get(cols,'date','date raised','created at');
+    const mod=moduleKey?get(cols,moduleKey):'';
     return{sl:i+1,app:get(cols,'app')||'REQ',refNo:get(cols,'ref no','ref','refno','reference')||'REQ-'+(i+1),
       date:ds,_monthKey:toMonthKey(ds),_weekKey:toWeekKey(ds),
-      module:get(cols,'module'),title:get(cols,'title'),description:get(cols,'description','desc'),
+      module:mod,title:get(cols,'title'),description:get(cols,'description','desc'),
       status:get(cols,'status'),priority:get(cols,'priority'),
       devStage:get(cols,'development stage','dev stage','devstage','stage'),
       developerStatus:get(cols,'developer status','dev status','developerstatus'),
@@ -677,14 +682,13 @@ function setMonth(m){activeMonth=m;activeCell=null;activePriority=null;buildMont
 // ── MATRIX ────────────────────────────────────────────────
 function buildMatrix(cid,key){
   const def=MATRICES_DEF[key],data=getMonthFiltered();
-  // Use 'Unknown' fallback so rows with empty module still appear
-  const rowVals=[...new Set(data.map(r=>r[def.rowField]||'Unknown').filter(Boolean))].sort();
+  const getRow=r=>{const v=r[def.rowField];return(v&&v.trim())?v.trim():(def.rowField==='module'?'(No Module)':null);};
+  const rowVals=[...new Set(data.map(getRow).filter(Boolean))].sort();
   const counts={},colTotals={};let grand=0;
   def.cols.forEach(c=>{colTotals[c.k]=0;});
   rowVals.forEach(rv=>{counts[rv]={};def.cols.forEach(c=>{counts[rv][c.k]=0;});});
   data.forEach(r=>{
-    const rv=r[def.rowField]||'Unknown';
-    if(!rv)return;
+    const rv=getRow(r);if(!rv)return;
     def.cols.forEach(c=>{if(r[def.colField]===c.k){counts[rv][c.k]++;colTotals[c.k]++;grand++;}});
   });
   const rowTotals={};rowVals.forEach(rv=>{rowTotals[rv]=def.cols.reduce((s,c)=>s+counts[rv][c.k],0);});
@@ -824,13 +828,13 @@ function onDrop(e,newDevStatus){
   const old=r.developerStatus;r.developerStatus=newDevStatus;
   const _sx=window.scrollX,_sy=window.scrollY;
   buildBoard();
-  requestAnimationFrame(()=>window.scrollTo(_sx,_sy));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(_sx,_sy)));
   fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateDevStatus',reqNo:dragSrcRefNo,newDevStatus,author:boardUser,title:r.title,app:r.app})})
     .catch(()=>{
       r.developerStatus=old;
       const _sx2=window.scrollX,_sy2=window.scrollY;
       buildBoard();
-      requestAnimationFrame(()=>window.scrollTo(_sx2,_sy2));
+      requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(_sx2,_sy2)));
       alert('Failed to update developer status.');
     });
   dragSrcRefNo=null;dragSrcStatus=null;
@@ -1330,7 +1334,7 @@ async function quickSaveField(refNo, field, newValue, title, dataKey){
       buildStatBar();buildAllMatrices();
       // Dev Status moves the card to a different column — full rebuild needed
       // Everything else: patch only the card so scroll position is preserved
-      if(field==='Developer Status'){if(activeTab==='board'){const _sx=window.scrollX,_sy=window.scrollY;buildBoard();requestAnimationFrame(()=>window.scrollTo(_sx,_sy));}}
+      if(field==='Developer Status'){if(activeTab==='board'){const _sx=window.scrollX,_sy=window.scrollY;buildBoard();requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(_sx,_sy)));}}
       else{if(activeTab==='board')_patchCard(refNo);}
       _syncModalBadges(refNo);
       setTimeout(()=>{if(msg)msg.textContent='';},2500);
