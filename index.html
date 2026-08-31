@@ -352,6 +352,20 @@
     .kanban-dev-badge{cursor:pointer;transition:color .15s;}
     .kanban-dev-badge:hover{color:var(--accent2);}
 
+    /* KANBAN CLICKABLE BADGES */
+    .kanban-cycle-badge{cursor:pointer;transition:all .15s;user-select:none;}
+    .kanban-cycle-badge:hover{opacity:.8;transform:scale(1.05);}
+    .kanban-row-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;margin-top:6px;}
+
+    /* DEV STAGE badge colors */
+    .badge.devstage-development{background:var(--devstage-bg);color:var(--devstage);}
+    .badge.devstage-testing{background:var(--testing-bg);color:var(--testing);}
+    .badge.devstage-readytodeploy{background:var(--readydeploy-bg);color:var(--readydeploy);}
+    .badge.devstage-deployedstaging{background:var(--onhold-bg);color:var(--onhold);}
+    .badge.devstage-onhold{background:var(--open-bg);color:var(--open);}
+    .badge.devstage-deployedprod{background:var(--deployed-bg);color:var(--deployed);}
+    .badge.devstage-none{background:var(--surface2);color:var(--muted);}
+
     /* SETTINGS GEAR BUTTON in modal */
     .settings-gear-btn{background:none;border:1px solid var(--border);border-radius:7px;padding:3px 8px;font-size:14px;cursor:pointer;color:var(--muted);transition:all .15s;line-height:1;}
     .settings-gear-btn:hover{border-color:var(--accent);color:var(--text);}
@@ -809,7 +823,9 @@ function buildBoard(){
       const stale=isStale(r);const days=daysSince(r.date);
       const sc_cls=r.status==='Closed'?'sc-closed':r.status==='Cancelled'?'sc-cancelled':'sc-open';
       const sc_sym=r.status==='Closed'?'✓':r.status==='Cancelled'?'✕':'';
-      const modTag=r.module?'<div class="kanban-module">'+r.module+'</div>':'';
+      const stageBadge=r.devStage
+        ?'<span class="badge '+getStageCls(r.devStage)+' kanban-cycle-badge" onclick="cycleStage(event,\''+r.refNo+'\')" title="Dev Stage: '+r.devStage+' (click to cycle)">'+r.devStage+'</span>'
+        :'<span class="badge devstage-none kanban-cycle-badge" onclick="cycleStage(event,\''+r.refNo+'\')" title="No stage set (click to cycle)">No Stage</span>';
       return'<div class="kanban-card" data-ref="'+r.refNo+'" draggable="true"'+
         ' ondragstart="onDragStart(event,\''+r.refNo+'\',\''+st+'\')"'+
         ' ondragend="onDragEnd(event)"'+
@@ -817,11 +833,11 @@ function buildBoard(){
         '<div class="kanban-card-top">'+
           '<span class="kanban-ref">'+r.refNo+'</span>'+
           '<div style="display:flex;align-items:center;gap:6px;">'+
-            (r.priority?'<span class="badge '+getPriorityCls(r.priority)+'">'+r.priority+'</span>':'')+
+            (r.priority?'<span class="badge '+getPriorityCls(r.priority)+' kanban-cycle-badge" onclick="cyclePriority(event,\''+r.refNo+'\')" title="Priority: '+r.priority+' (click to cycle)">'+r.priority+'</span>':'')+
             '<div class="status-circle '+sc_cls+'" onclick="cycleStatus(\''+r.refNo+'\',\''+r.status+'\',event)" title="Status: '+r.status+' (click to change)">'+sc_sym+'</div>'+
           '</div>'+
         '</div>'+
-        modTag+
+        stageBadge+
         '<div class="kanban-title">'+r.title+'</div>'+
         '<div class="kanban-meta">'+
           '<span class="kanban-assignee kanban-dev-badge" onclick="cycleDeveloper(event,\''+r.refNo+'\')" title="Click to change developer">👤 '+r.developedBy+'</span>'+
@@ -856,16 +872,17 @@ function openTicketModal(refNo){
         '<button class="modal-close" onclick="document.getElementById(\'modalOverlay\').classList.remove(\'open\')">×</button>'+
       '</div>'+
       '<div class="modal-meta">'+
-        (r.priority?'<span class="badge '+getPriorityCls(r.priority)+'">'+r.priority+' Priority</span>':'')+
+        (r.priority?'<span id="modal-priority-badge" class="badge '+getPriorityCls(r.priority)+'">'+r.priority+' Priority</span>':'')+
         (r.status?'<span class="badge '+getStatusCls(r.status)+'">'+r.status+'</span>':'')+
         (r.developerStatus?'<span class="badge '+getDevCls(r.developerStatus)+'">'+r.developerStatus+'</span>':'')+
+        '<span id="modal-stage-badge" class="badge '+getStageCls(r.devStage)+'">'+( r.devStage||'No Stage')+'</span>'+
         (canUpdate?'<button class="settings-gear-btn" onclick="toggleQuickEdit()" title="Quick edit all fields">⚙️</button>':'')+
       '</div>'+
       (canUpdate?
   '<div class="quick-edit-panel" id="quickEditPanel" style="display:none">'+
 
     '<div class="qe-row"><label class="qe-label">Priority</label>'+
-      '<select class="qe-select" onchange="quickSaveField(\''+
+      '<select id="qe-priority-select" class="qe-select" onchange="quickSaveField(\''+
         refNo+
         '\',\'Priority\',this.value,\''+
         r.title.replace(/'/g,"\\'")+
@@ -898,7 +915,7 @@ function openTicketModal(refNo){
       '</select></div>'+
 
     '<div class="qe-row"><label class="qe-label">Dev Stage</label>'+
-      '<select class="qe-select" onchange="quickSaveField(\''+
+      '<select id="qe-stage-select" class="qe-select" onchange="quickSaveField(\''+
         refNo+
         '\',\'Development Stage\',this.value,\''+
         r.title.replace(/'/g,"\\'")+
@@ -915,7 +932,7 @@ function openTicketModal(refNo){
         '<div class="field-item"><span class="field-label">Submitted By</span><span class="field-value">'+(r.submittedBy||'&mdash;')+'</span></div>'+
         '<div class="field-item"><span class="field-label">Developed By</span><span class="field-value">'+r.developedBy+'</span></div>'+
         '<div class="field-item"><span class="field-label">Date Raised</span><span class="field-value" style="font-family:monospace">'+(r.date||'&mdash;')+'</span></div>'+
-        '<div class="field-item"><span class="field-label">Dev Stage</span><span class="field-value">'+(r.devStage||'&mdash;')+'</span></div>'+
+        '<div class="field-item"><span class="field-label">Dev Stage</span><span class="field-value" id="modal-stage-field-value">'+(r.devStage||'&mdash;')+'</span></div>'+
       '</div>'+
     '</div>'+
     statusRow+
@@ -1046,6 +1063,72 @@ function buildModuleChart(){
 function buildAllCharts(){buildWeekChart();buildDevChart();buildModuleChart();}
 
 
+// ── DEV STAGE BADGE CLASS ─────────────────────────────────
+function getStageCls(stage){
+  if(!stage)return'devstage-none';
+  const s=stage.toLowerCase().replace(/\s+/g,'').replace(/[()]/g,'');
+  if(s==='development')return'devstage-development';
+  if(s==='testing')return'devstage-testing';
+  if(s==='readytodeploy')return'devstage-readytodeploy';
+  if(s==='deployedstaging')return'devstage-deployedstaging';
+  if(s==='onhold')return'devstage-onhold';
+  if(s==='deployedprod')return'devstage-deployedprod';
+  return'devstage-none';
+}
+
+// ── PRIORITY CYCLE on kanban card ────────────────────────
+const PRIORITY_CYCLE = ['Low','Medium','High','Critical'];
+function cyclePriority(event, refNo){
+  event.stopPropagation();
+  if(boardIsGuest){alert('Sign in to change priority.');return;}
+  const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
+  const idx=PRIORITY_CYCLE.indexOf(r.priority);
+  const next=PRIORITY_CYCLE[(idx===-1?0:idx+1)%PRIORITY_CYCLE.length];
+  const old=r.priority;r.priority=next;
+  buildBoard();
+  // Sync open modal if same card
+  _syncModalBadges(refNo);
+  fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:next,author:boardUser,title:r.title,app:r.app})})
+    .catch(()=>{r.priority=old;buildBoard();alert('Failed to update priority.');});
+}
+
+// ── DEV STAGE CYCLE on kanban card ───────────────────────
+const STAGE_CYCLE = ['Development','Testing','Ready to deploy','Deployed (Staging)','On Hold','Deployed (Prod)'];
+function cycleStage(event, refNo){
+  event.stopPropagation();
+  if(boardIsGuest){alert('Sign in to change development stage.');return;}
+  const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
+  const idx=STAGE_CYCLE.indexOf(r.devStage);
+  const next=STAGE_CYCLE[(idx===-1?0:idx+1)%STAGE_CYCLE.length];
+  const old=r.devStage;r.devStage=next;
+  buildBoard();
+  // Sync open modal if same card
+  _syncModalBadges(refNo);
+  fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:next,author:boardUser,title:r.title,app:r.app})})
+    .catch(()=>{r.devStage=old;buildBoard();alert('Failed to update stage.');});
+}
+
+// ── SYNC MODAL BADGES when value changes ─────────────────
+function _syncModalBadges(refNo){
+  const overlay=document.getElementById('modalOverlay');
+  if(!overlay||!overlay.classList.contains('open'))return;
+  const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
+  // Update priority badge in modal-meta
+  const pb=document.getElementById('modal-priority-badge');
+  if(pb){pb.className='badge '+getPriorityCls(r.priority);pb.textContent=r.priority+' Priority';}
+  // Update dev stage badge in modal-meta
+  const sb=document.getElementById('modal-stage-badge');
+  if(sb){sb.className='badge '+getStageCls(r.devStage);sb.textContent=r.devStage||'No Stage';}
+  // Update Dev Stage field-value in modal-fields
+  const sfv=document.getElementById('modal-stage-field-value');
+  if(sfv)sfv.textContent=r.devStage||'—';
+  // Sync quick-edit dropdowns if panel is open
+  const qePriority=document.getElementById('qe-priority-select');
+  if(qePriority)qePriority.value=r.priority;
+  const qeStage=document.getElementById('qe-stage-select');
+  if(qeStage)qeStage.value=r.devStage;
+}
+
 // ── DEVELOPER CYCLE ───────────────────────────────────────
 const DEV_CYCLE = ['Devi Priya','Madhan'];
 function cycleDeveloper(event, refNo){
@@ -1086,6 +1169,7 @@ async function quickSaveField(refNo, field, newValue, title, dataKey){
     if(data.success||data.ok!==false){
       if(msg){msg.className='qe-save-msg ok';msg.textContent='✓ Saved';}
       buildStatBar();buildAllMatrices();if(activeTab==='board')buildBoard();
+      _syncModalBadges(refNo);
       setTimeout(()=>{if(msg)msg.textContent='';},2500);
     } else {
       if(r&&dataKey)r[dataKey]=old;
