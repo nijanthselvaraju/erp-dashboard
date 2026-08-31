@@ -267,7 +267,35 @@
     /* MODULE TAG on cards — no empty box */
     .kanban-module{display:inline-block;font-size:10px;background:var(--surface2);color:var(--muted);padding:2px 7px;border-radius:4px;margin-bottom:4px;font-weight:500;}
 
-    /* IDENTITY GATE */
+    /* ── MULTI-SELECT ── */
+    .ms-toggle-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
+    .ms-toggle-btn:hover{border-color:var(--accent);color:var(--accent2);}
+    .ms-toggle-btn.active{background:rgba(108,99,255,.18);border-color:var(--accent);color:var(--accent2);}
+    .ms-counter{display:none;font-size:12px;font-weight:700;color:var(--accent2);background:rgba(108,99,255,.15);border:1px solid rgba(108,99,255,.3);padding:5px 13px;border-radius:20px;align-items:center;gap:6px;}
+    .ms-counter.visible{display:inline-flex;}
+
+    .kanban-card.ms-mode{cursor:pointer;}
+    .kanban-card.ms-mode:hover{border-color:var(--accent2);}
+    .kanban-card.ms-selected{border-color:var(--accent)!important;background:rgba(108,99,255,.1)!important;box-shadow:0 0 0 2px rgba(108,99,255,.35);}
+    .ms-check{display:none;position:absolute;top:8px;left:8px;width:18px;height:18px;border-radius:5px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;pointer-events:none;}
+    .kanban-card{position:relative;}
+    .kanban-card.ms-selected .ms-check{display:flex;}
+
+    /* Bulk action bar */
+    .bulk-bar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:600;background:var(--surface);border-top:2px solid var(--accent);padding:14px 24px;box-shadow:0 -4px 24px rgba(0,0,0,.4);}
+    .bulk-bar.visible{display:block;}
+    .bulk-bar-inner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:1200px;margin:0 auto;}
+    .bulk-bar-label{font-size:12px;font-weight:700;color:var(--accent2);white-space:nowrap;}
+    .bulk-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;outline:none;cursor:pointer;min-width:150px;transition:border-color .15s;}
+    .bulk-select:focus{border-color:var(--accent);}
+    .bulk-apply-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:opacity .2s;margin-left:4px;}
+    .bulk-apply-btn:hover{opacity:.85;}
+    .bulk-apply-btn:disabled{opacity:.45;cursor:not-allowed;}
+    .bulk-cancel-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+    .bulk-cancel-btn:hover{border-color:var(--high);color:var(--high);}
+    .bulk-msg{font-size:12px;font-weight:600;margin-left:8px;}
+    .bulk-msg.ok{color:var(--closed);}
+    .bulk-msg.err{color:var(--high);}
     .gate-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;align-items:center;justify-content:center;padding:24px;}
     .gate-overlay.open{display:flex;}
     .gate-modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;max-width:400px;width:100%;padding:36px 32px 32px;box-shadow:var(--shadow);text-align:center;position:relative;}
@@ -519,13 +547,29 @@
     <div class="tab-panel" id="panel-board">
       <div class="board-topbar">
         <div id="boardWhoLabel" class="board-user-badge guest">👁 Viewing as Guest</div>
-        <button class="filter-btn" onclick="switchUser()">🔄 Switch User</button>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="ms-counter" id="msCounter">✓ <span id="msCountNum">0</span> selected</span>
+          <button class="ms-toggle-btn" id="msToggleBtn" onclick="toggleMultiSelect()">☐ Multi-select</button>
+          <button class="filter-btn" onclick="switchUser()">🔄 Switch User</button>
+        </div>
       </div>
       <div class="board-cols-wrap" id="boardCols"></div>
     </div>
 
+<!-- BULK ACTION BAR -->
+<div class="bulk-bar" id="bulkBar">
+  <div class="bulk-bar-inner">
+    <span class="bulk-bar-label">Bulk update <span id="bulkCountLabel">0</span> requests:</span>
+    <select class="bulk-select" id="bsDeveloperStatus"><option value="">— Dev Status —</option><option>Not Started</option><option>In Progress</option><option>Incomplete</option><option>Completed</option><option>Deferred</option></select>
+    <select class="bulk-select" id="bsPriority"><option value="">— Priority —</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select>
+    <select class="bulk-select" id="bsDevStage"><option value="">— Dev Stage —</option><option>Development</option><option>Testing</option><option>Ready to deploy</option><option>Deployed (Staging)</option><option>On Hold</option><option>Deployed (Prod)</option></select>
+    <select class="bulk-select" id="bsStatus"><option value="">— Request Status —</option><option>Open</option><option>Closed</option><option>Cancelled</option></select>
+    <select class="bulk-select" id="bsDevelopedBy"><option value="">— Developed By —</option><option>Devi Priya</option><option>Madhan</option><option>Anto</option><option>Craig</option><option>Nijanthan</option></select>
+    <button class="bulk-apply-btn" id="bulkApplyBtn" onclick="applyBulkUpdate()">Apply →</button>
+    <button class="bulk-cancel-btn" onclick="exitMultiSelect()">✕ Cancel</button>
+    <span class="bulk-msg" id="bulkMsg"></span>
   </div>
-</main>
+</div>
 
 <!-- IDENTITY GATE -->
 <div class="gate-overlay" id="gateOverlay">
@@ -896,10 +940,11 @@ function buildBoard(){
       const stageBadge=r.devStage
         ?'<span class="badge '+getStageCls(r.devStage)+' kanban-cycle-badge" onclick="cycleStage(event,\''+r.refNo+'\')" title="Dev Stage: '+r.devStage+' (click to cycle)">'+r.devStage+'</span>'
         :'<span class="badge devstage-none kanban-cycle-badge" onclick="cycleStage(event,\''+r.refNo+'\')" title="No stage set (click to cycle)">No Stage</span>';
-      return'<div class="kanban-card" data-ref="'+r.refNo+'" draggable="true"'+
+      return'<div class="kanban-card'+(msActive?' ms-mode':'')+(msSelected.has(r.refNo)?' ms-selected':'')+'" data-ref="'+r.refNo+'" draggable="'+(msActive?'false':'true')+'"'+
         ' ondragstart="onDragStart(event,\''+r.refNo+'\',\''+st+'\')"'+
         ' ondragend="onDragEnd(event)"'+
-        ' onclick="openTicketModal(\''+r.refNo+'\')">'+
+        ' onclick="if(handleCardClick(event,\''+r.refNo+'\'))return;openTicketModal(\''+r.refNo+'\')">'+
+        '<div class="ms-check">✓</div>'+
         '<div class="kanban-card-top">'+
           '<span class="kanban-ref">'+r.refNo+'</span>'+
           '<div style="display:flex;align-items:center;gap:6px;">'+
@@ -1388,6 +1433,145 @@ async function quickSaveField(refNo, field, newValue, title, dataKey){
     if(msg){msg.className='qe-save-msg err';msg.textContent='Network error';}
   }
 }
+
+// ════════════════════════════════════════════════════════════
+// MULTI-SELECT & BULK UPDATE
+// ════════════════════════════════════════════════════════════
+let msActive=false;
+const msSelected=new Set();
+
+function toggleMultiSelect(){
+  if(msActive)exitMultiSelect();
+  else enterMultiSelect();
+}
+
+function enterMultiSelect(){
+  if(boardIsGuest){alert('Sign in to use multi-select.');return;}
+  msActive=true;msSelected.clear();
+  document.getElementById('msToggleBtn').classList.add('active');
+  document.getElementById('msToggleBtn').textContent='☑ Multi-select';
+  _applyMsMode();_updateMsUI();
+}
+
+function exitMultiSelect(){
+  msActive=false;msSelected.clear();
+  document.getElementById('msToggleBtn').classList.remove('active');
+  document.getElementById('msToggleBtn').textContent='☐ Multi-select';
+  document.getElementById('bulkBar').classList.remove('visible');
+  document.getElementById('msCounter').classList.remove('visible');
+  // Reset bulk selects
+  ['bsDeveloperStatus','bsPriority','bsDevStage','bsStatus','bsDevelopedBy'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('bulkMsg').textContent='';
+  _applyMsMode();
+}
+
+function _applyMsMode(){
+  document.querySelectorAll('.kanban-card').forEach(card=>{
+    if(msActive){
+      card.classList.add('ms-mode');
+      card.setAttribute('draggable','false');
+    } else {
+      card.classList.remove('ms-mode','ms-selected');
+      card.setAttribute('draggable','true');
+    }
+  });
+}
+
+function _updateMsUI(){
+  const n=msSelected.size;
+  document.getElementById('msCountNum').textContent=n;
+  document.getElementById('bulkCountLabel').textContent=n;
+  const counter=document.getElementById('msCounter');
+  const bar=document.getElementById('bulkBar');
+  if(n>0){counter.classList.add('visible');bar.classList.add('visible');}
+  else{counter.classList.remove('visible');bar.classList.remove('visible');}
+}
+
+function handleCardClick(event,refNo){
+  if(!msActive)return false; // let normal onclick run
+  event.stopPropagation();
+  const card=document.querySelector('.kanban-card[data-ref="'+refNo+'"]');
+  if(!card)return true;
+  if(msSelected.has(refNo)){msSelected.delete(refNo);card.classList.remove('ms-selected');}
+  else{msSelected.add(refNo);card.classList.add('ms-selected');}
+  _updateMsUI();
+  return true; // consumed
+}
+
+async function applyBulkUpdate(){
+  if(!msSelected.size)return;
+  const devStatus=document.getElementById('bsDeveloperStatus').value;
+  const priority=document.getElementById('bsPriority').value;
+  const devStage=document.getElementById('bsDevStage').value;
+  const status=document.getElementById('bsStatus').value;
+  const developedBy=document.getElementById('bsDevelopedBy').value;
+
+  if(!devStatus&&!priority&&!devStage&&!status&&!developedBy){
+    document.getElementById('bulkMsg').className='bulk-msg err';
+    document.getElementById('bulkMsg').textContent='Choose at least one field to update.';
+    return;
+  }
+
+  const btn=document.getElementById('bulkApplyBtn');
+  btn.disabled=true;btn.textContent='Saving…';
+  document.getElementById('bulkMsg').textContent='';
+
+  const refs=[...msSelected];
+  const errors=[];
+
+  for(const refNo of refs){
+    const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)continue;
+    try{
+      // Apply each changed field
+      if(devStatus&&r.developerStatus!==devStatus){
+        await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateDevStatus',reqNo:refNo,newDevStatus:devStatus,author:boardUser,title:r.title,app:r.app})});
+        r.developerStatus=devStatus;
+      }
+      if(status&&r.status!==status){
+        await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateStatus',reqNo:refNo,newStatus:status,author:boardUser,title:r.title,app:r.app})});
+        r.status=status;
+      }
+      if(priority&&r.priority!==priority){
+        await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:priority,author:boardUser,title:r.title,app:r.app})});
+        r.priority=priority;
+      }
+      if(devStage&&r.devStage!==devStage){
+        await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:devStage,author:boardUser,title:r.title,app:r.app})});
+        r.devStage=devStage;
+      }
+      if(developedBy&&r.developedBy!==developedBy){
+        await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Developed By',newValue:developedBy,author:boardUser,title:r.title,app:r.app})});
+        r.developedBy=developedBy;
+      }
+    }catch(e){errors.push(refNo);}
+  }
+
+  // Re-render only the affected cards in-place; cards that moved columns need a full rebuild
+  const needsRebuild=devStatus; // dev status moves cards between columns
+  if(needsRebuild){
+    const _sx=window.scrollX,_sy=window.scrollY;
+    buildBoard();
+    // Restore ms-mode on new cards
+    if(msActive)_applyMsMode();
+    requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(_sx,_sy)));
+  } else {
+    refs.forEach(refNo=>{_patchCard(refNo);});
+  }
+
+  btn.disabled=false;btn.textContent='Apply →';
+  const msg=document.getElementById('bulkMsg');
+  if(errors.length){
+    msg.className='bulk-msg err';
+    msg.textContent=errors.length+' request(s) failed: '+errors.join(', ');
+  } else {
+    msg.className='bulk-msg ok';
+    msg.textContent='✓ '+refs.length+' request(s) updated!';
+    setTimeout(()=>{msg.textContent='';},3000);
+  }
+}
+
+// Keyboard shortcut: Escape exits multi-select
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&msActive)exitMultiSelect();});
 
 // ── LOAD ──────────────────────────────────────────────────
 async function loadData(){
