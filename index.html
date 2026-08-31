@@ -862,25 +862,54 @@ function openTicketModal(refNo){
         (canUpdate?'<button class="settings-gear-btn" onclick="toggleQuickEdit()" title="Quick edit all fields">⚙️</button>':'')+
       '</div>'+
       (canUpdate?
-        '<div class="quick-edit-panel" id="quickEditPanel" style="display:none">'+
-          '<div class="qe-row"><label class="qe-label">Priority</label>'+
-            '<select class="qe-select" onchange="quickSaveField(''+refNo+'','Priority',this.value,''+r.title.replace(/'/g,"\'")+'','priority')">'+
-              ['Low','Medium','High','Critical'].map(function(v){return'<option'+(r.priority===v?' selected':'')+'>'+v+'</option>';}).join('')+
-            '</select></div>'+
-          '<div class="qe-row"><label class="qe-label">Status</label>'+
-            '<select class="qe-select" onchange="quickSaveField(''+refNo+'','Status',this.value,''+r.title.replace(/'/g,"\'")+'','status')">'+
-              ['Open','Closed','Cancelled'].map(function(v){return'<option'+(r.status===v?' selected':'')+'>'+v+'</option>';}).join('')+
-            '</select></div>'+
-          '<div class="qe-row"><label class="qe-label">Dev Status</label>'+
-            '<select class="qe-select" onchange="quickSaveField(''+refNo+'','Developer Status',this.value,''+r.title.replace(/'/g,"\'")+'','developerStatus')">'+
-              ['Not Started','In Progress','Incomplete','Completed','Deferred'].map(function(v){return'<option'+(r.developerStatus===v?' selected':'')+'>'+v+'</option>';}).join('')+
-            '</select></div>'+
-          '<div class="qe-row"><label class="qe-label">Dev Stage</label>'+
-            '<select class="qe-select" onchange="quickSaveField(''+refNo+'','Development Stage',this.value,''+r.title.replace(/'/g,"\'")+'','devStage')">'+
-              ['Development','Testing','Ready to deploy','Deployed (Staging)','On Hold','Deployed (Prod)'].map(function(v){return'<option'+(r.devStage===v?' selected':'')+'>'+v+'</option>';}).join('')+
-            '</select></div>'+
-          '<div class="qe-save-msg" id="qeSaveMsg"></div>'+
-        '</div>':'')+
+  '<div class="quick-edit-panel" id="quickEditPanel" style="display:none">'+
+
+    '<div class="qe-row"><label class="qe-label">Priority</label>'+
+      '<select class="qe-select" onchange="quickSaveField(\''+
+        refNo+
+        '\',\'Priority\',this.value,\''+
+        r.title.replace(/'/g,"\\'")+
+        '\',\'priority\')">'+
+        ['Low','Medium','High','Critical'].map(function(v){
+          return '<option'+(r.priority===v?' selected':'')+'>'+v+'</option>';
+        }).join('')+
+      '</select></div>'+
+
+    '<div class="qe-row"><label class="qe-label">Status</label>'+
+      '<select class="qe-select" onchange="quickSaveField(\''+
+        refNo+
+        '\',\'Status\',this.value,\''+
+        r.title.replace(/'/g,"\\'")+
+        '\',\'status\')">'+
+        ['Open','Closed','Cancelled'].map(function(v){
+          return '<option'+(r.status===v?' selected':'')+'>'+v+'</option>';
+        }).join('')+
+      '</select></div>'+
+
+    '<div class="qe-row"><label class="qe-label">Dev Status</label>'+
+      '<select class="qe-select" onchange="quickSaveField(\''+
+        refNo+
+        '\',\'Developer Status\',this.value,\''+
+        r.title.replace(/'/g,"\\'")+
+        '\',\'developerStatus\')">'+
+        ['Not Started','In Progress','Incomplete','Completed','Deferred'].map(function(v){
+          return '<option'+(r.developerStatus===v?' selected':'')+'>'+v+'</option>';
+        }).join('')+
+      '</select></div>'+
+
+    '<div class="qe-row"><label class="qe-label">Dev Stage</label>'+
+      '<select class="qe-select" onchange="quickSaveField(\''+
+        refNo+
+        '\',\'Development Stage\',this.value,\''+
+        r.title.replace(/'/g,"\\'")+
+        '\',\'devStage\')">'+
+        ['Development','Testing','Ready to deploy','Deployed (Staging)','On Hold','Deployed (Prod)'].map(function(v){
+          return '<option'+(r.devStage===v?' selected':'')+'>'+v+'</option>';
+        }).join('')+
+      '</select></div>'+
+
+    '<div class="qe-save-msg" id="qeSaveMsg"></div>'+
+  '</div>':'')+
       '<div class="modal-desc">'+(r.description||'No description provided.')+'</div>'+
       '<div class="modal-fields">'+
         '<div class="field-item"><span class="field-label">Submitted By</span><span class="field-value">'+(r.submittedBy||'&mdash;')+'</span></div>'+
