@@ -327,16 +327,23 @@
     .comment-text{font-size:13px;line-height:1.6;color:var(--text);}
     .comment-attachment a{font-size:12px;color:var(--accent2);text-decoration:none;margin-top:4px;display:inline-flex;align-items:center;gap:4px;}
     .comment-attachment a:hover{text-decoration:underline;}
+    .comment-img-thumb{display:block;max-width:100%;max-height:200px;border-radius:8px;margin-top:8px;border:1px solid var(--border);cursor:zoom-in;object-fit:contain;background:var(--bg);}
+    .img-lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;}
+    .img-lightbox.open{display:flex;}
+    .img-lightbox img{max-width:92vw;max-height:92vh;border-radius:10px;box-shadow:0 8px 48px rgba(0,0,0,.7);object-fit:contain;}
     .no-comments{text-align:center;padding:24px;color:var(--muted);font-size:13px;}
     .comment-form{border-top:1px solid var(--border);padding-top:14px;}
     .comment-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;resize:vertical;min-height:72px;transition:border-color .15s;}
     .comment-textarea:focus{border-color:var(--accent);}
     .comment-textarea::placeholder{color:var(--muted);}
-    .comment-attach-row{display:flex;align-items:center;gap:8px;margin:8px 0;}
-    .comment-attach-label{font-size:11px;color:var(--muted);white-space:nowrap;}
-    .comment-attach-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;outline:none;}
-    .comment-attach-input::placeholder{color:var(--muted);}
-    .comment-submit-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+    .comment-img-upload-row{margin:8px 0;}
+    .comment-img-label{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;font-weight:500;}
+    .comment-img-label:hover{border-color:var(--accent);color:var(--accent2);}
+    .comment-img-input{display:none;}
+    .img-preview-wrap{margin-top:6px;position:relative;display:inline-block;}
+    .img-preview{max-height:80px;max-width:180px;border-radius:6px;border:1px solid var(--border);object-fit:contain;background:var(--bg);}
+    .img-preview-remove{position:absolute;top:-6px;right:-6px;background:var(--high);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;}
+    .comment-submit-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:8px;}
     .commenting-as{font-size:11px;color:var(--muted);}
     .commenting-as strong{color:var(--accent2);}
     .post-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .2s;}
@@ -553,6 +560,7 @@
 </div>
 
 <div class="chart-tooltip" id="chartTooltip"></div>
+<div class="img-lightbox" id="imgLightbox" onclick="this.classList.remove('open')"><img id="imgLightboxSrc" src="" alt=""/></div>
 <footer>ERP Development Tracker · VBEDU · Live data from Google Sheets</footer>
 
 <script>
@@ -943,7 +951,13 @@ function openTicketModal(refNo){
       (canUpdate?
         '<div class="comment-form">'+
           '<textarea class="comment-textarea" id="commentText" placeholder="Add a comment… e.g. why this is not yet completed"></textarea>'+
-          '<div class="comment-attach-row"><span class="comment-attach-label">📎 Drive link:</span><input class="comment-attach-input" type="url" id="commentAttach" placeholder="https://drive.google.com/…"/></div>'+
+          '<div class="comment-img-upload-row">'+
+            '<label class="comment-img-label"><span>📷</span> Attach image<input class="comment-img-input" type="file" id="commentImgInput" accept="image/*" onchange="previewCommentImg(this)"/></label>'+
+            '<div class="img-preview-wrap" id="imgPreviewWrap" style="display:none">'+
+              '<img class="img-preview" id="imgPreview" src="" alt="preview"/>'+
+              '<button class="img-preview-remove" onclick="removeCommentImg()" title="Remove">×</button>'+
+            '</div>'+
+          '</div>'+
           '<div class="comment-submit-row"><span class="commenting-as">As <strong>'+boardUser+'</strong></span><button class="post-btn" id="postCommentBtn" onclick="submitComment(\''+refNo+'\',\''+r.title.replace(/'/g,"\\'")+'\')">Post Comment →</button></div>'+
           '<div class="post-msg" id="postMsg"></div>'+
         '</div>':
@@ -957,38 +971,134 @@ function openTicketModal(refNo){
 function closeTicketModal(e){if(e.target===document.getElementById('modalOverlay'))document.getElementById('modalOverlay').classList.remove('open');}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('modalOverlay').classList.remove('open');document.getElementById('gateOverlay').classList.remove('open');}});
 
+// ── COMMENTS CACHE ────────────────────────────────────────
+// Keyed by reqNo. Populated on first load, updated optimistically on post.
+const _commentsCache={};
+
+function _renderComments(comments,listEl,cntEl){
+  const filtered=comments.filter(c=>c.type!=='status_change');
+  if(cntEl)cntEl.textContent=filtered.length;
+  if(!filtered.length){listEl.innerHTML='<div class="no-comments">No comments yet.</div>';return;}
+  listEl.innerHTML=filtered.map(c=>{
+    const init=(c.author||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const hasImg=c.imageData&&c.imageData.startsWith('data:image');
+    return'<div class="comment-item'+(c.type==='status_change'?' status-change':'')+'">'+
+      '<div class="comment-author-row"><div class="comment-avatar">'+init+'</div><span class="comment-author">'+c.author+'</span><span class="comment-time">'+c.timestamp+'</span></div>'+
+      '<div class="comment-text">'+c.comment+'</div>'+
+      (hasImg?'<img class="comment-img-thumb" src="'+c.imageData+'" alt="attachment" onclick="openImgLightbox(this.src)" loading="lazy"/>':'')+
+    '</div>';
+  }).join('');
+  listEl.scrollTop=listEl.scrollHeight;
+}
+
 async function loadComments(refNo){
+  const list=document.getElementById('commentsList');
+  const cnt=document.getElementById('commentsCount');
+  if(!list)return;
+  // Show cache instantly if available
+  if(_commentsCache[refNo]){
+    _renderComments(_commentsCache[refNo],list,cnt);
+  }
+  // Always fetch fresh data in background
   try{
     const res=await fetch(APPS_SCRIPT_URL+'?action=getComments&reqNo='+encodeURIComponent(refNo));
     const data=await res.json();
-    const list=document.getElementById('commentsList');const cnt=document.getElementById('commentsCount');
-    if(!list)return;
-    const comments=(data.comments||[]).filter(c=>c.type!=='status_change');if(cnt)cnt.textContent=comments.length;
-    if(!comments.length){list.innerHTML='<div class="no-comments">No comments yet.</div>';return;}
-    list.innerHTML=comments.map(c=>{
-      const init=(c.author||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-      return'<div class="comment-item'+(c.type==='status_change'?' status-change':'')+'">'+
-        '<div class="comment-author-row"><div class="comment-avatar">'+init+'</div><span class="comment-author">'+c.author+'</span><span class="comment-time">'+c.timestamp+'</span></div>'+
-        '<div class="comment-text">'+c.comment+'</div>'+
-        (c.attachment?'<div class="comment-attachment"><a href="'+c.attachment+'" target="_blank">📎 View Attachment</a></div>':'')+
-      '</div>';
-    }).join('');
-    list.scrollTop=list.scrollHeight;
-  }catch(e){const l=document.getElementById('commentsList');if(l)l.innerHTML='<div class="no-comments" style="color:var(--muted)">Could not load comments.</div>';}
+    const comments=data.comments||[];
+    _commentsCache[refNo]=comments;
+    // Only re-render if the modal is still showing this ticket
+    const currentList=document.getElementById('commentsList');
+    const currentCnt=document.getElementById('commentsCount');
+    if(currentList)_renderComments(comments,currentList,currentCnt);
+  }catch(e){
+    if(!_commentsCache[refNo]){
+      if(list)list.innerHTML='<div class="no-comments" style="color:var(--muted)">Could not load comments.</div>';
+    }
+  }
+}
+
+function openImgLightbox(src){
+  const lb=document.getElementById('imgLightbox');
+  const img=document.getElementById('imgLightboxSrc');
+  if(lb&&img){img.src=src;lb.classList.add('open');}
+}
+
+// ── IMAGE COMPRESS + PREVIEW ──────────────────────────────
+function previewCommentImg(input){
+  const file=input.files[0];if(!file)return;
+  const wrap=document.getElementById('imgPreviewWrap');
+  const prev=document.getElementById('imgPreview');
+  compressImage(file,800,0.72,dataUrl=>{
+    input._compressedData=dataUrl;
+    if(prev)prev.src=dataUrl;
+    if(wrap)wrap.style.display='inline-block';
+  });
+}
+
+function removeCommentImg(){
+  const input=document.getElementById('commentImgInput');
+  const wrap=document.getElementById('imgPreviewWrap');
+  const prev=document.getElementById('imgPreview');
+  if(input){input.value='';input._compressedData=null;}
+  if(prev)prev.src='';
+  if(wrap)wrap.style.display='none';
+}
+
+function compressImage(file,maxPx,quality,cb){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      let {width:w,height:h}=img;
+      if(w>maxPx||h>maxPx){const r=Math.min(maxPx/w,maxPx/h);w=Math.round(w*r);h=Math.round(h*r);}
+      const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      cb(canvas.toDataURL('image/jpeg',quality));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 async function submitComment(refNo,title){
   const text=(document.getElementById('commentText').value||'').trim();
-  const attach=(document.getElementById('commentAttach').value||'').trim();
+  const imgInput=document.getElementById('commentImgInput');
+  const imageData=(imgInput&&imgInput._compressedData)||'';
   const btn=document.getElementById('postCommentBtn');const msg=document.getElementById('postMsg');
   if(!text){msg.className='post-msg err';msg.textContent='Please write a comment first.';return;}
   btn.disabled=true;btn.textContent='Posting…';msg.textContent='';
+
+  // Build optimistic comment for instant display
+  const now=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const tsDisplay=pad(now.getDate())+' '+now.toLocaleString('en-GB',{month:'short'})+' '+now.getFullYear()+' '+pad(now.getHours())+':'+pad(now.getMinutes());
+  const optimistic={author:boardUser,comment:text,timestamp:tsDisplay,type:'comment',imageData};
+  if(!_commentsCache[refNo])_commentsCache[refNo]=[];
+  _commentsCache[refNo].push(optimistic);
+  const list=document.getElementById('commentsList');
+  const cnt=document.getElementById('commentsCount');
+  if(list)_renderComments(_commentsCache[refNo],list,cnt);
+
   try{
-    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'postComment',reqNo:refNo,title,author:boardUser,comment:text,attachmentUrl:attach})});
+    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'postComment',reqNo:refNo,title,author:boardUser,comment:text,attachmentUrl:'',imageData})});
     const data=await res.json();
-    if(data.success){msg.className='post-msg ok';msg.textContent='✓ Comment posted!';document.getElementById('commentText').value='';document.getElementById('commentAttach').value='';setTimeout(()=>{msg.textContent='';},3000);loadComments(refNo);}
-    else{msg.className='post-msg err';msg.textContent='Error: '+(data.error||'Unknown');}
-  }catch(e){msg.className='post-msg err';msg.textContent='Could not post. Check Apps Script URL.';}
+    if(data.success){
+      msg.className='post-msg ok';msg.textContent='✓ Comment posted!';
+      document.getElementById('commentText').value='';
+      removeCommentImg();
+      setTimeout(()=>{msg.textContent='';},3000);
+      // Refresh from server to get canonical data
+      loadComments(refNo);
+    }else{
+      // Rollback optimistic
+      _commentsCache[refNo].pop();
+      if(list)_renderComments(_commentsCache[refNo],list,cnt);
+      msg.className='post-msg err';msg.textContent='Error: '+(data.error||'Unknown');
+    }
+  }catch(e){
+    _commentsCache[refNo].pop();
+    if(list)_renderComments(_commentsCache[refNo],list,cnt);
+    msg.className='post-msg err';msg.textContent='Could not post. Check Apps Script URL.';
+  }
   btn.disabled=false;btn.textContent='Post Comment →';
 }
 
