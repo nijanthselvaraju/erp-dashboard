@@ -821,22 +821,63 @@ function onDragStart(e,refNo,devStatus){
 function onDragEnd(e){document.querySelectorAll('.kanban-card').forEach(c=>c.classList.remove('dragging'));document.querySelectorAll('.board-col').forEach(c=>c.classList.remove('drag-over'));}
 function onDragOver(e,colStatus){e.preventDefault();e.dataTransfer.dropEffect='move';document.querySelectorAll('.board-col').forEach(c=>c.classList.remove('drag-over'));const col=document.querySelector('[data-col="'+colStatus+'"]');if(col)col.classList.add('drag-over');}
 function onDrop(e,newDevStatus){
-  e.preventDefault();document.querySelectorAll('.board-col').forEach(c=>c.classList.remove('drag-over'));
+  e.preventDefault();
+  document.querySelectorAll('.board-col').forEach(c=>c.classList.remove('drag-over'));
   if(!dragSrcRefNo||dragSrcStatus===newDevStatus)return;
   if(boardIsGuest){alert('Sign in to move cards.');return;}
   const r=RAW_DATA.find(x=>x.refNo===dragSrcRefNo);if(!r)return;
-  const old=r.developerStatus;r.developerStatus=newDevStatus;
-  const _sx=window.scrollX,_sy=window.scrollY;
-  buildBoard();
-  requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(_sx,_sy)));
+
+  // Find the card DOM element BEFORE changing data
+  const card=document.querySelector('.kanban-card[data-ref="'+dragSrcRefNo+'"]');
+  const oldDevStatus=r.developerStatus;
+  r.developerStatus=newDevStatus;
+
+  if(card){
+    // ── Surgical DOM move — no rebuild, no scroll jump ───
+    const srcCol=document.querySelector('.board-col[data-col="'+oldDevStatus+'"]');
+    const dstCol=document.querySelector('.board-col[data-col="'+newDevStatus+'"]');
+
+    if(srcCol&&dstCol){
+      const srcCards=srcCol.querySelector('.board-cards');
+      const dstCards=dstCol.querySelector('.board-cards');
+
+      // Remove from source
+      card.remove();
+
+      // If source is now empty, show "No requests"
+      if(srcCards&&srcCards.querySelectorAll('.kanban-card').length===0){
+        srcCards.innerHTML='<div class="board-empty">No requests</div>';
+      }
+
+      // Remove "No requests" placeholder from destination if present
+      if(dstCards){
+        const empty=dstCards.querySelector('.board-empty');
+        if(empty)empty.remove();
+        // Update draggable column reference in ondragstart
+        card.setAttribute('ondragstart','onDragStart(event,\''+dragSrcRefNo+'\',\''+newDevStatus+'\')');
+        dstCards.appendChild(card);
+      }
+
+      // Update column count badges
+      _refreshColCounts();
+    }
+  } else {
+    // Card not in DOM (filtered) — fall back to full rebuild preserving scroll
+    const _sx=window.scrollX,_sy=window.scrollY;
+    buildBoard();
+    requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(_sx,_sy)));
+  }
+
+  // Persist to server; rollback DOM on failure
   fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateDevStatus',reqNo:dragSrcRefNo,newDevStatus,author:boardUser,title:r.title,app:r.app})})
     .catch(()=>{
-      r.developerStatus=old;
-      const _sx2=window.scrollX,_sy2=window.scrollY;
+      r.developerStatus=oldDevStatus;
+      const _sx=window.scrollX,_sy=window.scrollY;
       buildBoard();
-      requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(_sx2,_sy2)));
+      requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(_sx,_sy)));
       alert('Failed to update developer status.');
     });
+
   dragSrcRefNo=null;dragSrcStatus=null;
 }
 
