@@ -792,11 +792,12 @@ function cycleStatus(refNo,currentStatus,event){
 async function updateStatusOnBoard(refNo,newStatus){
   const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
   const oldStatus=r.status;
-  r.status=newStatus; // optimistic
-  buildBoard();
+  r.status=newStatus;
+  _patchCard(refNo);
+  _syncModalBadges(refNo);
   try{
     await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateStatus',reqNo:refNo,newStatus,author:boardUser,title:r.title,app:r.app})});
-  }catch(e){r.status=oldStatus;buildBoard();alert('Failed to update status.');}
+  }catch(e){r.status=oldStatus;_patchCard(refNo);_syncModalBadges(refNo);alert('Failed to update status.');}
 }
 
 // DRAG & DROP - updates Developer Status
@@ -813,9 +814,10 @@ function onDrop(e,newDevStatus){
   if(!dragSrcRefNo||dragSrcStatus===newDevStatus)return;
   if(boardIsGuest){alert('Sign in to move cards.');return;}
   const r=RAW_DATA.find(x=>x.refNo===dragSrcRefNo);if(!r)return;
-  const old=r.developerStatus;r.developerStatus=newDevStatus;buildBoard();
+  const old=r.developerStatus;r.developerStatus=newDevStatus;
+  const _sx=window.scrollX,_sy=window.scrollY;buildBoard();window.scrollTo(_sx,_sy);
   fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateDevStatus',reqNo:dragSrcRefNo,newDevStatus,author:boardUser,title:r.title,app:r.app})})
-    .catch(()=>{r.developerStatus=old;buildBoard();alert('Failed to update developer status.');});
+    .catch(()=>{r.developerStatus=old;const _sx2=window.scrollX,_sy2=window.scrollY;buildBoard();window.scrollTo(_sx2,_sy2);alert('Failed to update developer status.');});
   dragSrcRefNo=null;dragSrcStatus=null;
 }
 
@@ -1184,6 +1186,42 @@ function getStageCls(stage){
   return'devstage-none';
 }
 
+// ── PATCH A SINGLE CARD IN-PLACE (no scroll jump) ────────
+function _patchCard(refNo){
+  const card=document.querySelector('.kanban-card[data-ref="'+refNo+'"]');
+  if(!card)return; // card not in DOM (filtered out) — no action needed
+  const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
+  // Priority badge
+  const pb=card.querySelector('.kanban-cycle-badge[onclick*="cyclePriority"]');
+  if(pb&&r.priority){pb.className='badge '+getPriorityCls(r.priority)+' kanban-cycle-badge';pb.textContent=r.priority;pb.title='Priority: '+r.priority+' (click to cycle)';}
+  // Stage badge
+  const sb=card.querySelector('.kanban-cycle-badge[onclick*="cycleStage"]');
+  if(sb){sb.className='badge '+getStageCls(r.devStage)+' kanban-cycle-badge';sb.textContent=r.devStage||'No Stage';sb.title='Dev Stage: '+(r.devStage||'No Stage')+' (click to cycle)';}
+  // Status circle
+  const sc=card.querySelector('.status-circle');
+  if(sc){
+    const sc_cls=r.status==='Closed'?'sc-closed':r.status==='Cancelled'?'sc-cancelled':'sc-open';
+    const sc_sym=r.status==='Closed'?'✓':r.status==='Cancelled'?'✕':'';
+    sc.className='status-circle '+sc_cls;sc.textContent=sc_sym;
+    sc.setAttribute('onclick','cycleStatus(\''+refNo+'\',\''+r.status+'\',event)');
+    sc.title='Status: '+r.status+' (click to change)';
+  }
+  // Developer label
+  const dl=card.querySelector('.kanban-dev-badge');
+  if(dl)dl.textContent='👤 '+r.developedBy;
+  // Update column count badges (cheap — just text nodes)
+  _refreshColCounts();
+}
+
+function _refreshColCounts(){
+  DEV_STATUSES.forEach(st=>{
+    const col=document.querySelector('.board-col[data-col="'+st+'"]');if(!col)return;
+    const cnt=col.querySelector('.board-col-count');if(!cnt)return;
+    const n=col.querySelectorAll('.kanban-card').length;
+    cnt.textContent=n;
+  });
+}
+
 // ── PRIORITY CYCLE on kanban card ────────────────────────
 const PRIORITY_CYCLE = ['Low','Medium','High','Critical'];
 function cyclePriority(event, refNo){
@@ -1193,11 +1231,10 @@ function cyclePriority(event, refNo){
   const idx=PRIORITY_CYCLE.indexOf(r.priority);
   const next=PRIORITY_CYCLE[(idx===-1?0:idx+1)%PRIORITY_CYCLE.length];
   const old=r.priority;r.priority=next;
-  buildBoard();
-  // Sync open modal if same card
+  _patchCard(refNo);
   _syncModalBadges(refNo);
   fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:next,author:boardUser,title:r.title,app:r.app})})
-    .catch(()=>{r.priority=old;buildBoard();alert('Failed to update priority.');});
+    .catch(()=>{r.priority=old;_patchCard(refNo);alert('Failed to update priority.');});
 }
 
 // ── DEV STAGE CYCLE on kanban card ───────────────────────
@@ -1209,11 +1246,10 @@ function cycleStage(event, refNo){
   const idx=STAGE_CYCLE.indexOf(r.devStage);
   const next=STAGE_CYCLE[(idx===-1?0:idx+1)%STAGE_CYCLE.length];
   const old=r.devStage;r.devStage=next;
-  buildBoard();
-  // Sync open modal if same card
+  _patchCard(refNo);
   _syncModalBadges(refNo);
   fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:next,author:boardUser,title:r.title,app:r.app})})
-    .catch(()=>{r.devStage=old;buildBoard();alert('Failed to update stage.');});
+    .catch(()=>{r.devStage=old;_patchCard(refNo);alert('Failed to update stage.');});
 }
 
 // ── SYNC MODAL BADGES when value changes ─────────────────
@@ -1245,9 +1281,9 @@ function cycleDeveloper(event, refNo){
   const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
   const idx=DEV_CYCLE.indexOf(r.developedBy);
   const next=DEV_CYCLE[(idx===-1?0:idx+1)%DEV_CYCLE.length];
-  const old=r.developedBy;r.developedBy=next;buildBoard();
+  const old=r.developedBy;r.developedBy=next;_patchCard(refNo);
   fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Developed By',newValue:next,author:boardUser,title:r.title,app:r.app})})
-    .catch(()=>{r.developedBy=old;buildBoard();alert('Failed to update developer.');});
+    .catch(()=>{r.developedBy=old;_patchCard(refNo);alert('Failed to update developer.');});
 }
 
 // ── QUICK EDIT (gear panel) ───────────────────────────────
@@ -1276,7 +1312,11 @@ async function quickSaveField(refNo, field, newValue, title, dataKey){
     const data=await res.json();
     if(data.success||data.ok!==false){
       if(msg){msg.className='qe-save-msg ok';msg.textContent='✓ Saved';}
-      buildStatBar();buildAllMatrices();if(activeTab==='board')buildBoard();
+      buildStatBar();buildAllMatrices();
+      // Dev Status moves the card to a different column — full rebuild needed
+      // Everything else: patch only the card so scroll position is preserved
+      if(field==='Developer Status'){if(activeTab==='board')buildBoard();}
+      else{if(activeTab==='board')_patchCard(refNo);}
       _syncModalBadges(refNo);
       setTimeout(()=>{if(msg)msg.textContent='';},2500);
     } else {
