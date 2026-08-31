@@ -229,10 +229,10 @@
     .board-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
     .board-user-badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--accent2);}
     .board-user-badge.guest{color:var(--muted);}
-    .board-cols-wrap{display:flex;gap:14px;overflow-x:auto;align-items:flex-start;padding-bottom:8px;}
-    .board-col{background:var(--surface2);border:1px solid var(--border);border-radius:12px;min-width:240px;max-width:280px;flex:1;display:flex;flex-direction:column;transition:border-color .2s;}
+    .board-cols-wrap{display:flex;gap:14px;overflow-x:auto;align-items:stretch;padding-bottom:8px;min-height:700px;}
+    .board-col{background:var(--surface2);border:1px solid var(--border);border-radius:12px;min-width:240px;max-width:280px;flex:1;display:flex;flex-direction:column;transition:border-color .2s;min-height:700px;}
     .board-col.drag-over{border-color:var(--accent);background:rgba(108,99,255,.07);}
-    .board-col-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+    .board-col-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;}
     .board-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
     .board-col-count{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;background:var(--surface);padding:2px 7px;border-radius:8px;color:var(--muted);}
     .col-notstarted .board-col-title{color:var(--notstarted);}
@@ -240,7 +240,7 @@
     .col-incomplete .board-col-title{color:var(--incomplete);}
     .col-completed  .board-col-title{color:var(--completed);}
     .col-deferred   .board-col-title{color:var(--deferred);}
-    .board-cards{padding:8px;display:flex;flex-direction:column;gap:8px;max-height:520px;overflow-y:auto;min-height:60px;}
+    .board-cards{padding:8px;display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;min-height:60px;}
     .board-cards::-webkit-scrollbar{width:4px;}
     .board-cards::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 
@@ -647,6 +647,7 @@ function switchTab(tab){
   document.getElementById('boardUserHeader').style.display=tab==='board'?'flex':'none';
   if(tab==='charts')buildAllCharts();
   else if(tab==='board')handleBoardTabClick();
+  else if(tab==='dashboard'){buildStatBar();buildAllMatrices();}
 }
 
 // ── STAT BAR ──────────────────────────────────────────────
@@ -815,9 +816,17 @@ function onDrop(e,newDevStatus){
   if(boardIsGuest){alert('Sign in to move cards.');return;}
   const r=RAW_DATA.find(x=>x.refNo===dragSrcRefNo);if(!r)return;
   const old=r.developerStatus;r.developerStatus=newDevStatus;
-  const _sx=window.scrollX,_sy=window.scrollY;buildBoard();window.scrollTo(_sx,_sy);
+  const _sx=window.scrollX,_sy=window.scrollY;
+  buildBoard();
+  requestAnimationFrame(()=>window.scrollTo(_sx,_sy));
   fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateDevStatus',reqNo:dragSrcRefNo,newDevStatus,author:boardUser,title:r.title,app:r.app})})
-    .catch(()=>{r.developerStatus=old;const _sx2=window.scrollX,_sy2=window.scrollY;buildBoard();window.scrollTo(_sx2,_sy2);alert('Failed to update developer status.');});
+    .catch(()=>{
+      r.developerStatus=old;
+      const _sx2=window.scrollX,_sy2=window.scrollY;
+      buildBoard();
+      requestAnimationFrame(()=>window.scrollTo(_sx2,_sy2));
+      alert('Failed to update developer status.');
+    });
   dragSrcRefNo=null;dragSrcStatus=null;
 }
 
@@ -1315,7 +1324,7 @@ async function quickSaveField(refNo, field, newValue, title, dataKey){
       buildStatBar();buildAllMatrices();
       // Dev Status moves the card to a different column — full rebuild needed
       // Everything else: patch only the card so scroll position is preserved
-      if(field==='Developer Status'){if(activeTab==='board')buildBoard();}
+      if(field==='Developer Status'){if(activeTab==='board'){const _sx=window.scrollX,_sy=window.scrollY;buildBoard();requestAnimationFrame(()=>window.scrollTo(_sx,_sy));}}
       else{if(activeTab==='board')_patchCard(refNo);}
       _syncModalBadges(refNo);
       setTimeout(()=>{if(msg)msg.textContent='';},2500);
