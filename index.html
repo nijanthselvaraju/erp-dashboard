@@ -348,11 +348,6 @@
     .viewer-warning{display:flex;align-items:center;gap:6px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--stale);margin-bottom:10px;}
 
 
-    /* DEV STAGE TAG on cards */
-    .kanban-stage{display:inline-block;font-size:10px;background:var(--surface2);border:1px solid var(--border);color:var(--accent2);padding:2px 8px;border-radius:4px;margin-bottom:4px;font-weight:600;cursor:pointer;transition:all .15s;}
-    .kanban-stage:hover{border-color:var(--accent);background:rgba(108,99,255,.1);}
-    .kanban-stage-empty{color:var(--muted);font-style:italic;border-style:dashed;}
-
     /* KANBAN DEV BADGE — clickable */
     .kanban-dev-badge{cursor:pointer;transition:color .15s;}
     .kanban-dev-badge:hover{color:var(--accent2);}
@@ -621,7 +616,7 @@ function getFiltered(){
 }
 
 // ── TAB ───────────────────────────────────────────────────
-function switchTab(tab, skipGate){
+function switchTab(tab){
   activeTab=tab;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
@@ -629,7 +624,7 @@ function switchTab(tab, skipGate){
   document.getElementById('panel-'+tab).classList.add('active');
   document.getElementById('boardUserHeader').style.display=tab==='board'?'flex':'none';
   if(tab==='charts')buildAllCharts();
-  else if(tab==='board'){if(skipGate)buildBoard();else handleBoardTabClick();}
+  else if(tab==='board')handleBoardTabClick();
 }
 
 // ── STAT BAR ──────────────────────────────────────────────
@@ -741,7 +736,7 @@ async function submitGate(){
       boardUser=name;boardIsGuest=false;setBoardSession(name,false);
       document.getElementById('gateOverlay').classList.remove('open');
       applyBoardUser();buildBoard();
-      switchTab('board', true);
+      switchTab('board');
     } else {
       document.getElementById('gateError').textContent='❌ Incorrect PIN. Please try again.';
       document.getElementById('gatePinInput').value='';
@@ -814,11 +809,11 @@ function buildBoard(){
       const stale=isStale(r);const days=daysSince(r.date);
       const sc_cls=r.status==='Closed'?'sc-closed':r.status==='Cancelled'?'sc-cancelled':'sc-open';
       const sc_sym=r.status==='Closed'?'✓':r.status==='Cancelled'?'✕':'';
-      const stageLabel=r.devStage||'';
-      const stageTag=stageLabel
-        ?'<div class="kanban-stage" onclick="cycleDevStage(\''+r.refNo+'\',\''+stageLabel.replace(/\'/g,"\\'")+'\',event)" title="Dev Stage: '+stageLabel+' (click to change)">'+stageLabel+'</div>'
-        :'<div class="kanban-stage kanban-stage-empty" onclick="cycleDevStage(\''+r.refNo+'\',\'\',event)" title="Set dev stage">— stage —</div>';
+      const modTag=r.module?'<div class="kanban-module">'+r.module+'</div>':'';
       return'<div class="kanban-card" data-ref="'+r.refNo+'" draggable="true"'+
+        ' ondragstart="onDragStart(event,\''+r.refNo+'\',\''+st+'\')"'+
+        ' ondragend="onDragEnd(event)"'+
+        ' onclick="openTicketModal(\''+r.refNo+'\')">'+
         '<div class="kanban-card-top">'+
           '<span class="kanban-ref">'+r.refNo+'</span>'+
           '<div style="display:flex;align-items:center;gap:6px;">'+
@@ -826,7 +821,7 @@ function buildBoard(){
             '<div class="status-circle '+sc_cls+'" onclick="cycleStatus(\''+r.refNo+'\',\''+r.status+'\',event)" title="Status: '+r.status+' (click to change)">'+sc_sym+'</div>'+
           '</div>'+
         '</div>'+
-        stageTag+
+        modTag+
         '<div class="kanban-title">'+r.title+'</div>'+
         '<div class="kanban-meta">'+
           '<span class="kanban-assignee kanban-dev-badge" onclick="cycleDeveloper(event,\''+r.refNo+'\')" title="Click to change developer">👤 '+r.developedBy+'</span>'+
@@ -1062,23 +1057,6 @@ function cycleDeveloper(event, refNo){
   const old=r.developedBy;r.developedBy=next;buildBoard();
   fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Developed By',newValue:next,author:boardUser,title:r.title,app:r.app})})
     .catch(()=>{r.developedBy=old;buildBoard();alert('Failed to update developer.');});
-}
-
-// ── DEV STAGE CYCLE on card ─────────────────────
-const DEV_STAGES=['Development','Testing','Ready to deploy','Deployed (Staging)','On Hold','Deployed (Prod)'];
-function cycleDevStage(refNo, currentStage, event){
-  event.stopPropagation();
-  if(boardIsGuest){alert('Sign in to update dev stage.');return;}
-  const idx=DEV_STAGES.indexOf(currentStage);
-  const next=DEV_STAGES[(idx===-1?0:idx+1)%DEV_STAGES.length];
-  updateDevStageOnBoard(refNo, next);
-}
-async function updateDevStageOnBoard(refNo, newStage){
-  const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
-  const old=r.devStage;r.devStage=newStage;buildBoard();
-  try{
-    await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:newStage,author:boardUser,title:r.title,app:r.app})});
-  }catch(e){r.devStage=old;buildBoard();alert('Failed to update dev stage.');}
 }
 
 // ── QUICK EDIT (gear panel) ───────────────────────────────
