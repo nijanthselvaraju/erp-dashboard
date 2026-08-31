@@ -327,7 +327,7 @@
     .comment-text{font-size:13px;line-height:1.6;color:var(--text);}
     .comment-attachment a{font-size:12px;color:var(--accent2);text-decoration:none;margin-top:4px;display:inline-flex;align-items:center;gap:4px;}
     .comment-attachment a:hover{text-decoration:underline;}
-    .comment-img-thumb{display:block;max-width:100%;max-height:200px;border-radius:8px;margin-top:8px;border:1px solid var(--border);cursor:zoom-in;object-fit:contain;background:var(--bg);}
+    .comment-img-thumb{display:inline-block;width:80px;height:80px;border-radius:6px;margin-top:8px;border:1px solid var(--border);cursor:zoom-in;object-fit:cover;background:var(--bg);vertical-align:top;}
     .img-lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;}
     .img-lightbox.open{display:flex;}
     .img-lightbox img{max-width:92vw;max-height:92vh;border-radius:10px;box-shadow:0 8px 48px rgba(0,0,0,.7);object-fit:contain;}
@@ -1027,7 +1027,7 @@ function previewCommentImg(input){
   const file=input.files[0];if(!file)return;
   const wrap=document.getElementById('imgPreviewWrap');
   const prev=document.getElementById('imgPreview');
-  compressImage(file,800,0.72,dataUrl=>{
+  compressImage(file,1600,0.92,dataUrl=>{
     input._compressedData=dataUrl;
     if(prev)prev.src=dataUrl;
     if(wrap)wrap.style.display='inline-block';
@@ -1086,8 +1086,6 @@ async function submitComment(refNo,title){
       document.getElementById('commentText').value='';
       removeCommentImg();
       setTimeout(()=>{msg.textContent='';},3000);
-      // Refresh from server to get canonical data
-      loadComments(refNo);
     }else{
       // Rollback optimistic
       _commentsCache[refNo].pop();
