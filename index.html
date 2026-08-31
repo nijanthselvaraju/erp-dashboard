@@ -266,15 +266,6 @@
     /* MODULE TAG on cards — no empty box */
     .kanban-module{display:inline-block;font-size:10px;background:var(--surface2);color:var(--muted);padding:2px 7px;border-radius:4px;margin-bottom:4px;font-weight:500;}
 
-    /* DEV STAGE TAG on cards — clickable */
-    .kanban-stage{display:inline-block;font-size:10px;background:var(--surface2);border:1px solid var(--border);color:var(--accent2);padding:2px 8px;border-radius:4px;margin-bottom:4px;font-weight:600;cursor:pointer;transition:all .15s;}
-    .kanban-stage:hover{border-color:var(--accent);background:rgba(108,99,255,.1);}
-    .kanban-stage-empty{color:var(--muted);font-style:italic;border-style:dashed;}
-
-    /* PRIORITY BADGE — clickable */
-    .kanban-priority-badge{cursor:pointer;transition:opacity .15s;}
-    .kanban-priority-badge:hover{opacity:.75;}
-
     /* IDENTITY GATE */
     .gate-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;align-items:center;justify-content:center;padding:24px;}
     .gate-overlay.open{display:flex;}
@@ -356,7 +347,26 @@
     .post-msg.err{color:var(--high);}
     .viewer-warning{display:flex;align-items:center;gap:6px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--stale);margin-bottom:10px;}
 
-    footer{text-align:center;padding:24px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);}
+
+    /* KANBAN DEV BADGE — clickable */
+    .kanban-dev-badge{cursor:pointer;transition:color .15s;}
+    .kanban-dev-badge:hover{color:var(--accent2);}
+
+    /* SETTINGS GEAR BUTTON in modal */
+    .settings-gear-btn{background:none;border:1px solid var(--border);border-radius:7px;padding:3px 8px;font-size:14px;cursor:pointer;color:var(--muted);transition:all .15s;line-height:1;}
+    .settings-gear-btn:hover{border-color:var(--accent);color:var(--text);}
+
+    /* QUICK EDIT PANEL */
+    .quick-edit-panel{background:var(--surface2);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;}
+    .qe-row{display:flex;align-items:center;gap:8px;}
+    .qe-label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:600;white-space:nowrap;}
+    .qe-select{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:5px 10px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;outline:none;cursor:pointer;transition:border-color .15s;}
+    .qe-select:focus{border-color:var(--accent);}
+    .qe-save-msg{font-size:11px;font-weight:600;margin-left:4px;}
+    .qe-save-msg.ok{color:var(--closed);}
+    .qe-save-msg.err{color:var(--high);}
+
+        footer{text-align:center;padding:24px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);}
 
     @media(max-width:1100px){.stat-bar{grid-template-columns:repeat(3,1fr);}}
     @media(max-width:900px){.matrix-grid,.charts-grid-half{grid-template-columns:1fr;}}
@@ -722,8 +732,16 @@ async function submitGate(){
   try{
     const res=await fetch(APPS_SCRIPT_URL+'?action=verifyPin&name='+encodeURIComponent(name)+'&pin='+encodeURIComponent(pin));
     const data=await res.json();
-    if(data.success){boardUser=name;boardIsGuest=false;setBoardSession(name,false);document.getElementById('gateOverlay').classList.remove('open');applyBoardUser();buildBoard();}
-    else{document.getElementById('gateError').textContent='Incorrect PIN. Please try again.';}
+    if(data.success){
+      boardUser=name;boardIsGuest=false;setBoardSession(name,false);
+      document.getElementById('gateOverlay').classList.remove('open');
+      applyBoardUser();buildBoard();
+      switchTab('board');
+    } else {
+      document.getElementById('gateError').textContent='❌ Incorrect PIN. Please try again.';
+      document.getElementById('gatePinInput').value='';
+      document.getElementById('gatePinInput').focus();
+    }
   }catch(e){document.getElementById('gateError').textContent='Could not connect. Check Apps Script URL.';}
   btn.textContent='Enter Board →';btn.disabled=false;
 }
@@ -747,46 +765,6 @@ function cycleStatus(refNo,currentStatus,event){
   const order=['Open','Closed','Cancelled'];
   const next=order[(order.indexOf(currentStatus)+1)%order.length];
   updateStatusOnBoard(refNo,next);
-}
-
-// PRIORITY BADGE click - cycles High→Critical→Low→Medium→High
-function cyclePriority(refNo,currentPriority,event){
-  event.stopPropagation();
-  if(boardIsGuest){alert('Sign in to update priority.');return;}
-  const order=['High','Critical','Low','Medium'];
-  const idx=order.indexOf(currentPriority);
-  const next=order[(idx===-1?0:idx+1)%order.length];
-  updatePriorityOnBoard(refNo,next);
-}
-
-async function updatePriorityOnBoard(refNo,newPriority){
-  const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
-  const old=r.priority;
-  r.priority=newPriority; // optimistic
-  buildBoard();
-  try{
-    await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:newPriority,author:boardUser,title:r.title,app:r.app})});
-  }catch(e){r.priority=old;buildBoard();alert('Failed to update priority.');}
-}
-
-// DEV STAGE TAG click - cycles through stages
-const DEV_STAGES=['Development','Testing','Ready to deploy','Deployed (Staging)','On Hold','Deployed (Prod)'];
-function cycleDevStage(refNo,currentStage,event){
-  event.stopPropagation();
-  if(boardIsGuest){alert('Sign in to update dev stage.');return;}
-  const idx=DEV_STAGES.indexOf(currentStage);
-  const next=DEV_STAGES[(idx===-1?0:idx+1)%DEV_STAGES.length];
-  updateDevStageOnBoard(refNo,next);
-}
-
-async function updateDevStageOnBoard(refNo,newStage){
-  const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
-  const old=r.devStage;
-  r.devStage=newStage; // optimistic
-  buildBoard();
-  try{
-    await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:newStage,author:boardUser,title:r.title,app:r.app})});
-  }catch(e){r.devStage=old;buildBoard();alert('Failed to update dev stage.');}
 }
 
 async function updateStatusOnBoard(refNo,newStatus){
@@ -831,7 +809,7 @@ function buildBoard(){
       const stale=isStale(r);const days=daysSince(r.date);
       const sc_cls=r.status==='Closed'?'sc-closed':r.status==='Cancelled'?'sc-cancelled':'sc-open';
       const sc_sym=r.status==='Closed'?'✓':r.status==='Cancelled'?'✕':'';
-      const stageTag=r.devStage?'<div class="kanban-stage" onclick="cycleDevStage(\''+r.refNo+'\',\''+r.devStage.replace(/'/g,"\\'")+'\',event)" title="Dev Stage: '+r.devStage+' (click to change)">'+r.devStage+'</div>':'<div class="kanban-stage kanban-stage-empty" onclick="cycleDevStage(\''+r.refNo+'\',\'\',event)" title="Set dev stage">— stage —</div>';
+      const modTag=r.module?'<div class="kanban-module">'+r.module+'</div>':'';
       return'<div class="kanban-card" data-ref="'+r.refNo+'" draggable="true"'+
         ' ondragstart="onDragStart(event,\''+r.refNo+'\',\''+st+'\')"'+
         ' ondragend="onDragEnd(event)"'+
@@ -839,14 +817,14 @@ function buildBoard(){
         '<div class="kanban-card-top">'+
           '<span class="kanban-ref">'+r.refNo+'</span>'+
           '<div style="display:flex;align-items:center;gap:6px;">'+
-            (r.priority?'<span class="badge '+getPriorityCls(r.priority)+' kanban-priority-badge" onclick="cyclePriority(\''+r.refNo+'\',\''+r.priority+'\',event)" title="Priority: '+r.priority+' (click to change)">'+r.priority+'</span>':'<span class="badge kanban-priority-badge priority-low" onclick="cyclePriority(\''+r.refNo+'\',\'\',event)" title="Set priority">—</span>')+
+            (r.priority?'<span class="badge '+getPriorityCls(r.priority)+'">'+r.priority+'</span>':'')+
             '<div class="status-circle '+sc_cls+'" onclick="cycleStatus(\''+r.refNo+'\',\''+r.status+'\',event)" title="Status: '+r.status+' (click to change)">'+sc_sym+'</div>'+
           '</div>'+
         '</div>'+
-        stageTag+
+        modTag+
         '<div class="kanban-title">'+r.title+'</div>'+
         '<div class="kanban-meta">'+
-          '<span class="kanban-assignee">👤 '+r.developedBy+'</span>'+
+          '<span class="kanban-assignee kanban-dev-badge" onclick="cycleDeveloper(event,\''+r.refNo+'\')" title="Click to change developer">👤 '+r.developedBy+'</span>'+
           (stale?'<span class="stale-tag">⚠ '+days+'d</span>':'<span class="kanban-date">'+r.date+'</span>')+
         '</div></div>';
     }).join(''):'<div class="board-empty">No requests</div>';
@@ -868,14 +846,7 @@ function openTicketModal(refNo){
   const canUpdate=isBoard&&!boardIsGuest;
   const statusOpts=STATUSES.map(s=>'<option value="'+s+'"'+(r.status===s?' selected':'')+'>'+s+'</option>').join('');
 
-  const statusRow=isBoard?(canUpdate?
-    '<div class="status-update-row">'+
-      '<span class="status-update-label">Update Status:</span>'+
-      '<select class="status-select" id="ticketStatusSelect">'+statusOpts+'</select>'+
-      '<button class="update-btn" id="updateStatusBtn" onclick="submitStatusUpdate(this.dataset.ref)" data-ref="'+refNo.replace(/"/g,'&quot;')+'">Update</button>'+
-      '<span class="update-msg" id="updateMsg"></span>'+
-    '</div>':
-    '<div class="status-update-row"><span class="readonly-notice">&#128065; Guest &mdash; read only</span></div>'):'';
+  const statusRow='';
 
   document.getElementById('ticketModal').innerHTML=
     '<div class="modal-top">'+
@@ -888,7 +859,28 @@ function openTicketModal(refNo){
         (r.priority?'<span class="badge '+getPriorityCls(r.priority)+'">'+r.priority+' Priority</span>':'')+
         (r.status?'<span class="badge '+getStatusCls(r.status)+'">'+r.status+'</span>':'')+
         (r.developerStatus?'<span class="badge '+getDevCls(r.developerStatus)+'">'+r.developerStatus+'</span>':'')+
+        (canUpdate?'<button class="settings-gear-btn" onclick="toggleQuickEdit()" title="Quick edit all fields">⚙️</button>':'')+
       '</div>'+
+      (canUpdate?
+        '<div class="quick-edit-panel" id="quickEditPanel" style="display:none">'+
+          '<div class="qe-row"><label class="qe-label">Priority</label>'+
+            '<select class="qe-select" onchange="quickSaveField(''+refNo+'','Priority',this.value,''+r.title.replace(/'/g,"\'")+'','priority')">'+
+              ['Low','Medium','High','Critical'].map(function(v){return'<option'+(r.priority===v?' selected':'')+'>'+v+'</option>';}).join('')+
+            '</select></div>'+
+          '<div class="qe-row"><label class="qe-label">Status</label>'+
+            '<select class="qe-select" onchange="quickSaveField(''+refNo+'','Status',this.value,''+r.title.replace(/'/g,"\'")+'','status')">'+
+              ['Open','Closed','Cancelled'].map(function(v){return'<option'+(r.status===v?' selected':'')+'>'+v+'</option>';}).join('')+
+            '</select></div>'+
+          '<div class="qe-row"><label class="qe-label">Dev Status</label>'+
+            '<select class="qe-select" onchange="quickSaveField(''+refNo+'','Developer Status',this.value,''+r.title.replace(/'/g,"\'")+'','developerStatus')">'+
+              ['Not Started','In Progress','Incomplete','Completed','Deferred'].map(function(v){return'<option'+(r.developerStatus===v?' selected':'')+'>'+v+'</option>';}).join('')+
+            '</select></div>'+
+          '<div class="qe-row"><label class="qe-label">Dev Stage</label>'+
+            '<select class="qe-select" onchange="quickSaveField(''+refNo+'','Development Stage',this.value,''+r.title.replace(/'/g,"\'")+'','devStage')">'+
+              ['Development','Testing','Ready to deploy','Deployed (Staging)','On Hold','Deployed (Prod)'].map(function(v){return'<option'+(r.devStage===v?' selected':'')+'>'+v+'</option>';}).join('')+
+            '</select></div>'+
+          '<div class="qe-save-msg" id="qeSaveMsg"></div>'+
+        '</div>':'')+
       '<div class="modal-desc">'+(r.description||'No description provided.')+'</div>'+
       '<div class="modal-fields">'+
         '<div class="field-item"><span class="field-label">Submitted By</span><span class="field-value">'+(r.submittedBy||'&mdash;')+'</span></div>'+
@@ -925,7 +917,7 @@ async function loadComments(refNo){
     const data=await res.json();
     const list=document.getElementById('commentsList');const cnt=document.getElementById('commentsCount');
     if(!list)return;
-    const comments=data.comments||[];if(cnt)cnt.textContent=comments.length;
+    const comments=(data.comments||[]).filter(c=>c.type!=='status_change');if(cnt)cnt.textContent=comments.length;
     if(!comments.length){list.innerHTML='<div class="no-comments">No comments yet.</div>';return;}
     list.innerHTML=comments.map(c=>{
       const init=(c.author||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
@@ -1023,6 +1015,58 @@ function buildModuleChart(){
 }
 
 function buildAllCharts(){buildWeekChart();buildDevChart();buildModuleChart();}
+
+
+// ── DEVELOPER CYCLE ───────────────────────────────────────
+const DEV_CYCLE = ['Devi Priya','Madhan'];
+function cycleDeveloper(event, refNo){
+  event.stopPropagation();
+  if(boardIsGuest){alert('Sign in to change developer.');return;}
+  const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
+  const idx=DEV_CYCLE.indexOf(r.developedBy);
+  const next=DEV_CYCLE[(idx===-1?0:idx+1)%DEV_CYCLE.length];
+  const old=r.developedBy;r.developedBy=next;buildBoard();
+  fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Developed By',newValue:next,author:boardUser,title:r.title,app:r.app})})
+    .catch(()=>{r.developedBy=old;buildBoard();alert('Failed to update developer.');});
+}
+
+// ── QUICK EDIT (gear panel) ───────────────────────────────
+function toggleQuickEdit(){
+  const p=document.getElementById('quickEditPanel');
+  if(p)p.style.display=p.style.display==='none'?'flex':'none';
+}
+
+// Field key mapping for RAW_DATA
+const QE_DATA_KEY={'Priority':'priority','Status':'status','Developer Status':'developerStatus','Development Stage':'devStage','Developed By':'developedBy'};
+const QE_ACTION={'Status':'updateStatus','Developer Status':'updateDevStatus'};
+
+async function quickSaveField(refNo, field, newValue, title, dataKey){
+  const msg=document.getElementById('qeSaveMsg');
+  if(msg){msg.className='qe-save-msg';msg.textContent='Saving…';}
+  const r=RAW_DATA.find(x=>x.refNo===refNo);
+  const old=r?r[dataKey]:null;
+  if(r&&dataKey)r[dataKey]=newValue;
+  // Pick correct action
+  let body;
+  if(field==='Status')          body={action:'updateStatus',reqNo:refNo,newStatus:newValue,author:boardUser,title,app:r?r.app:''};
+  else if(field==='Developer Status') body={action:'updateDevStatus',reqNo:refNo,newDevStatus:newValue,author:boardUser,title,app:r?r.app:''};
+  else                          body={action:'updateField',reqNo:refNo,field,newValue,author:boardUser,title,app:r?r.app:''};
+  try{
+    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify(body)});
+    const data=await res.json();
+    if(data.success||data.ok!==false){
+      if(msg){msg.className='qe-save-msg ok';msg.textContent='✓ Saved';}
+      buildStatBar();buildAllMatrices();if(activeTab==='board')buildBoard();
+      setTimeout(()=>{if(msg)msg.textContent='';},2500);
+    } else {
+      if(r&&dataKey)r[dataKey]=old;
+      if(msg){msg.className='qe-save-msg err';msg.textContent='Error: '+(data.error||'Failed');}
+    }
+  }catch(e){
+    if(r&&dataKey)r[dataKey]=old;
+    if(msg){msg.className='qe-save-msg err';msg.textContent='Network error';}
+  }
+}
 
 // ── LOAD ──────────────────────────────────────────────────
 async function loadData(){
