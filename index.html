@@ -229,8 +229,8 @@
     .board-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
     .board-user-badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--accent2);}
     .board-user-badge.guest{color:var(--muted);}
-    .board-cols-wrap{display:flex;gap:14px;overflow-x:auto;align-items:stretch;padding-bottom:8px;min-height:700px;}
-    .board-col{background:var(--surface2);border:1px solid var(--border);border-radius:12px;min-width:240px;max-width:280px;flex:1;display:flex;flex-direction:column;transition:border-color .2s;min-height:700px;}
+    .board-cols-wrap{display:flex;gap:14px;overflow-x:auto;align-items:flex-start;padding-bottom:8px;}
+    .board-col{background:var(--surface2);border:1px solid var(--border);border-radius:12px;min-width:240px;max-width:280px;flex:1;display:flex;flex-direction:column;transition:border-color .2s;height:720px;}
     .board-col.drag-over{border-color:var(--accent);background:rgba(108,99,255,.07);}
     .board-col-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;}
     .board-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
@@ -240,9 +240,10 @@
     .col-incomplete .board-col-title{color:var(--incomplete);}
     .col-completed  .board-col-title{color:var(--completed);}
     .col-deferred   .board-col-title{color:var(--deferred);}
-    .board-cards{padding:8px;display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;min-height:60px;}
+    .board-cards{padding:8px;display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;min-height:0;}
     .board-cards::-webkit-scrollbar{width:4px;}
     .board-cards::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+    .board-empty{padding:20px;text-align:center;color:var(--muted);font-size:12px;}
 
     /* KANBAN CARD */
     .kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:grab;transition:all .15s;user-select:none;}
@@ -676,11 +677,16 @@ function setMonth(m){activeMonth=m;activeCell=null;activePriority=null;buildMont
 // ── MATRIX ────────────────────────────────────────────────
 function buildMatrix(cid,key){
   const def=MATRICES_DEF[key],data=getMonthFiltered();
-  const rowVals=[...new Set(data.map(r=>r[def.rowField]).filter(Boolean))].sort();
+  // Use 'Unknown' fallback so rows with empty module still appear
+  const rowVals=[...new Set(data.map(r=>r[def.rowField]||'Unknown').filter(Boolean))].sort();
   const counts={},colTotals={};let grand=0;
   def.cols.forEach(c=>{colTotals[c.k]=0;});
   rowVals.forEach(rv=>{counts[rv]={};def.cols.forEach(c=>{counts[rv][c.k]=0;});});
-  data.forEach(r=>{const rv=r[def.rowField];if(!rv)return;def.cols.forEach(c=>{if(r[def.colField]===c.k){counts[rv][c.k]++;colTotals[c.k]++;grand++;}});});
+  data.forEach(r=>{
+    const rv=r[def.rowField]||'Unknown';
+    if(!rv)return;
+    def.cols.forEach(c=>{if(r[def.colField]===c.k){counts[rv][c.k]++;colTotals[c.k]++;grand++;}});
+  });
   const rowTotals={};rowVals.forEach(rv=>{rowTotals[rv]=def.cols.reduce((s,c)=>s+counts[rv][c.k],0);});
   function pill(n,p){if(n===0)return'<span class="cp zero">&mdash;</span>';return'<span class="cp '+p+'">'+n+'</span>';}
   const bodyRows=rowVals.map(rv=>{
