@@ -226,9 +226,6 @@
     .trend-eq{background:rgba(107,114,128,.15);color:var(--muted);}
 
     /* ── BOARD ── */
-    .board-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
-    .board-user-badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--accent2);}
-    .board-user-badge.guest{color:var(--muted);}
     .board-cols-wrap{display:flex;gap:14px;overflow-x:auto;align-items:flex-start;padding-bottom:8px;}
     .board-col{background:var(--surface2);border:1px solid var(--border);border-radius:12px;min-width:240px;max-width:280px;flex:1;display:flex;flex-direction:column;transition:border-color .2s;height:580px;}
     .board-col.drag-over{border-color:var(--accent);background:rgba(108,99,255,.07);}
@@ -268,20 +265,38 @@
     .kanban-module{display:inline-block;font-size:10px;background:var(--surface2);color:var(--muted);padding:2px 7px;border-radius:4px;margin-bottom:4px;font-weight:500;}
 
     /* ── BOARD FILTER STRIP ── */
-    .board-filter-strip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:16px;}
-    .board-filter-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);white-space:nowrap;margin-right:2px;}
+    .board-filter-strip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 14px;margin-bottom:8px;position:relative;}
+    .board-filter-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);white-space:nowrap;margin-right:2px;flex-shrink:0;}
     .board-filter-sep{width:1px;height:18px;background:var(--border);margin:0 4px;flex-shrink:0;}
-    .board-filter-select{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;outline:none;transition:all .15s;appearance:none;-webkit-appearance:none;padding-right:22px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237c82a0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
-    .board-filter-select:hover{border-color:var(--accent);color:var(--accent2);}
-    .board-filter-select.active{border-color:var(--accent);color:var(--accent2);background-color:rgba(108,99,255,.1);}
-    .board-filter-chips{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:4px;}
-    .board-filter-chips:empty{display:none;}
-    .bf-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(108,99,255,.15);border:1px solid rgba(108,99,255,.35);color:var(--accent2);padding:3px 8px 3px 10px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;}
-    .bf-chip button{background:none;border:none;color:var(--accent2);cursor:pointer;font-size:13px;line-height:1;padding:0;opacity:.7;}
+    .board-filter-strip-right{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0;}
+    .bf-result-count{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);white-space:nowrap;}
+    /* custom multi-select dropdown */
+    .bfd-wrap{position:relative;flex-shrink:0;}
+    .bfd-btn{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 10px 5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .15s;user-select:none;}
+    .bfd-btn:hover{border-color:var(--accent);color:var(--accent2);}
+    .bfd-btn.active{border-color:var(--accent);color:var(--accent2);background:rgba(108,99,255,.12);}
+    .bfd-btn svg{flex-shrink:0;transition:transform .15s;}
+    .bfd-btn.open svg{transform:rotate(180deg);}
+    .bfd-count{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;border-radius:10px;font-size:9px;font-weight:700;padding:1px 5px;min-width:16px;line-height:1.4;}
+    .bfd-panel{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:300;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);min-width:190px;padding:6px 0;max-height:260px;overflow-y:auto;}
+    .bfd-panel.open{display:block;}
+    .bfd-panel::-webkit-scrollbar{width:4px;}
+    .bfd-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+    .bfd-option{display:flex;align-items:center;gap:9px;padding:7px 14px;font-size:12px;font-weight:500;color:var(--text);cursor:pointer;transition:background .1s;white-space:nowrap;}
+    .bfd-option:hover{background:var(--surface2);}
+    .bfd-option.selected{color:var(--accent2);}
+    .bfd-checkbox{width:14px;height:14px;border-radius:4px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s;}
+    .bfd-option.selected .bfd-checkbox{background:var(--accent);border-color:var(--accent);}
+    .bfd-checkbox svg{display:none;}
+    .bfd-option.selected .bfd-checkbox svg{display:block;}
+    /* chip row */
+    .bf-chip-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+    .bf-chip-row.hidden{display:none;}
+    .bf-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(108,99,255,.13);border:1px solid rgba(108,99,255,.3);color:var(--accent2);padding:3px 8px 3px 11px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;}
+    .bf-chip button{background:none;border:none;color:var(--accent2);cursor:pointer;font-size:13px;line-height:1;padding:0;opacity:.65;margin-left:1px;}
     .bf-chip button:hover{opacity:1;}
-    .bf-clear-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;}
+    .bf-clear-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;flex-shrink:0;}
     .bf-clear-btn:hover{border-color:var(--accent);color:var(--accent2);}
-    .bf-result-count{margin-left:auto;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);white-space:nowrap;}
 
     /* ── MULTI-SELECT ── */
     .ms-toggle-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
@@ -561,56 +576,84 @@
 
     <!-- BOARD TAB -->
     <div class="tab-panel" id="panel-board">
-      <div class="board-topbar">
-        <div id="boardWhoLabel" class="board-user-badge guest">👁 Viewing as Guest</div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="ms-counter" id="msCounter">✓ <span id="msCountNum">0</span> selected</span>
-          <button class="ms-toggle-btn" id="msToggleBtn" onclick="toggleMultiSelect()">☐ Multi-select</button>
-          <button class="filter-btn" onclick="switchUser()">🔄 Switch User</button>
-        </div>
-      </div>
-      <!-- BOARD FILTER STRIP -->
+      <!-- FILTER STRIP: single fixed-height row -->
       <div class="board-filter-strip" id="boardFilterStrip">
         <span class="board-filter-label">🔍 Filter</span>
         <div class="board-filter-sep"></div>
-        <select class="board-filter-select" id="bfStatus" onchange="applyBoardFilters()">
-          <option value="">Request Status</option>
-          <option>Open</option>
-          <option>Closed</option>
-          <option>Cancelled</option>
-        </select>
-        <select class="board-filter-select" id="bfPriority" onchange="applyBoardFilters()">
-          <option value="">Priority</option>
-          <option>Low</option>
-          <option>Medium</option>
-          <option>High</option>
-          <option>Critical</option>
-        </select>
-        <select class="board-filter-select" id="bfDevStage" onchange="applyBoardFilters()">
-          <option value="">Dev Stage</option>
-          <option>Development</option>
-          <option>Testing</option>
-          <option>Ready to deploy</option>
-          <option>Deployed (Staging)</option>
-          <option>On Hold</option>
-          <option>Deployed (Prod)</option>
-        </select>
-        <select class="board-filter-select" id="bfDevStatus" onchange="applyBoardFilters()">
-          <option value="">Developer Status</option>
-          <option>Not Started</option>
-          <option>In Progress</option>
-          <option>Incomplete</option>
-          <option>Completed</option>
-          <option>Deferred</option>
-        </select>
-        <select class="board-filter-select" id="bfModule" onchange="applyBoardFilters()">
-          <option value="">Module</option>
-        </select>
-        <div class="board-filter-sep" id="bfChipSep" style="display:none"></div>
-        <div class="board-filter-chips" id="bfChips"></div>
-        <button class="bf-clear-btn" id="bfClearBtn" style="display:none" onclick="clearBoardFilters()">✕ Clear all</button>
-        <span class="bf-result-count" id="bfResultCount"></span>
+        <!-- Request Status -->
+        <div class="bfd-wrap" id="bfdWrap-status">
+          <div class="bfd-btn" id="bfdBtn-status" onclick="toggleBfdPanel('status')">
+            <span id="bfdLabel-status">Request Status</span>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="bfd-panel" id="bfdPanel-status">
+            <div class="bfd-option" onclick="toggleBfdValue('status','Open')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Open</div>
+            <div class="bfd-option" onclick="toggleBfdValue('status','Closed')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Closed</div>
+            <div class="bfd-option" onclick="toggleBfdValue('status','Cancelled')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Cancelled</div>
+          </div>
+        </div>
+        <!-- Priority -->
+        <div class="bfd-wrap" id="bfdWrap-priority">
+          <div class="bfd-btn" id="bfdBtn-priority" onclick="toggleBfdPanel('priority')">
+            <span id="bfdLabel-priority">Priority</span>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="bfd-panel" id="bfdPanel-priority">
+            <div class="bfd-option" onclick="toggleBfdValue('priority','Low')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Low</div>
+            <div class="bfd-option" onclick="toggleBfdValue('priority','Medium')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Medium</div>
+            <div class="bfd-option" onclick="toggleBfdValue('priority','High')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>High</div>
+            <div class="bfd-option" onclick="toggleBfdValue('priority','Critical')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Critical</div>
+          </div>
+        </div>
+        <!-- Dev Stage -->
+        <div class="bfd-wrap" id="bfdWrap-devStage">
+          <div class="bfd-btn" id="bfdBtn-devStage" onclick="toggleBfdPanel('devStage')">
+            <span id="bfdLabel-devStage">Dev Stage</span>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="bfd-panel" id="bfdPanel-devStage">
+            <div class="bfd-option" onclick="toggleBfdValue('devStage','Development')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Development</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStage','Testing')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Testing</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStage','Ready to deploy')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Ready to deploy</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStage','Deployed (Staging)')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Deployed (Staging)</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStage','On Hold')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>On Hold</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStage','Deployed (Prod)')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Deployed (Prod)</div>
+          </div>
+        </div>
+        <!-- Developer Status -->
+        <div class="bfd-wrap" id="bfdWrap-devStatus">
+          <div class="bfd-btn" id="bfdBtn-devStatus" onclick="toggleBfdPanel('devStatus')">
+            <span id="bfdLabel-devStatus">Dev Status</span>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="bfd-panel" id="bfdPanel-devStatus">
+            <div class="bfd-option" onclick="toggleBfdValue('devStatus','Not Started')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Not Started</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStatus','In Progress')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>In Progress</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStatus','Incomplete')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Incomplete</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStatus','Completed')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Completed</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStatus','Deferred')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Deferred</div>
+          </div>
+        </div>
+        <!-- Module (dynamic) -->
+        <div class="bfd-wrap" id="bfdWrap-module">
+          <div class="bfd-btn" id="bfdBtn-module" onclick="toggleBfdPanel('module')">
+            <span id="bfdLabel-module">Module</span>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="bfd-panel" id="bfdPanel-module">
+            <!-- options injected by buildBoardModuleOptions() -->
+          </div>
+        </div>
+        <!-- right side: multi-select + result count -->
+        <div class="board-filter-sep"></div>
+        <div class="board-filter-strip-right">
+          <span class="ms-counter" id="msCounter">✓ <span id="msCountNum">0</span> selected</span>
+          <button class="ms-toggle-btn" id="msToggleBtn" onclick="toggleMultiSelect()">☐ Multi-select</button>
+          <span class="bf-result-count" id="bfResultCount"></span>
+        </div>
       </div>
+      <!-- CHIP ROW: separate slim row below strip -->
+      <div class="bf-chip-row hidden" id="bfChipRow"></div>
 
       <div class="board-cols-wrap" id="boardCols"></div>
     </div>
@@ -887,12 +930,10 @@ function enterAsGuest(){boardUser='Guest';boardIsGuest=true;setBoardSession('Gue
 function switchUser(){clearBoardSession();boardUser=null;boardIsGuest=false;openGate();}
 
 function applyBoardUser(){
-  const lbl=document.getElementById('boardWhoLabel');
   const hdr=document.getElementById('boardUserHeader');
   const nm=document.getElementById('boardUserName');
-  if(boardIsGuest){lbl.textContent='👁 Viewing as Guest';lbl.className='board-user-badge guest';nm.textContent='👁 Guest';}
-  else{lbl.textContent='✅ '+boardUser;lbl.className='board-user-badge';nm.textContent='✅ '+boardUser;}
-  hdr.style.display='flex';
+  if(nm){nm.textContent=boardIsGuest?'👁 Guest':'✅ '+boardUser;}
+  if(hdr)hdr.style.display='flex';
 }
 
 // STATUS CIRCLE click - cycles Open→Closed→Cancelled→Open
@@ -986,92 +1027,146 @@ function onDrop(e,newDevStatus){
 }
 
 // ════════════════════════════════════════════════════════════
-// BOARD FILTERS
+// BOARD FILTERS — multi-select custom dropdowns
 // ════════════════════════════════════════════════════════════
-const boardFilters={status:'',priority:'',devStage:'',devStatus:'',module:''};
 
-function buildBoardModuleSelect(){
-  const seen=new Set();
-  RAW_DATA.forEach(r=>{if(r.module&&r.module.trim())seen.add(r.module.trim());});
-  const sel=document.getElementById('bfModule');
-  const cur=sel.value;
-  sel.innerHTML='<option value="">Module</option>'+
-    [...seen].sort().map(m=>'<option value="'+m.replace(/"/g,'&quot;')+'"'+(cur===m?' selected':'')+'>'+m+'</option>').join('');
+// State: each key holds a Set of selected values
+const boardFilters={
+  status:   new Set(),
+  priority: new Set(),
+  devStage: new Set(),
+  devStatus:new Set(),
+  module:   new Set(),
+};
+
+// Filter key → data field mapping
+const BF_FIELD={status:'status',priority:'priority',devStage:'devStage',devStatus:'developerStatus',module:'module'};
+// Filter key → display label
+const BF_LABEL={status:'Request Status',priority:'Priority',devStage:'Dev Stage',devStatus:'Dev Status',module:'Module'};
+
+// ── Panel open/close ─────────────────────────────────────
+function toggleBfdPanel(key){
+  const panel=document.getElementById('bfdPanel-'+key);
+  const btn=document.getElementById('bfdBtn-'+key);
+  const isOpen=panel.classList.contains('open');
+  // close all panels first
+  document.querySelectorAll('.bfd-panel').forEach(p=>p.classList.remove('open'));
+  document.querySelectorAll('.bfd-btn').forEach(b=>b.classList.remove('open'));
+  if(!isOpen){panel.classList.add('open');btn.classList.add('open');}
 }
 
-function getBoardFiltered(){
-  const base=getMonthFiltered();
-  return base.filter(r=>{
-    if(boardFilters.status   && r.status          !==boardFilters.status)   return false;
-    if(boardFilters.priority && r.priority         !==boardFilters.priority) return false;
-    if(boardFilters.devStage && r.devStage         !==boardFilters.devStage) return false;
-    if(boardFilters.devStatus&& r.developerStatus  !==boardFilters.devStatus)return false;
-    if(boardFilters.module   && r.module           !==boardFilters.module)   return false;
-    return true;
+// Close panels when clicking outside
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.bfd-wrap')){
+    document.querySelectorAll('.bfd-panel').forEach(p=>p.classList.remove('open'));
+    document.querySelectorAll('.bfd-btn').forEach(b=>b.classList.remove('open'));
+  }
+});
+
+// ── Toggle a value in a filter ───────────────────────────
+function toggleBfdValue(key,value){
+  const set=boardFilters[key];
+  if(set.has(value))set.delete(value);else set.add(value);
+  // sync option UI
+  const panel=document.getElementById('bfdPanel-'+key);
+  panel.querySelectorAll('.bfd-option').forEach(opt=>{
+    const v=opt.textContent.trim();
+    opt.classList.toggle('selected',set.has(v));
   });
-}
-
-function applyBoardFilters(){
-  boardFilters.status   =document.getElementById('bfStatus').value;
-  boardFilters.priority =document.getElementById('bfPriority').value;
-  boardFilters.devStage =document.getElementById('bfDevStage').value;
-  boardFilters.devStatus=document.getElementById('bfDevStatus').value;
-  boardFilters.module   =document.getElementById('bfModule').value;
-
-  // Highlight active selects
-  ['bfStatus','bfPriority','bfDevStage','bfDevStatus','bfModule'].forEach(id=>{
-    const el=document.getElementById(id);
-    el.classList.toggle('active',!!el.value);
-  });
-
+  _updateBfdBtn(key);
   _renderBoardFilterChips();
   buildBoard();
 }
 
+// ── Update button label + active state ──────────────────
+function _updateBfdBtn(key){
+  const set=boardFilters[key];
+  const btn=document.getElementById('bfdBtn-'+key);
+  const label=document.getElementById('bfdLabel-'+key);
+  const n=set.size;
+  btn.classList.toggle('active',n>0);
+  if(n===0){
+    label.innerHTML=BF_LABEL[key];
+  } else if(n===1){
+    label.innerHTML=BF_LABEL[key]+' <span class="bfd-count">'+n+'</span>';
+  } else {
+    label.innerHTML=BF_LABEL[key]+' <span class="bfd-count">'+n+'</span>';
+  }
+}
+
+// ── Build module dropdown options dynamically ────────────
+function buildBoardModuleOptions(){
+  const seen=new Set();
+  RAW_DATA.forEach(r=>{if(r.module&&r.module.trim())seen.add(r.module.trim());});
+  const panel=document.getElementById('bfdPanel-module');
+  const SVG='<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  panel.innerHTML=[...seen].sort().map(m=>{
+    const safe=m.replace(/'/g,"\'").replace(/"/g,'&quot;');
+    const sel=boardFilters.module.has(m)?'selected':'';
+    return'<div class="bfd-option '+sel+'" onclick="toggleBfdValue('module',''+safe+'')"><span class="bfd-checkbox">'+SVG+'</span>'+m+'</div>';
+  }).join('');
+}
+
+// Alias kept for compatibility with handleBoardTabClick
+function buildBoardModuleSelect(){buildBoardModuleOptions();}
+
+// ── Filter data ──────────────────────────────────────────
+function getBoardFiltered(){
+  return getMonthFiltered().filter(r=>{
+    for(const [key,set] of Object.entries(boardFilters)){
+      if(set.size===0)continue;
+      const field=BF_FIELD[key];
+      if(!set.has(r[field]))return false;
+    }
+    return true;
+  });
+}
+
+// ── Chip row rendering ───────────────────────────────────
 function _renderBoardFilterChips(){
-  const labels={
-    status:   boardFilters.status   ?'Status: '+boardFilters.status   :'',
-    priority: boardFilters.priority ?'Priority: '+boardFilters.priority:'',
-    devStage: boardFilters.devStage ?'Stage: '+boardFilters.devStage  :'',
-    devStatus:boardFilters.devStatus?'Dev Status: '+boardFilters.devStatus:'',
-    module:   boardFilters.module   ?'Module: '+boardFilters.module   :'',
-  };
-  const active=Object.entries(labels).filter(([,v])=>v);
-  const chips=document.getElementById('bfChips');
-  const clearBtn=document.getElementById('bfClearBtn');
-  const sep=document.getElementById('bfChipSep');
-
-  chips.innerHTML=active.map(([key,label])=>
-    '<span class="bf-chip">'+label+
-    '<button onclick="clearOneBoardFilter(\''+key+'\')" title="Remove">×</button></span>'
-  ).join('');
-
-  const hasActive=active.length>0;
-  clearBtn.style.display=hasActive?'':'none';
-  sep.style.display=hasActive?'':'none';
-
-  // Update result count
+  const row=document.getElementById('bfChipRow');
+  const chips=[];
+  for(const [key,set] of Object.entries(boardFilters)){
+    set.forEach(val=>{
+      const safe=val.replace(/'/g,"\'");
+      chips.push('<span class="bf-chip">'+BF_LABEL[key]+': '+val+
+        '<button onclick="removeBfChip(''+key+'',''+safe+'')" title="Remove">×</button></span>');
+    });
+  }
+  const hasActive=chips.length>0;
+  if(hasActive){
+    row.innerHTML=chips.join('')+
+      '<button class="bf-clear-btn" onclick="clearBoardFilters()">✕ Clear all</button>';
+    row.classList.remove('hidden');
+  } else {
+    row.innerHTML='';
+    row.classList.add('hidden');
+  }
+  // result count
   const filtered=getBoardFiltered();
   const total=getMonthFiltered().length;
   const countEl=document.getElementById('bfResultCount');
-  countEl.textContent=hasActive?(filtered.length+' of '+total+' requests'):'';
+  countEl.textContent=hasActive?(filtered.length+' of '+total+' shown'):'';
 }
 
-function clearOneBoardFilter(key){
-  boardFilters[key]='';
-  const idMap={status:'bfStatus',priority:'bfPriority',devStage:'bfDevStage',devStatus:'bfDevStatus',module:'bfModule'};
-  const el=document.getElementById(idMap[key]);
-  if(el){el.value='';el.classList.remove('active');}
+function removeBfChip(key,value){
+  boardFilters[key].delete(value);
+  // sync option selected state
+  const panel=document.getElementById('bfdPanel-'+key);
+  if(panel){
+    panel.querySelectorAll('.bfd-option').forEach(opt=>{
+      if(opt.textContent.trim()===value)opt.classList.remove('selected');
+    });
+  }
+  _updateBfdBtn(key);
   _renderBoardFilterChips();
   buildBoard();
 }
 
 function clearBoardFilters(){
-  Object.keys(boardFilters).forEach(k=>boardFilters[k]='');
-  ['bfStatus','bfPriority','bfDevStage','bfDevStatus','bfModule'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){el.value='';el.classList.remove('active');}
-  });
+  Object.values(boardFilters).forEach(s=>s.clear());
+  document.querySelectorAll('.bfd-option').forEach(o=>o.classList.remove('selected'));
+  Object.keys(boardFilters).forEach(k=>_updateBfdBtn(k));
   _renderBoardFilterChips();
   buildBoard();
 }
