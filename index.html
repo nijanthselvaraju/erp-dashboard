@@ -1519,46 +1519,66 @@ async function applyBulkUpdate(){
   const refs=[...msSelected];
   const errors=[];
 
-  // Build all fetch calls upfront and fire them ALL in parallel
-  const tasks=refs.flatMap(refNo=>{
-    const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return[];
-    const calls=[];
-    if(devStatus&&r.developerStatus!==devStatus)
-      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateDevStatus',reqNo:refNo,newDevStatus:devStatus,author:boardUser,title:r.title,app:r.app})})
-        .then(()=>{r.developerStatus=devStatus;}).catch(()=>errors.push(refNo+' devStatus')));
-    if(status&&r.status!==status)
-      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateStatus',reqNo:refNo,newStatus:status,author:boardUser,title:r.title,app:r.app})})
-        .then(()=>{r.status=status;}).catch(()=>errors.push(refNo+' status')));
-    if(priority&&r.priority!==priority)
-      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:priority,author:boardUser,title:r.title,app:r.app})})
-        .then(()=>{r.priority=priority;}).catch(()=>errors.push(refNo+' priority')));
-    if(devStage&&r.devStage!==devStage)
-      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:devStage,author:boardUser,title:r.title,app:r.app})})
-        .then(()=>{r.devStage=devStage;}).catch(()=>errors.push(refNo+' devStage')));
-    if(developedBy&&r.developedBy!==developedBy)
-      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Developed By',newValue:developedBy,author:boardUser,title:r.title,app:r.app})})
-        .then(()=>{r.developedBy=developedBy;}).catch(()=>errors.push(refNo+' developedBy')));
-    return calls;
+  // ── Step 1: Mutate RAW_DATA optimistically FIRST ──────────
+  // This must happen before any UI rebuild so buildBoard reads correct values
+  const snapshots={}; // store old values for rollback
+  refs.forEach(refNo=>{
+    const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
+    snapshots[refNo]={developerStatus:r.developerStatus,status:r.status,priority:r.priority,devStage:r.devStage,developedBy:r.developedBy};
+    if(devStatus)  r.developerStatus=devStatus;
+    if(status)     r.status=status;
+    if(priority)   r.priority=priority;
+    if(devStage)   r.devStage=devStage;
+    if(developedBy)r.developedBy=developedBy;
   });
 
-  // Update UI optimistically right away — don't wait for server
+  // ── Step 2: Update UI immediately ────────────────────────
   if(devStatus){
+    // Dev status moves cards between columns — full rebuild needed
     const _sx=window.scrollX,_sy=window.scrollY;
     buildBoard();
-    if(msActive)_applyMsMode();
     requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(_sx,_sy)));
   } else {
     refs.forEach(refNo=>_patchCard(refNo));
   }
 
-  // Wait for all parallel fetches to finish
+  // ── Step 3: Clear selection immediately after UI updates ─
+  msSelected.clear();
+  _updateMsUI();
+  // Reset all dropdowns
+  ['bsDeveloperStatus','bsPriority','bsDevStage','bsStatus','bsDevelopedBy'].forEach(id=>{document.getElementById(id).value='';});
+
+  // ── Step 4: Fire all server calls in parallel ─────────────
+  const tasks=refs.flatMap(refNo=>{
+    const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return[];
+    const snap=snapshots[refNo];const calls=[];
+    if(devStatus&&snap.developerStatus!==devStatus)
+      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateDevStatus',reqNo:refNo,newDevStatus:devStatus,author:boardUser,title:r.title,app:r.app})})
+        .catch(()=>{errors.push(refNo);r.developerStatus=snap.developerStatus;}));
+    if(status&&snap.status!==status)
+      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateStatus',reqNo:refNo,newStatus:status,author:boardUser,title:r.title,app:r.app})})
+        .catch(()=>{errors.push(refNo);r.status=snap.status;}));
+    if(priority&&snap.priority!==priority)
+      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:priority,author:boardUser,title:r.title,app:r.app})})
+        .catch(()=>{errors.push(refNo);r.priority=snap.priority;}));
+    if(devStage&&snap.devStage!==devStage)
+      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:devStage,author:boardUser,title:r.title,app:r.app})})
+        .catch(()=>{errors.push(refNo);r.devStage=snap.devStage;}));
+    if(developedBy&&snap.developedBy!==developedBy)
+      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Developed By',newValue:developedBy,author:boardUser,title:r.title,app:r.app})})
+        .catch(()=>{errors.push(refNo);r.developedBy=snap.developedBy;}));
+    return calls;
+  });
+
   await Promise.all(tasks);
 
   btn.disabled=false;btn.textContent='Apply →';
   const msg=document.getElementById('bulkMsg');
   if(errors.length){
+    // Rollback failed cards in UI
+    if(devStatus)buildBoard(); else errors.forEach(refNo=>_patchCard(refNo));
     msg.className='bulk-msg err';
-    msg.textContent=errors.length+' failed: '+errors.join(', ');
+    msg.textContent=errors.length+' failed to save. Rolled back.';
   } else {
     msg.className='bulk-msg ok';
     msg.textContent='✓ '+refs.length+' updated!';
