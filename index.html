@@ -851,7 +851,7 @@ async function updateStatusOnBoard(refNo,newStatus){
   _patchCard(refNo);
   _syncModalBadges(refNo);
   try{
-    await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateStatus',reqNo:refNo,newStatus,author:boardUser,title:r.title,app:r.app})});
+    await fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify({action:'updateStatus',reqNo:refNo,newStatus,author:boardUser,title:r.title,app:r.app})});
   }catch(e){r.status=oldStatus;_patchCard(refNo);_syncModalBadges(refNo);alert('Failed to update status.');}
 }
 
@@ -913,7 +913,7 @@ function onDrop(e,newDevStatus){
   }
 
   // Persist to server; rollback DOM on failure
-  fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateDevStatus',reqNo:dragSrcRefNo,newDevStatus,author:boardUser,title:r.title,app:r.app})})
+  fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify({action:'updateDevStatus',reqNo:dragSrcRefNo,newDevStatus,author:boardUser,title:r.title,app:r.app})})
     .catch(()=>{
       r.developerStatus=oldDevStatus;
       const _sx=window.scrollX,_sy=window.scrollY;
@@ -1186,7 +1186,7 @@ async function submitComment(refNo,title){
   if(list)_renderComments(_commentsCache[refNo],list,cnt);
 
   try{
-    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'postComment',reqNo:refNo,title,author:boardUser,comment:text,attachmentUrl:'',imageData})});
+    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify({action:'postComment',reqNo:refNo,title,author:boardUser,comment:text,attachmentUrl:'',imageData})});
     const data=await res.json();
     if(data.success){
       msg.className='post-msg ok';msg.textContent='✓ Comment posted!';
@@ -1213,7 +1213,7 @@ async function submitStatusUpdate(refNo){
   btn.disabled=true;btn.textContent='Saving…';msg.textContent='';
   try{
     const r=RAW_DATA.find(x=>x.refNo===refNo);
-    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateStatus',reqNo:refNo,newStatus,author:boardUser,title:r?r.title:'',app:r?r.app:''})});
+    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify({action:'updateStatus',reqNo:refNo,newStatus,author:boardUser,title:r?r.title:'',app:r?r.app:''})});
     const data=await res.json();
     if(data.success){msg.className='update-msg ok';msg.textContent='✓ Updated!';if(r)r.status=newStatus;buildStatBar();buildAllMatrices();if(activeTab==='board')buildBoard();setTimeout(()=>{msg.textContent='';},3000);loadComments(refNo);}
     else{msg.className='update-msg err';msg.textContent='Error: '+(data.error||'Unknown');}
@@ -1338,7 +1338,7 @@ function cyclePriority(event, refNo){
   const old=r.priority;r.priority=next;
   _patchCard(refNo);
   _syncModalBadges(refNo);
-  fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:next,author:boardUser,title:r.title,app:r.app})})
+  fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:next,author:boardUser,title:r.title,app:r.app})})
     .catch(()=>{r.priority=old;_patchCard(refNo);alert('Failed to update priority.');});
 }
 
@@ -1353,7 +1353,7 @@ function cycleStage(event, refNo){
   const old=r.devStage;r.devStage=next;
   _patchCard(refNo);
   _syncModalBadges(refNo);
-  fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:next,author:boardUser,title:r.title,app:r.app})})
+  fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:next,author:boardUser,title:r.title,app:r.app})})
     .catch(()=>{r.devStage=old;_patchCard(refNo);alert('Failed to update stage.');});
 }
 
@@ -1387,7 +1387,7 @@ function cycleDeveloper(event, refNo){
   const idx=DEV_CYCLE.indexOf(r.developedBy);
   const next=DEV_CYCLE[(idx===-1?0:idx+1)%DEV_CYCLE.length];
   const old=r.developedBy;r.developedBy=next;_patchCard(refNo);
-  fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Developed By',newValue:next,author:boardUser,title:r.title,app:r.app})})
+  fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Developed By',newValue:next,author:boardUser,title:r.title,app:r.app})})
     .catch(()=>{r.developedBy=old;_patchCard(refNo);alert('Failed to update developer.');});
 }
 
@@ -1413,7 +1413,7 @@ async function quickSaveField(refNo, field, newValue, title, dataKey){
   else if(field==='Developer Status') body={action:'updateDevStatus',reqNo:refNo,newDevStatus:newValue,author:boardUser,title,app:r?r.app:''};
   else                          body={action:'updateField',reqNo:refNo,field,newValue,author:boardUser,title,app:r?r.app:''};
   try{
-    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify(body)});
+    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify(body)});
     const data=await res.json();
     if(data.success||data.ok!==false){
       if(msg){msg.className='qe-save-msg ok';msg.textContent='✓ Saved';}
@@ -1451,6 +1451,8 @@ function enterMultiSelect(){
   document.getElementById('msToggleBtn').classList.add('active');
   document.getElementById('msToggleBtn').textContent='☑ Multi-select';
   _applyMsMode();_updateMsUI();
+  // Warm up Apps Script so it's not cold when Apply is clicked
+  fetch(APPS_SCRIPT_URL+'?action=ping',{method:'GET',keepalive:true}).catch(()=>{});
 }
 
 function exitMultiSelect(){
@@ -1545,29 +1547,36 @@ async function applyBulkUpdate(){
   // ── Step 3: Reset dropdowns only — keep selection & bar visible ─
   ['bsDeveloperStatus','bsPriority','bsDevStage','bsStatus','bsDevelopedBy'].forEach(id=>{document.getElementById(id).value='';});
 
-  // ── Step 4: Fire all server calls in parallel ─────────────
-  const tasks=refs.flatMap(refNo=>{
+  // ── Step 4: Single batched POST — Apps Script opens sheet once ──
+  const updates=refs.flatMap(refNo=>{
     const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return[];
-    const snap=snapshots[refNo];const calls=[];
-    if(devStatus&&snap.developerStatus!==devStatus)
-      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateDevStatus',reqNo:refNo,newDevStatus:devStatus,author:boardUser,title:r.title,app:r.app})})
-        .catch(()=>{errors.push(refNo);r.developerStatus=snap.developerStatus;}));
-    if(status&&snap.status!==status)
-      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateStatus',reqNo:refNo,newStatus:status,author:boardUser,title:r.title,app:r.app})})
-        .catch(()=>{errors.push(refNo);r.status=snap.status;}));
-    if(priority&&snap.priority!==priority)
-      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:priority,author:boardUser,title:r.title,app:r.app})})
-        .catch(()=>{errors.push(refNo);r.priority=snap.priority;}));
-    if(devStage&&snap.devStage!==devStage)
-      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:devStage,author:boardUser,title:r.title,app:r.app})})
-        .catch(()=>{errors.push(refNo);r.devStage=snap.devStage;}));
-    if(developedBy&&snap.developedBy!==developedBy)
-      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Developed By',newValue:developedBy,author:boardUser,title:r.title,app:r.app})})
-        .catch(()=>{errors.push(refNo);r.developedBy=snap.developedBy;}));
-    return calls;
+    const snap=snapshots[refNo];const items=[];
+    if(devStatus  &&snap.developerStatus!==devStatus)  items.push({action:'updateDevStatus',  reqNo:refNo,newDevStatus:devStatus,  author:boardUser,title:r.title,app:r.app});
+    if(status     &&snap.status!==status)              items.push({action:'updateStatus',      reqNo:refNo,newStatus:status,        author:boardUser,title:r.title,app:r.app});
+    if(priority   &&snap.priority!==priority)          items.push({action:'updateField',reqNo:refNo,field:'Priority',        newValue:priority,   author:boardUser,title:r.title,app:r.app});
+    if(devStage   &&snap.devStage!==devStage)          items.push({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:devStage,   author:boardUser,title:r.title,app:r.app});
+    if(developedBy&&snap.developedBy!==developedBy)   items.push({action:'updateField',reqNo:refNo,field:'Developed By',    newValue:developedBy,author:boardUser,title:r.title,app:r.app});
+    return items;
   });
 
-  await Promise.all(tasks);
+  if(updates.length){
+    try{
+      const res=await fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify({action:'batchUpdate',updates})});
+      const data=await res.json();
+      if(data.errors&&data.errors.length){
+        data.errors.forEach(refNo=>{
+          const r=RAW_DATA.find(x=>x.refNo===refNo);const snap=snapshots[refNo];
+          if(r&&snap){Object.assign(r,snap);}
+          errors.push(refNo);
+        });
+      }
+    }catch(e){
+      // Fallback: parallel individual calls if batch endpoint unavailable
+      await Promise.all(updates.map(body=>
+        fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify(body)}).catch(()=>errors.push(body.reqNo))
+      ));
+    }
+  }
 
   btn.disabled=false;btn.textContent='Apply →';
   const msg=document.getElementById('bulkMsg');
