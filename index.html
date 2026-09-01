@@ -1559,24 +1559,16 @@ async function applyBulkUpdate(){
     return items;
   });
 
-  if(updates.length){
-    try{
-      const res=await fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify({action:'batchUpdate',updates})});
-      const data=await res.json();
-      if(data.errors&&data.errors.length){
-        data.errors.forEach(refNo=>{
-          const r=RAW_DATA.find(x=>x.refNo===refNo);const snap=snapshots[refNo];
-          if(r&&snap){Object.assign(r,snap);}
-          errors.push(refNo);
-        });
-      }
-    }catch(e){
-      // Fallback: parallel individual calls if batch endpoint unavailable
-      await Promise.all(updates.map(body=>
-        fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify(body)}).catch(()=>errors.push(body.reqNo))
-      ));
-    }
-  }
+  // ── Step 4: Fire all updates in parallel using proven individual endpoints ──
+  // Each action uses the same Apps Script function as single-card updates,
+  // guaranteeing sheet writes work for all rows including newly added ones.
+  const tasks=updates.map(u=>{
+    return fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify(u)})
+      .then(r=>r.json())
+      .then(d=>{ if(!d.success&&d.error){ errors.push(u.reqNo); } })
+      .catch(()=>errors.push(u.reqNo));
+  });
+  await Promise.all(tasks);
 
   btn.disabled=false;btn.textContent='Apply →';
   const msg=document.getElementById('bulkMsg');
