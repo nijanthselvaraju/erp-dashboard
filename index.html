@@ -1559,22 +1559,37 @@ async function applyBulkUpdate(){
     return items;
   });
 
-  // ── Step 4: Fire all updates in parallel using proven individual endpoints ──
-  // Each action uses the same Apps Script function as single-card updates,
-  // guaranteeing sheet writes work for all rows including newly added ones.
+  // ── Step 4: Fire all updates in parallel ─────────────────
   const tasks=updates.map(u=>{
     return fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify(u)})
       .then(r=>r.json())
-      .then(d=>{ if(!d.success&&d.error){ errors.push(u.reqNo); } })
-      .catch(()=>errors.push(u.reqNo));
+      .then(d=>{
+        // Apps Script may return error due to email sending failing AFTER
+        // the sheet write succeeds. Only rollback on explicit 'not found' errors.
+        if(d.success===false && d.error && d.error.toLowerCase().includes('not found')){
+          errors.push(u.reqNo);
+        }
+        // All other cases (including email errors) — sheet was written, treat as ok
+      })
+      .catch(e=>{
+        // True network failure — sheet write may not have happened
+        console.error('[Bulk] network error',u.reqNo,e);
+        errors.push(u.reqNo);
+      });
   });
   await Promise.all(tasks);
 
   btn.disabled=false;btn.textContent='Apply →';
   const msg=document.getElementById('bulkMsg');
   if(errors.length){
-    // Rollback failed cards in UI
-    if(devStatus)buildBoard(); else errors.forEach(refNo=>_patchCard(refNo));
+    // Restore RAW_DATA for failed cards before UI rebuild
+    errors.forEach(refNo=>{
+      const r=RAW_DATA.find(x=>x.refNo===refNo);
+      const snap=snapshots[refNo];
+      if(r&&snap)Object.assign(r,snap);
+    });
+    if(devStatus){const _sx=window.scrollX,_sy=window.scrollY;buildBoard();requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(_sx,_sy)));}
+    else errors.forEach(refNo=>_patchCard(refNo));
     msg.className='bulk-msg err';
     msg.textContent=errors.length+' failed to save. Rolled back.';
   } else {
