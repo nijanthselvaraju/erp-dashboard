@@ -267,6 +267,22 @@
     /* MODULE TAG on cards — no empty box */
     .kanban-module{display:inline-block;font-size:10px;background:var(--surface2);color:var(--muted);padding:2px 7px;border-radius:4px;margin-bottom:4px;font-weight:500;}
 
+    /* ── BOARD FILTER STRIP ── */
+    .board-filter-strip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:16px;}
+    .board-filter-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);white-space:nowrap;margin-right:2px;}
+    .board-filter-sep{width:1px;height:18px;background:var(--border);margin:0 4px;flex-shrink:0;}
+    .board-filter-select{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;outline:none;transition:all .15s;appearance:none;-webkit-appearance:none;padding-right:22px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237c82a0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+    .board-filter-select:hover{border-color:var(--accent);color:var(--accent2);}
+    .board-filter-select.active{border-color:var(--accent);color:var(--accent2);background-color:rgba(108,99,255,.1);}
+    .board-filter-chips{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:4px;}
+    .board-filter-chips:empty{display:none;}
+    .bf-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(108,99,255,.15);border:1px solid rgba(108,99,255,.35);color:var(--accent2);padding:3px 8px 3px 10px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;}
+    .bf-chip button{background:none;border:none;color:var(--accent2);cursor:pointer;font-size:13px;line-height:1;padding:0;opacity:.7;}
+    .bf-chip button:hover{opacity:1;}
+    .bf-clear-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;}
+    .bf-clear-btn:hover{border-color:var(--accent);color:var(--accent2);}
+    .bf-result-count{margin-left:auto;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);white-space:nowrap;}
+
     /* ── MULTI-SELECT ── */
     .ms-toggle-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
     .ms-toggle-btn:hover{border-color:var(--accent);color:var(--accent2);}
@@ -553,6 +569,49 @@
           <button class="filter-btn" onclick="switchUser()">🔄 Switch User</button>
         </div>
       </div>
+      <!-- BOARD FILTER STRIP -->
+      <div class="board-filter-strip" id="boardFilterStrip">
+        <span class="board-filter-label">🔍 Filter</span>
+        <div class="board-filter-sep"></div>
+        <select class="board-filter-select" id="bfStatus" onchange="applyBoardFilters()">
+          <option value="">Request Status</option>
+          <option>Open</option>
+          <option>Closed</option>
+          <option>Cancelled</option>
+        </select>
+        <select class="board-filter-select" id="bfPriority" onchange="applyBoardFilters()">
+          <option value="">Priority</option>
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+          <option>Critical</option>
+        </select>
+        <select class="board-filter-select" id="bfDevStage" onchange="applyBoardFilters()">
+          <option value="">Dev Stage</option>
+          <option>Development</option>
+          <option>Testing</option>
+          <option>Ready to deploy</option>
+          <option>Deployed (Staging)</option>
+          <option>On Hold</option>
+          <option>Deployed (Prod)</option>
+        </select>
+        <select class="board-filter-select" id="bfDevStatus" onchange="applyBoardFilters()">
+          <option value="">Developer Status</option>
+          <option>Not Started</option>
+          <option>In Progress</option>
+          <option>Incomplete</option>
+          <option>Completed</option>
+          <option>Deferred</option>
+        </select>
+        <select class="board-filter-select" id="bfModule" onchange="applyBoardFilters()">
+          <option value="">Module</option>
+        </select>
+        <div class="board-filter-sep" id="bfChipSep" style="display:none"></div>
+        <div class="board-filter-chips" id="bfChips"></div>
+        <button class="bf-clear-btn" id="bfClearBtn" style="display:none" onclick="clearBoardFilters()">✕ Clear all</button>
+        <span class="bf-result-count" id="bfResultCount"></span>
+      </div>
+
       <div class="board-cols-wrap" id="boardCols"></div>
     </div>
 
@@ -721,7 +780,7 @@ function buildMonthBar(){
   RAW_DATA.forEach(r=>{if(r._monthKey&&!seen.has(r._monthKey)){seen.add(r._monthKey);months.push(r._monthKey);}});
   document.getElementById('monthBtns').innerHTML=months.map(m=>'<button class="pill-btn '+(activeMonth===m?'active':'')+'" onclick="setMonth(\''+m+'\')">'+m+'</button>').join('');
 }
-function setMonth(m){activeMonth=m;activeCell=null;activePriority=null;buildMonthBar();buildStatBar();buildAllMatrices();buildPriorityFilters();renderActiveFilters();renderTable();if(activeTab==='charts')buildAllCharts();if(activeTab==='board')buildBoard();}
+function setMonth(m){activeMonth=m;activeCell=null;activePriority=null;buildMonthBar();buildStatBar();buildAllMatrices();buildPriorityFilters();renderActiveFilters();renderTable();if(activeTab==='charts')buildAllCharts();if(activeTab==='board'){clearBoardFilters();buildBoardModuleSelect();}}
 
 // ── MATRIX ────────────────────────────────────────────────
 function buildMatrix(cid,key){
@@ -791,6 +850,7 @@ function renderTable(){
 
 // ── BOARD ─────────────────────────────────────────────────
 function handleBoardTabClick(){
+  buildBoardModuleSelect();
   const s=getBoardSession();
   if(s){boardUser=s.name;boardIsGuest=s.isGuest;applyBoardUser();buildBoard();}
   else openGate();
@@ -925,8 +985,99 @@ function onDrop(e,newDevStatus){
   dragSrcRefNo=null;dragSrcStatus=null;
 }
 
+// ════════════════════════════════════════════════════════════
+// BOARD FILTERS
+// ════════════════════════════════════════════════════════════
+const boardFilters={status:'',priority:'',devStage:'',devStatus:'',module:''};
+
+function buildBoardModuleSelect(){
+  const seen=new Set();
+  RAW_DATA.forEach(r=>{if(r.module&&r.module.trim())seen.add(r.module.trim());});
+  const sel=document.getElementById('bfModule');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Module</option>'+
+    [...seen].sort().map(m=>'<option value="'+m.replace(/"/g,'&quot;')+'"'+(cur===m?' selected':'')+'>'+m+'</option>').join('');
+}
+
+function getBoardFiltered(){
+  const base=getMonthFiltered();
+  return base.filter(r=>{
+    if(boardFilters.status   && r.status          !==boardFilters.status)   return false;
+    if(boardFilters.priority && r.priority         !==boardFilters.priority) return false;
+    if(boardFilters.devStage && r.devStage         !==boardFilters.devStage) return false;
+    if(boardFilters.devStatus&& r.developerStatus  !==boardFilters.devStatus)return false;
+    if(boardFilters.module   && r.module           !==boardFilters.module)   return false;
+    return true;
+  });
+}
+
+function applyBoardFilters(){
+  boardFilters.status   =document.getElementById('bfStatus').value;
+  boardFilters.priority =document.getElementById('bfPriority').value;
+  boardFilters.devStage =document.getElementById('bfDevStage').value;
+  boardFilters.devStatus=document.getElementById('bfDevStatus').value;
+  boardFilters.module   =document.getElementById('bfModule').value;
+
+  // Highlight active selects
+  ['bfStatus','bfPriority','bfDevStage','bfDevStatus','bfModule'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.classList.toggle('active',!!el.value);
+  });
+
+  _renderBoardFilterChips();
+  buildBoard();
+}
+
+function _renderBoardFilterChips(){
+  const labels={
+    status:   boardFilters.status   ?'Status: '+boardFilters.status   :'',
+    priority: boardFilters.priority ?'Priority: '+boardFilters.priority:'',
+    devStage: boardFilters.devStage ?'Stage: '+boardFilters.devStage  :'',
+    devStatus:boardFilters.devStatus?'Dev Status: '+boardFilters.devStatus:'',
+    module:   boardFilters.module   ?'Module: '+boardFilters.module   :'',
+  };
+  const active=Object.entries(labels).filter(([,v])=>v);
+  const chips=document.getElementById('bfChips');
+  const clearBtn=document.getElementById('bfClearBtn');
+  const sep=document.getElementById('bfChipSep');
+
+  chips.innerHTML=active.map(([key,label])=>
+    '<span class="bf-chip">'+label+
+    '<button onclick="clearOneBoardFilter(\''+key+'\')" title="Remove">×</button></span>'
+  ).join('');
+
+  const hasActive=active.length>0;
+  clearBtn.style.display=hasActive?'':'none';
+  sep.style.display=hasActive?'':'none';
+
+  // Update result count
+  const filtered=getBoardFiltered();
+  const total=getMonthFiltered().length;
+  const countEl=document.getElementById('bfResultCount');
+  countEl.textContent=hasActive?(filtered.length+' of '+total+' requests'):'';
+}
+
+function clearOneBoardFilter(key){
+  boardFilters[key]='';
+  const idMap={status:'bfStatus',priority:'bfPriority',devStage:'bfDevStage',devStatus:'bfDevStatus',module:'bfModule'};
+  const el=document.getElementById(idMap[key]);
+  if(el){el.value='';el.classList.remove('active');}
+  _renderBoardFilterChips();
+  buildBoard();
+}
+
+function clearBoardFilters(){
+  Object.keys(boardFilters).forEach(k=>boardFilters[k]='');
+  ['bfStatus','bfPriority','bfDevStage','bfDevStatus','bfModule'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.value='';el.classList.remove('active');}
+  });
+  _renderBoardFilterChips();
+  buildBoard();
+}
+
 function buildBoard(){
-  const data=getMonthFiltered();
+  const data=getBoardFiltered();
   const cols={};
   DEV_STATUSES.forEach(s=>{cols[s]=[];});
   data.forEach(r=>{if(cols[r.developerStatus])cols[r.developerStatus].push(r);});
@@ -967,6 +1118,8 @@ function buildBoard(){
       '<div class="board-col-header"><span class="board-col-title">'+st+'</span><span class="board-col-count">'+cards.length+'</span></div>'+
       '<div class="board-cards">'+cardsHtml+'</div></div>';
   }).join('');
+  // Sync result count chip
+  _renderBoardFilterChips();
 }
 
 // ── TICKET MODAL ──────────────────────────────────────────
