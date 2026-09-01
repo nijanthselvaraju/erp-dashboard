@@ -1542,10 +1542,7 @@ async function applyBulkUpdate(){
     refs.forEach(refNo=>_patchCard(refNo));
   }
 
-  // ── Step 3: Clear selection immediately after UI updates ─
-  msSelected.clear();
-  _updateMsUI();
-  // Reset all dropdowns
+  // ── Step 3: Reset dropdowns only — keep selection & bar visible ─
   ['bsDeveloperStatus','bsPriority','bsDevStage','bsStatus','bsDevelopedBy'].forEach(id=>{document.getElementById(id).value='';});
 
   // ── Step 4: Fire all server calls in parallel ─────────────
