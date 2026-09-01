@@ -1551,11 +1551,11 @@ async function applyBulkUpdate(){
   const updates=refs.flatMap(refNo=>{
     const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return[];
     const snap=snapshots[refNo];const items=[];
-    if(devStatus  &&snap.developerStatus!==devStatus)  items.push({action:'updateDevStatus',  reqNo:refNo,newDevStatus:devStatus,  author:boardUser,title:r.title,app:r.app});
-    if(status     &&snap.status!==status)              items.push({action:'updateStatus',      reqNo:refNo,newStatus:status,        author:boardUser,title:r.title,app:r.app});
-    if(priority   &&snap.priority!==priority)          items.push({action:'updateField',reqNo:refNo,field:'Priority',        newValue:priority,   author:boardUser,title:r.title,app:r.app});
-    if(devStage   &&snap.devStage!==devStage)          items.push({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:devStage,   author:boardUser,title:r.title,app:r.app});
-    if(developedBy&&snap.developedBy!==developedBy)   items.push({action:'updateField',reqNo:refNo,field:'Developed By',    newValue:developedBy,author:boardUser,title:r.title,app:r.app});
+    if(devStatus)   items.push({action:'updateDevStatus',  reqNo:refNo,newDevStatus:devStatus,  author:boardUser,title:r.title,app:r.app});
+    if(status)      items.push({action:'updateStatus',      reqNo:refNo,newStatus:status,        author:boardUser,title:r.title,app:r.app});
+    if(priority)    items.push({action:'updateField',reqNo:refNo,field:'Priority',        newValue:priority,   author:boardUser,title:r.title,app:r.app});
+    if(devStage)    items.push({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:devStage,   author:boardUser,title:r.title,app:r.app});
+    if(developedBy) items.push({action:'updateField',reqNo:refNo,field:'Developed By',    newValue:developedBy,author:boardUser,title:r.title,app:r.app});
     return items;
   });
 
