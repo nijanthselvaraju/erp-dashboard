@@ -564,7 +564,7 @@
     <select class="bulk-select" id="bsPriority"><option value="">— Priority —</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select>
     <select class="bulk-select" id="bsDevStage"><option value="">— Dev Stage —</option><option>Development</option><option>Testing</option><option>Ready to deploy</option><option>Deployed (Staging)</option><option>On Hold</option><option>Deployed (Prod)</option></select>
     <select class="bulk-select" id="bsStatus"><option value="">— Request Status —</option><option>Open</option><option>Closed</option><option>Cancelled</option></select>
-    <select class="bulk-select" id="bsDevelopedBy"><option value="">— Developed By —</option><option>Devi Priya</option><option>Madhan</option><option>Anto</option><option>Craig</option><option>Nijanthan</option></select>
+    <select class="bulk-select" id="bsDevelopedBy"><option value="">— Developed By —</option><option>Devi Priya</option><option>Madhan</option></select>
     <button class="bulk-apply-btn" id="bulkApplyBtn" onclick="applyBulkUpdate()">Apply →</button>
     <button class="bulk-cancel-btn" onclick="exitMultiSelect()">✕ Cancel</button>
     <span class="bulk-msg" id="bulkMsg"></span>
@@ -1519,53 +1519,49 @@ async function applyBulkUpdate(){
   const refs=[...msSelected];
   const errors=[];
 
-  for(const refNo of refs){
-    const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)continue;
-    try{
-      // Apply each changed field
-      if(devStatus&&r.developerStatus!==devStatus){
-        await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateDevStatus',reqNo:refNo,newDevStatus:devStatus,author:boardUser,title:r.title,app:r.app})});
-        r.developerStatus=devStatus;
-      }
-      if(status&&r.status!==status){
-        await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateStatus',reqNo:refNo,newStatus:status,author:boardUser,title:r.title,app:r.app})});
-        r.status=status;
-      }
-      if(priority&&r.priority!==priority){
-        await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:priority,author:boardUser,title:r.title,app:r.app})});
-        r.priority=priority;
-      }
-      if(devStage&&r.devStage!==devStage){
-        await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:devStage,author:boardUser,title:r.title,app:r.app})});
-        r.devStage=devStage;
-      }
-      if(developedBy&&r.developedBy!==developedBy){
-        await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Developed By',newValue:developedBy,author:boardUser,title:r.title,app:r.app})});
-        r.developedBy=developedBy;
-      }
-    }catch(e){errors.push(refNo);}
-  }
+  // Build all fetch calls upfront and fire them ALL in parallel
+  const tasks=refs.flatMap(refNo=>{
+    const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return[];
+    const calls=[];
+    if(devStatus&&r.developerStatus!==devStatus)
+      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateDevStatus',reqNo:refNo,newDevStatus:devStatus,author:boardUser,title:r.title,app:r.app})})
+        .then(()=>{r.developerStatus=devStatus;}).catch(()=>errors.push(refNo+' devStatus')));
+    if(status&&r.status!==status)
+      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateStatus',reqNo:refNo,newStatus:status,author:boardUser,title:r.title,app:r.app})})
+        .then(()=>{r.status=status;}).catch(()=>errors.push(refNo+' status')));
+    if(priority&&r.priority!==priority)
+      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:priority,author:boardUser,title:r.title,app:r.app})})
+        .then(()=>{r.priority=priority;}).catch(()=>errors.push(refNo+' priority')));
+    if(devStage&&r.devStage!==devStage)
+      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Development Stage',newValue:devStage,author:boardUser,title:r.title,app:r.app})})
+        .then(()=>{r.devStage=devStage;}).catch(()=>errors.push(refNo+' devStage')));
+    if(developedBy&&r.developedBy!==developedBy)
+      calls.push(fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Developed By',newValue:developedBy,author:boardUser,title:r.title,app:r.app})})
+        .then(()=>{r.developedBy=developedBy;}).catch(()=>errors.push(refNo+' developedBy')));
+    return calls;
+  });
 
-  // Re-render only the affected cards in-place; cards that moved columns need a full rebuild
-  const needsRebuild=devStatus; // dev status moves cards between columns
-  if(needsRebuild){
+  // Update UI optimistically right away — don't wait for server
+  if(devStatus){
     const _sx=window.scrollX,_sy=window.scrollY;
     buildBoard();
-    // Restore ms-mode on new cards
     if(msActive)_applyMsMode();
     requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(_sx,_sy)));
   } else {
-    refs.forEach(refNo=>{_patchCard(refNo);});
+    refs.forEach(refNo=>_patchCard(refNo));
   }
+
+  // Wait for all parallel fetches to finish
+  await Promise.all(tasks);
 
   btn.disabled=false;btn.textContent='Apply →';
   const msg=document.getElementById('bulkMsg');
   if(errors.length){
     msg.className='bulk-msg err';
-    msg.textContent=errors.length+' request(s) failed: '+errors.join(', ');
+    msg.textContent=errors.length+' failed: '+errors.join(', ');
   } else {
     msg.className='bulk-msg ok';
-    msg.textContent='✓ '+refs.length+' request(s) updated!';
+    msg.textContent='✓ '+refs.length+' updated!';
     setTimeout(()=>{msg.textContent='';},3000);
   }
 }
