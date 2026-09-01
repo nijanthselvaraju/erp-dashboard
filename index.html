@@ -1101,9 +1101,9 @@ function buildBoardModuleOptions(){
   const panel=document.getElementById('bfdPanel-module');
   const SVG='<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   panel.innerHTML=[...seen].sort().map(m=>{
-    const safe=m.replace(/'/g,"\'").replace(/"/g,'&quot;');
+    const safe=m.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const sel=boardFilters.module.has(m)?'selected':'';
-    return'<div class="bfd-option '+sel+'" onclick="toggleBfdValue('module',''+safe+'')"><span class="bfd-checkbox">'+SVG+'</span>'+m+'</div>';
+    return'<div class="bfd-option '+sel+'" onclick="toggleBfdValue(\'module\',\''+safe+'\')"><span class="bfd-checkbox">'+SVG+'</span>'+m+'</div>';
   }).join('');
 }
 
@@ -1130,7 +1130,7 @@ function _renderBoardFilterChips(){
     set.forEach(val=>{
       const safe=val.replace(/'/g,"\'");
       chips.push('<span class="bf-chip">'+BF_LABEL[key]+': '+val+
-        '<button onclick="removeBfChip(''+key+'',''+safe+'')" title="Remove">×</button></span>');
+        '<button onclick="removeBfChip(\''+key+'\',\''+safe+'\')" title="Remove">×</button></span>');
     });
   }
   const hasActive=chips.length>0;
