@@ -822,6 +822,7 @@ function getFiltered(){
 // ── TAB ───────────────────────────────────────────────────
 function switchTab(tab){
   activeTab=tab;
+  try{localStorage.setItem('erp-active-tab',tab);}catch(e){}
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -2004,6 +2005,8 @@ async function loadData(){
     document.getElementById('loadingState').style.display='none';
     document.getElementById('dashboardContent').style.display='block';
     buildMonthBar();buildStatBar();buildAllMatrices();buildPriorityFilters();buildWeekBtns();renderActiveFilters();renderTable();
+    // Restore last active tab
+    try{const saved=localStorage.getItem('erp-active-tab');if(saved&&saved!=='dashboard')switchTab(saved);}catch(e){}
   }catch(err){
     document.getElementById('loadingState').innerHTML='<div style="text-align:center;color:var(--high);max-width:420px;margin:auto"><div style="font-size:32px;margin-bottom:10px">&#9888;&#65039;</div><div style="font-size:14px;font-weight:600;">Could not load data from Google Sheets</div><div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6;">'+err.message+'</div><button onclick="loadData()" style="margin-top:16px;background:var(--accent);color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:13px;">Retry</button></div>';
     console.error('loadData error:',err);
