@@ -654,6 +654,16 @@
             <!-- options injected by buildBoardModuleOptions() -->
           </div>
         </div>
+        <!-- Dev By (dynamic) -->
+        <div class="bfd-wrap" id="bfdWrap-devBy">
+          <div class="bfd-btn" id="bfdBtn-devBy" onclick="toggleBfdPanel('devBy')">
+            <span id="bfdLabel-devBy">Dev By</span>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="bfd-panel" id="bfdPanel-devBy">
+            <!-- options injected by buildBoardDevByOptions() -->
+          </div>
+        </div>
         <!-- right side: multi-select + result count -->
         <div class="board-filter-sep"></div>
         <div class="board-filter-strip-right">
@@ -1084,12 +1094,13 @@ const boardFilters={
   devStage: new Set(),
   devStatus:new Set(),
   module:   new Set(),
+  devBy:    new Set(),
 };
 
 // Filter key → data field mapping
-const BF_FIELD={status:'status',priority:'priority',devStage:'devStage',devStatus:'developerStatus',module:'module'};
+const BF_FIELD={status:'status',priority:'priority',devStage:'devStage',devStatus:'developerStatus',module:'module',devBy:'developedBy'};
 // Filter key → display label
-const BF_LABEL={status:'Request Status',priority:'Priority',devStage:'Dev Stage',devStatus:'Dev Status',module:'Module'};
+const BF_LABEL={status:'Request Status',priority:'Priority',devStage:'Dev Stage',devStatus:'Dev Status',module:'Module',devBy:'Dev By'};
 
 // ── Panel open/close ─────────────────────────────────────
 function toggleBfdPanel(key){
@@ -1155,7 +1166,21 @@ function buildBoardModuleOptions(){
 }
 
 // Alias kept for compatibility with handleBoardTabClick
-function buildBoardModuleSelect(){buildBoardModuleOptions();}
+function buildBoardModuleSelect(){buildBoardModuleOptions();buildBoardDevByOptions();}
+
+// ── Build Dev By dropdown options dynamically ────────────
+function buildBoardDevByOptions(){
+  const seen=new Set();
+  RAW_DATA.forEach(r=>{if(r.developedBy&&r.developedBy.trim()&&r.developedBy!=='Unassigned')seen.add(r.developedBy.trim());});
+  const panel=document.getElementById('bfdPanel-devBy');
+  if(!panel)return;
+  const SVG='<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  panel.innerHTML=[...seen].sort().map(m=>{
+    const safe=m.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const sel=boardFilters.devBy.has(m)?'selected':'';
+    return'<div class="bfd-option '+sel+'" onclick="toggleBfdValue(\'devBy\',\''+safe+'\')"><span class="bfd-checkbox">'+SVG+'</span>'+m+'</div>';
+  }).join('');
+}
 
 // ── Filter data ──────────────────────────────────────────
 function getBoardFiltered(){
