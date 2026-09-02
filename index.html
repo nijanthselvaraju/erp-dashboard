@@ -929,8 +929,23 @@ function handleBoardTabClick(){
   else openGate();
 }
 
-function openGate(){document.getElementById('gateOverlay').classList.add('open');document.getElementById('gateError').textContent='';document.getElementById('gatePinInput').value='';document.getElementById('gateNameSelect').value='';}
-function closeGate(){document.getElementById('gateOverlay').classList.remove('open');if(!boardUser)enterAsGuest();}
+// Track whether gate was opened for switch (vs first-time)
+let _gateIsSwitching=false;
+
+function openGate(isSwitching=false){
+  _gateIsSwitching=isSwitching;
+  document.getElementById('gateOverlay').classList.add('open');
+  document.getElementById('gateError').textContent='';
+  document.getElementById('gatePinInput').value='';
+  document.getElementById('gateNameSelect').value='';
+}
+function closeGate(){
+  document.getElementById('gateOverlay').classList.remove('open');
+  // Only fall back to guest on first-time open with no session
+  // If switching, keep the current user — don't touch boardUser
+  if(!_gateIsSwitching&&!boardUser)enterAsGuest();
+  _gateIsSwitching=false;
+}
 function clearGateError(){document.getElementById('gateError').textContent='';}
 
 async function submitGate(){
@@ -943,6 +958,7 @@ async function submitGate(){
     const res=await fetch(APPS_SCRIPT_URL+'?action=verifyPin&name='+encodeURIComponent(name)+'&pin='+encodeURIComponent(pin));
     const data=await res.json();
     if(data.success){
+      clearBoardSession();
       boardUser=name;boardIsGuest=false;setBoardSession(name,false);
       document.getElementById('gateOverlay').classList.remove('open');
       applyBoardUser();buildBoard();
@@ -956,8 +972,8 @@ async function submitGate(){
   btn.textContent='Enter Board →';btn.disabled=false;
 }
 
-function enterAsGuest(){boardUser='Guest';boardIsGuest=true;setBoardSession('Guest',true);document.getElementById('gateOverlay').classList.remove('open');applyBoardUser();buildBoard();}
-function switchUser(){clearBoardSession();boardUser=null;boardIsGuest=false;openGate();}
+function enterAsGuest(){clearBoardSession();boardUser='Guest';boardIsGuest=true;setBoardSession('Guest',true);document.getElementById('gateOverlay').classList.remove('open');_gateIsSwitching=false;applyBoardUser();buildBoard();}
+function switchUser(){openGate(true);}
 
 function applyBoardUser(){
   const hdr=document.getElementById('boardUserHeader');
@@ -1373,7 +1389,7 @@ function openTicketModal(refNo){
   if(canUpdate)checkViewer(refNo);
 }
 function closeTicketModal(e){if(e.target===document.getElementById('modalOverlay'))document.getElementById('modalOverlay').classList.remove('open');}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('modalOverlay').classList.remove('open');document.getElementById('gateOverlay').classList.remove('open');}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('modalOverlay').classList.remove('open');closeGate();}});
 
 // ── COMMENTS CACHE ────────────────────────────────────────
 // Keyed by reqNo. Populated on first load, updated optimistically on post.
