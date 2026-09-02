@@ -304,6 +304,22 @@
     .ms-toggle-btn.active{background:rgba(108,99,255,.18);border-color:var(--accent);color:var(--accent2);}
     .ms-counter{display:none;font-size:12px;font-weight:700;color:var(--accent2);background:rgba(108,99,255,.15);border:1px solid rgba(108,99,255,.3);padding:5px 13px;border-radius:20px;align-items:center;gap:6px;}
     .ms-counter.visible{display:inline-flex;}
+    /* select-all button */
+    .ms-select-all-btn{display:none;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;}
+    .ms-select-all-btn:hover{border-color:var(--accent);color:var(--accent2);}
+    .ms-select-all-btn.visible{display:inline-flex;}
+    /* dev status quick-select row */
+    .ms-devstatus-row{display:none;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 14px;margin-bottom:10px;}
+    .ms-devstatus-row.visible{display:flex;}
+    .ms-devstatus-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);white-space:nowrap;margin-right:4px;flex-shrink:0;}
+    .ms-ds-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;user-select:none;}
+    .ms-ds-btn:hover{border-color:var(--accent);color:var(--accent2);}
+    .ms-ds-btn.all-selected{background:rgba(108,99,255,.15);border-color:var(--accent);color:var(--accent2);}
+    .ms-ds-btn.some-selected{border-color:var(--accent);color:var(--accent2);}
+    .ms-ds-count{font-size:9px;font-weight:700;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:1px 5px;border-radius:8px;min-width:18px;text-align:center;font-family:'JetBrains Mono',monospace;}
+    .ms-ds-btn.all-selected .ms-ds-count{background:var(--accent);border-color:var(--accent);color:#fff;}
+    .ms-ds-btn.some-selected .ms-ds-count{background:rgba(108,99,255,.2);border-color:var(--accent);color:var(--accent2);}
+    .ms-ds-check{font-size:11px;flex-shrink:0;}
 
     .kanban-card.ms-mode{cursor:pointer;}
     .kanban-card.ms-mode:hover{border-color:var(--accent2);}
@@ -648,12 +664,22 @@
         <div class="board-filter-sep"></div>
         <div class="board-filter-strip-right">
           <span class="ms-counter" id="msCounter">✓ <span id="msCountNum">0</span> selected</span>
+          <button class="ms-select-all-btn" id="msSelectAllBtn" onclick="toggleSelectAll()">⊞ Select All</button>
           <button class="ms-toggle-btn" id="msToggleBtn" onclick="toggleMultiSelect()">☐ Multi-select</button>
           <span class="bf-result-count" id="bfResultCount"></span>
         </div>
       </div>
       <!-- CHIP ROW: separate slim row below strip -->
       <div class="bf-chip-row hidden" id="bfChipRow"></div>
+      <!-- DEV STATUS QUICK-SELECT ROW: visible only when multi-select active -->
+      <div class="ms-devstatus-row" id="msDevStatusRow">
+        <span class="ms-devstatus-label">Select by Dev Status:</span>
+        <button class="ms-ds-btn" id="msDsBtn-Not Started"   onclick="toggleSelectByDevStatus('Not Started')">  <span class="ms-ds-check">☐</span>Not Started  <span class="ms-ds-count" id="msDsCount-Not Started">0</span></button>
+        <button class="ms-ds-btn" id="msDsBtn-In Progress"   onclick="toggleSelectByDevStatus('In Progress')">  <span class="ms-ds-check">☐</span>In Progress   <span class="ms-ds-count" id="msDsCount-In Progress">0</span></button>
+        <button class="ms-ds-btn" id="msDsBtn-Incomplete"    onclick="toggleSelectByDevStatus('Incomplete')">   <span class="ms-ds-check">☐</span>Incomplete     <span class="ms-ds-count" id="msDsCount-Incomplete">0</span></button>
+        <button class="ms-ds-btn" id="msDsBtn-Completed"     onclick="toggleSelectByDevStatus('Completed')">    <span class="ms-ds-check">☐</span>Completed      <span class="ms-ds-count" id="msDsCount-Completed">0</span></button>
+        <button class="ms-ds-btn" id="msDsBtn-Deferred"      onclick="toggleSelectByDevStatus('Deferred')">     <span class="ms-ds-check">☐</span>Deferred       <span class="ms-ds-count" id="msDsCount-Deferred">0</span></button>
+      </div>
 
       <div class="board-cols-wrap" id="boardCols"></div>
     </div>
@@ -1215,6 +1241,8 @@ function buildBoard(){
   }).join('');
   // Sync result count chip
   _renderBoardFilterChips();
+  // Sync multi-select quick controls if active
+  if(msActive){_updateMsDevStatusRow();_updateSelectAllBtn();}
 }
 
 // ── TICKET MODAL ──────────────────────────────────────────
@@ -1693,12 +1721,100 @@ function toggleMultiSelect(){
   else enterMultiSelect();
 }
 
+// ── SELECT ALL (filtered) ────────────────────────────────
+function toggleSelectAll(){
+  if(!msActive)return;
+  const filtered=getBoardFiltered();
+  const allRefs=filtered.map(r=>r.refNo);
+  const allSelected=allRefs.length>0&&allRefs.every(ref=>msSelected.has(ref));
+  if(allSelected){
+    // deselect all visible
+    allRefs.forEach(ref=>{
+      msSelected.delete(ref);
+      const card=document.querySelector('.kanban-card[data-ref="'+ref+'"]');
+      if(card)card.classList.remove('ms-selected');
+    });
+  } else {
+    // select all visible
+    allRefs.forEach(ref=>{
+      msSelected.add(ref);
+      const card=document.querySelector('.kanban-card[data-ref="'+ref+'"]');
+      if(card)card.classList.add('ms-selected');
+    });
+  }
+  _updateMsUI();
+  _updateMsDevStatusRow();
+  _updateSelectAllBtn();
+}
+
+// ── SELECT BY DEV STATUS ─────────────────────────────────
+function toggleSelectByDevStatus(devStatus){
+  if(!msActive)return;
+  const filtered=getBoardFiltered();
+  const matching=filtered.filter(r=>r.developerStatus===devStatus).map(r=>r.refNo);
+  if(!matching.length)return;
+  const allSelected=matching.every(ref=>msSelected.has(ref));
+  if(allSelected){
+    matching.forEach(ref=>{
+      msSelected.delete(ref);
+      const card=document.querySelector('.kanban-card[data-ref="'+ref+'"]');
+      if(card)card.classList.remove('ms-selected');
+    });
+  } else {
+    matching.forEach(ref=>{
+      msSelected.add(ref);
+      const card=document.querySelector('.kanban-card[data-ref="'+ref+'"]');
+      if(card)card.classList.add('ms-selected');
+    });
+  }
+  _updateMsUI();
+  _updateMsDevStatusRow();
+  _updateSelectAllBtn();
+}
+
+// ── UPDATE DEV STATUS ROW counts + highlight ─────────────
+function _updateMsDevStatusRow(){
+  const filtered=getBoardFiltered();
+  const DSS=['Not Started','In Progress','Incomplete','Completed','Deferred'];
+  DSS.forEach(ds=>{
+    const matching=filtered.filter(r=>r.developerStatus===ds).map(r=>r.refNo);
+    const n=matching.length;
+    const countEl=document.getElementById('msDsCount-'+ds);
+    const btn=document.getElementById('msDsBtn-'+ds);
+    const checkEl=btn?btn.querySelector('.ms-ds-check'):null;
+    if(countEl)countEl.textContent=n;
+    if(btn){
+      const allSel=n>0&&matching.every(ref=>msSelected.has(ref));
+      const someSel=!allSel&&matching.some(ref=>msSelected.has(ref));
+      btn.classList.toggle('all-selected',allSel);
+      btn.classList.toggle('some-selected',someSel);
+      if(checkEl)checkEl.textContent=allSel?'☑':'☐';
+      btn.disabled=n===0;
+      btn.style.opacity=n===0?'0.4':'1';
+    }
+  });
+}
+
+// ── UPDATE SELECT ALL button label ───────────────────────
+function _updateSelectAllBtn(){
+  const filtered=getBoardFiltered();
+  const allRefs=filtered.map(r=>r.refNo);
+  const allSelected=allRefs.length>0&&allRefs.every(ref=>msSelected.has(ref));
+  const btn=document.getElementById('msSelectAllBtn');
+  if(!btn)return;
+  btn.textContent=allSelected?'⊟ Deselect All':'⊞ Select All';
+}
+
 function enterMultiSelect(){
   if(boardIsGuest){alert('Sign in to use multi-select.');return;}
   msActive=true;msSelected.clear();
   document.getElementById('msToggleBtn').classList.add('active');
   document.getElementById('msToggleBtn').textContent='☑ Multi-select';
+  document.getElementById('msSelectAllBtn').classList.add('visible');
+  document.getElementById('msDevStatusRow').classList.add('visible');
   _applyMsMode();_updateMsUI();
+  _updateMsDevStatusRow();
+  _updateSelectAllBtn();
   // Warm up Apps Script so it's not cold when Apply is clicked
   fetch(APPS_SCRIPT_URL+'?action=ping',{method:'GET',keepalive:true}).catch(()=>{});
 }
@@ -1707,6 +1823,8 @@ function exitMultiSelect(){
   msActive=false;msSelected.clear();
   document.getElementById('msToggleBtn').classList.remove('active');
   document.getElementById('msToggleBtn').textContent='☐ Multi-select';
+  document.getElementById('msSelectAllBtn').classList.remove('visible');
+  document.getElementById('msDevStatusRow').classList.remove('visible');
   document.getElementById('bulkBar').classList.remove('visible');
   document.getElementById('msCounter').classList.remove('visible');
   // Reset bulk selects
@@ -1745,6 +1863,8 @@ function handleCardClick(event,refNo){
   if(msSelected.has(refNo)){msSelected.delete(refNo);card.classList.remove('ms-selected');}
   else{msSelected.add(refNo);card.classList.add('ms-selected');}
   _updateMsUI();
+  _updateMsDevStatusRow();
+  _updateSelectAllBtn();
   return true; // consumed
 }
 
