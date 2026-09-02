@@ -460,6 +460,91 @@
         footer{text-align:center;padding:24px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);}
 
     @media(max-width:1100px){.stat-bar{grid-template-columns:repeat(3,1fr);}}
+
+    /* ══════════════════════════════════════════════
+       MOBILE BOARD — ≤ 768px
+       Desktop layout is 100% unchanged.
+    ══════════════════════════════════════════════ */
+    @media(max-width:768px){
+
+      /* ── General ── */
+      header{padding:0 12px;}
+      #monthBar{padding:8px 12px;}
+      main{padding:10px 10px 120px;}
+      .tab-strip{padding:10px 12px 0;}
+      .stat-bar{grid-template-columns:repeat(2,1fr);}
+      .modal-fields{grid-template-columns:1fr;}
+      .logo-sub{display:none;}
+      td:nth-child(6),th:nth-child(6),td:nth-child(7),th:nth-child(7){display:none;}
+
+      /* ── Filter strip: collapsible on mobile ── */
+      .board-filter-strip{flex-wrap:wrap;padding:8px 10px;gap:6px;position:relative;}
+      .board-filter-label{display:none;}
+      .board-filter-sep{display:none;}
+      /* hide all filter pills by default on mobile */
+      .bfd-wrap{display:none;}
+      /* show them when expanded */
+      .board-filter-strip.mob-expanded .bfd-wrap{display:block;width:calc(50% - 3px);}
+      .board-filter-strip.mob-expanded .bfd-btn{width:100%;justify-content:space-between;border-radius:10px;}
+      .board-filter-strip.mob-expanded .bfd-panel{min-width:100%;left:0;}
+      /* mobile filter toggle button */
+      .mob-filter-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:7px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0;}
+      .mob-filter-btn.has-active{border-color:var(--accent);color:var(--accent2);background:rgba(108,99,255,.12);}
+      .mob-filter-count{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;border-radius:10px;font-size:9px;font-weight:700;padding:1px 5px;min-width:16px;line-height:1.4;margin-left:2px;}
+      /* right side of strip on mobile */
+      .board-filter-strip-right{margin-left:auto;gap:6px;}
+      .ms-toggle-btn{padding:7px 10px;font-size:11px;}
+      .ms-select-all-btn{padding:5px 10px;font-size:10px;}
+
+      /* ── Kanban: single column tab view ── */
+      .board-cols-wrap{display:block !important;overflow-x:visible;}
+      /* column tab strip */
+      .mob-col-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none;}
+      .mob-col-tabs::-webkit-scrollbar{display:none;}
+      .mob-col-tab{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--muted);white-space:nowrap;transition:all .15s;}
+      .mob-col-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+      .mob-col-tab-count{font-size:10px;opacity:.8;}
+      /* hide all cols except active on mobile */
+      .board-col{display:none;width:100% !important;min-width:0 !important;max-width:100% !important;height:auto !important;min-height:300px;}
+      .board-col.mob-active{display:flex;}
+
+      /* ── Card move button (replaces drag on mobile) ── */
+      .card-move-btn{display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;margin-top:6px;transition:all .15s;}
+      .card-move-btn:hover{border-color:var(--accent);color:var(--accent2);}
+      /* move picker dropdown */
+      .card-move-picker{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:16px;z-index:500;box-shadow:0 -4px 24px rgba(0,0,0,.3);}
+      .card-move-picker h4{margin:0 0 12px;font-size:13px;color:var(--text);text-align:center;}
+      .card-move-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+      .card-move-opt{padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;}
+      .card-move-opt:hover{border-color:var(--accent);color:var(--accent2);}
+      .card-move-opt.current{opacity:.4;pointer-events:none;}
+      .card-move-picker-cancel{width:100%;margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;}
+      /* move picker overlay */
+      .card-move-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:499;}
+      .card-move-overlay.open{display:block;}
+
+      /* ── Bulk bar: stacked grid on mobile ── */
+      .bulk-bar-inner{flex-wrap:wrap;gap:8px;padding:10px 12px;}
+      .bulk-bar-label{width:100%;font-size:12px;}
+      .bulk-select{min-width:0;flex:1;font-size:12px;}
+      .bulk-apply-btn{flex:1;min-width:0;}
+      .bulk-cancel-btn{flex:1;min-width:0;}
+
+      /* ── Multi-select strip on mobile ── */
+      .ms-counter{font-size:11px;padding:4px 10px;}
+      .ms-select-all-btn.visible{display:inline-flex;}
+
+      /* ── Ticket modal full-screen on mobile ── */
+      .modal-overlay{align-items:flex-end;padding:0;}
+      .modal{border-radius:16px 16px 0 0;max-height:92vh;overflow-y:auto;margin:0;}
+    }
+
+    /* hide mob-filter-btn and mob-col-tabs on desktop */
+    .mob-filter-btn{display:none;}
+    .mob-col-tabs{display:none;}
+    .card-move-btn{display:none;}
+    .card-move-picker{display:none;}
+    .card-move-overlay{display:none;}
     @media(max-width:900px){.matrix-grid,.charts-grid-half{grid-template-columns:1fr;}}
     @media(max-width:768px){header{padding:0 16px;}#monthBar{padding:10px 16px;}main{padding:16px 16px 48px;}.tab-strip{padding:12px 16px 0;}.stat-bar{grid-template-columns:repeat(2,1fr);}.modal-fields{grid-template-columns:1fr;}.logo-sub{display:none;}td:nth-child(6),th:nth-child(6),td:nth-child(7),th:nth-child(7){display:none;}}
   </style>
@@ -589,6 +674,7 @@
       <!-- FILTER STRIP: single fixed-height row -->
       <div class="board-filter-strip" id="boardFilterStrip">
         <span class="board-filter-label">🔍 Filter</span>
+        <button class="mob-filter-btn" id="mobFilterBtn" onclick="toggleMobFilters()">🔍 Filter</button>
         <div class="board-filter-sep"></div>
         <!-- Request Status -->
         <div class="bfd-wrap" id="bfdWrap-status">
@@ -675,7 +761,16 @@
       </div>
       <!-- CHIP ROW: separate slim row below strip -->
       <div class="bf-chip-row hidden" id="bfChipRow"></div>
+      <!-- MOBILE: column tab strip -->
+      <div class="mob-col-tabs" id="mobColTabs"></div>
       <div class="board-cols-wrap" id="boardCols"></div>
+      <!-- MOBILE: move card picker -->
+      <div class="card-move-overlay" id="moveOverlay" onclick="closeMovePickerNow()"></div>
+      <div class="card-move-picker" id="movePicker" style="display:none">
+        <h4 id="movePickerTitle">Move to…</h4>
+        <div class="card-move-opts" id="movePickerOpts"></div>
+        <button class="card-move-picker-cancel" onclick="closeMovePickerNow()">Cancel</button>
+      </div>
     </div>
 
 <!-- BULK ACTION BAR -->
@@ -1022,9 +1117,11 @@ function onDragStart(e,refNo,devStatus){
 }
 function onDragEnd(e){document.querySelectorAll('.kanban-card').forEach(c=>c.classList.remove('dragging'));document.querySelectorAll('.board-col').forEach(c=>c.classList.remove('drag-over'));}
 function onDragOver(e,colStatus){e.preventDefault();e.dataTransfer.dropEffect='move';document.querySelectorAll('.board-col').forEach(c=>c.classList.remove('drag-over'));const col=document.querySelector('[data-col="'+colStatus+'"]');if(col)col.classList.add('drag-over');}
-function onDrop(e,newDevStatus){
+function onDrop(e,newDevStatus,mobileRefNo){
   e.preventDefault();
   document.querySelectorAll('.board-col').forEach(c=>c.classList.remove('drag-over'));
+  // Support mobile move picker passing refNo directly
+  if(mobileRefNo){dragSrcRefNo=mobileRefNo;const r2=RAW_DATA.find(x=>x.refNo===mobileRefNo);dragSrcStatus=r2?r2.developerStatus:null;}
   if(!dragSrcRefNo||dragSrcStatus===newDevStatus)return;
   if(boardIsGuest){alert('Sign in to move cards.');return;}
   const r=RAW_DATA.find(x=>x.refNo===dragSrcRefNo);if(!r)return;
@@ -1275,7 +1372,9 @@ function buildBoard(){
         '<div class="kanban-meta">'+
           '<span class="kanban-assignee kanban-dev-badge" onclick="cycleDeveloper(event,\''+r.refNo+'\')" title="Click to change developer">👤 '+r.developedBy+'</span>'+
           (stale?'<span class="stale-tag">⚠ '+days+'d</span>':'<span class="kanban-date">'+r.date+'</span>')+
-        '</div></div>';
+        '</div>'+
+        '<button class="card-move-btn" onclick="openMovePicker(event,\''+r.refNo+'\',\''+st+'\')">↔ Move</button>'+
+        '</div>';
     }).join(''):'<div class="board-empty">No requests</div>';
 
     return'<div class="board-col '+COL_CLASS[st]+'" data-col="'+st+'"'+
@@ -2038,6 +2137,149 @@ async function loadData(){
   }
 }
 loadData();
+
+// ════════════════════════════════════════════════════════════
+// MOBILE BOARD ENHANCEMENTS
+// All logic is no-op on desktop (isMobile() returns false)
+// ════════════════════════════════════════════════════════════
+
+function isMobile(){return window.innerWidth<=768;}
+
+// ── 1. MOBILE FILTER TOGGLE ──────────────────────────────
+function toggleMobFilters(){
+  const strip=document.getElementById('boardFilterStrip');
+  const btn=document.getElementById('mobFilterBtn');
+  const expanded=strip.classList.toggle('mob-expanded');
+  // close all open panels when collapsing
+  if(!expanded){
+    document.querySelectorAll('.bfd-panel').forEach(p=>p.classList.remove('open'));
+    document.querySelectorAll('.bfd-btn').forEach(b=>b.classList.remove('open'));
+  }
+  btn.textContent=expanded?'✕ Close filters':'🔍 Filter';
+  _updateMobFilterBadge();
+}
+
+function _updateMobFilterBadge(){
+  const btn=document.getElementById('mobFilterBtn');
+  if(!btn)return;
+  let count=0;
+  Object.values(boardFilters).forEach(s=>count+=s.size);
+  btn.classList.toggle('has-active',count>0);
+  // update label
+  const strip=document.getElementById('boardFilterStrip');
+  const expanded=strip&&strip.classList.contains('mob-expanded');
+  if(!expanded){
+    btn.innerHTML=count>0
+      ?'🔍 Filter <span class="mob-filter-count">'+count+'</span>'
+      :'🔍 Filter';
+  }
+}
+
+// Hook into _renderBoardFilterChips to also update badge
+const _origRenderChips=_renderBoardFilterChips;
+_renderBoardFilterChips=function(){
+  _origRenderChips();
+  if(isMobile())_updateMobFilterBadge();
+};
+
+// ── 2. MOBILE COLUMN TABS ────────────────────────────────
+let mobActiveCol=DEV_STATUSES[0];
+
+function buildMobColTabs(){
+  if(!isMobile())return;
+  const wrap=document.getElementById('mobColTabs');
+  if(!wrap)return;
+  wrap.innerHTML=DEV_STATUSES.map(st=>{
+    const col=document.querySelector('.board-col[data-col="'+st+'"]');
+    const n=col?col.querySelectorAll('.kanban-card').length:0;
+    const active=st===mobActiveCol?'active':'';
+    return'<div class="mob-col-tab '+active+'" onclick="switchMobCol(\''+st+'\')">'+
+      st+' <span class="mob-col-tab-count">'+n+'</span></div>';
+  }).join('');
+  // show only active col
+  DEV_STATUSES.forEach(st=>{
+    const col=document.querySelector('.board-col[data-col="'+st+'"]');
+    if(!col)return;
+    col.classList.toggle('mob-active',st===mobActiveCol);
+  });
+}
+
+function switchMobCol(st){
+  mobActiveCol=st;
+  buildMobColTabs();
+}
+
+// ── 3. CARD MOVE BUTTON (replaces drag on mobile) ────────
+let _moveRefNo=null,_moveCurrentCol=null;
+
+function openMovePicker(event,refNo,currentCol){
+  event.stopPropagation();
+  if(!isMobile())return;
+  _moveRefNo=refNo;
+  _moveCurrentCol=currentCol;
+  const r=RAW_DATA.find(x=>x.refNo===refNo);
+  const title=r?r.title:refNo;
+  document.getElementById('movePickerTitle').textContent='Move: '+title.substring(0,30)+(title.length>30?'…':'');
+  const opts=document.getElementById('movePickerOpts');
+  opts.innerHTML=DEV_STATUSES.map(st=>{
+    const cur=st===currentCol?'current':'';
+    return'<div class="card-move-opt '+cur+'" onclick="execCardMove(\''+st+'\')">'+st+'</div>';
+  }).join('');
+  document.getElementById('movePicker').style.display='block';
+  document.getElementById('moveOverlay').classList.add('open');
+}
+
+function closeMovePickerNow(){
+  document.getElementById('movePicker').style.display='none';
+  document.getElementById('moveOverlay').classList.remove('open');
+  _moveRefNo=null;_moveCurrentCol=null;
+}
+
+function execCardMove(newCol){
+  if(!_moveRefNo)return;
+  const refNo=_moveRefNo;
+  closeMovePickerNow();
+  // reuse existing drop logic
+  onDrop({preventDefault:()=>{}},newCol,refNo);
+  // switch to new column on mobile
+  if(isMobile()){mobActiveCol=newCol;buildMobColTabs();}
+}
+
+// ── 4. REBUILD TABS AFTER buildBoard ────────────────────
+const _origBuildBoard=buildBoard;
+buildBoard=function(){
+  _origBuildBoard();
+  if(isMobile())buildMobColTabs();
+};
+
+// ── 5. HANDLE RESIZE ────────────────────────────────────
+window.addEventListener('resize',()=>{
+  if(isMobile())buildMobColTabs();
+  else{
+    document.querySelectorAll('.board-col').forEach(c=>c.classList.add('mob-active'));
+    document.getElementById('mobColTabs').innerHTML='';
+  }
+});
+
+// ── 6. PREVENT FILTER PANELS CLIPPING ON MOBILE ─────────
+// Override toggleBfdPanel to reposition panels if they clip
+const _origToggleBfd=toggleBfdPanel;
+toggleBfdPanel=function(key){
+  _origToggleBfd(key);
+  if(!isMobile())return;
+  const panel=document.getElementById('bfdPanel-'+key);
+  if(!panel||!panel.classList.contains('open'))return;
+  // if panel would go off right edge, align right instead of left
+  const rect=panel.getBoundingClientRect();
+  if(rect.right>window.innerWidth){
+    panel.style.left='auto';
+    panel.style.right='0';
+  } else {
+    panel.style.left='';
+    panel.style.right='';
+  }
+};
+
 </script>
 </body>
 </html>
