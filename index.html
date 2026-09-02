@@ -468,7 +468,13 @@
     @media(max-width:768px){
 
       /* ── General ── */
-      header{padding:0 12px;}
+      header{padding:0 10px;flex-wrap:nowrap;gap:6px;}
+      .logo{flex-shrink:0;}
+      .logo-title{font-size:14px;}
+      .header-right{flex-shrink:0;gap:6px;}
+      .last-updated{display:none;}
+      .view-sheet-btn span{display:none;}
+      .view-sheet-btn{padding:8px 10px;min-width:0;}
       #monthBar{padding:8px 12px;}
       main{padding:10px 10px 120px;}
       .tab-strip{padding:10px 12px 0;}
@@ -539,12 +545,17 @@
       .modal{border-radius:16px 16px 0 0;max-height:92vh;overflow-y:auto;margin:0;}
     }
 
-    /* hide mob-filter-btn and mob-col-tabs on desktop */
-    .mob-filter-btn{display:none;}
-    .mob-col-tabs{display:none;}
-    .card-move-btn{display:none;}
-    .card-move-picker{display:none;}
-    .card-move-overlay{display:none;}
+    /* hide mobile-only elements on desktop */
+    .mob-filter-btn{display:none !important;}
+    .mob-col-tabs{display:none !important;}
+    .card-move-btn{display:none !important;}
+    .card-move-picker{display:none !important;}
+    .card-move-overlay{display:none !important;}
+    @media(max-width:768px){
+      .mob-filter-btn{display:inline-flex !important;}
+      .mob-col-tabs{display:flex !important;}
+      .card-move-btn{display:inline-flex !important;}
+    }
     @media(max-width:900px){.matrix-grid,.charts-grid-half{grid-template-columns:1fr;}}
     @media(max-width:768px){header{padding:0 16px;}#monthBar{padding:10px 16px;}main{padding:16px 16px 48px;}.tab-strip{padding:12px 16px 0;}.stat-bar{grid-template-columns:repeat(2,1fr);}.modal-fields{grid-template-columns:1fr;}.logo-sub{display:none;}td:nth-child(6),th:nth-child(6),td:nth-child(7),th:nth-child(7){display:none;}}
   </style>
@@ -959,7 +970,7 @@ function buildMonthBar(){
   RAW_DATA.forEach(r=>{if(r._monthKey&&!seen.has(r._monthKey)){seen.add(r._monthKey);months.push(r._monthKey);}});
   document.getElementById('monthBtns').innerHTML=months.map(m=>'<button class="pill-btn '+(activeMonth===m?'active':'')+'" onclick="setMonth(\''+m+'\')">'+m+'</button>').join('');
 }
-function setMonth(m){activeMonth=m;activeCell=null;activePriority=null;buildMonthBar();buildStatBar();buildAllMatrices();buildPriorityFilters();renderActiveFilters();renderTable();if(activeTab==='charts')buildAllCharts();if(activeTab==='board'){clearBoardFilters();buildBoardModuleSelect();}}
+function setMonth(m){activeMonth=m;activeCell=null;activePriority=null;buildMonthBar();buildStatBar();buildAllMatrices();buildPriorityFilters();renderActiveFilters();renderTable();if(activeTab==='charts')buildAllCharts();if(activeTab==='board'){clearBoardFilters();buildBoardModuleSelect();buildBoard();}}
 
 // ── MATRIX ────────────────────────────────────────────────
 function buildMatrix(cid,key){
@@ -1316,6 +1327,8 @@ function _renderBoardFilterChips(){
   const total=getMonthFiltered().length;
   const countEl=document.getElementById('bfResultCount');
   countEl.textContent=hasActive?(filtered.length+' of '+total+' shown'):'';
+  // Mobile: update filter badge
+  if(typeof _updateMobFilterBadge==='function')_updateMobFilterBadge();
 }
 
 function removeBfChip(key,value){
@@ -1396,7 +1409,6 @@ function buildBoard(){
     msSelected.forEach(ref=>{
       if(!visibleRefs.has(ref)){
         msSelected.delete(ref);
-        // card already gone from DOM after rebuild — no classList needed
       }
     });
     _updateMsUI();
@@ -1405,6 +1417,8 @@ function buildBoard(){
     // Re-apply ms-active class (lost after innerHTML rebuild)
     document.getElementById('boardCols').classList.add('ms-active');
   }
+  // Mobile: rebuild column tabs after every board render
+  if(typeof buildMobColTabs==='function')buildMobColTabs();
 }
 
 // ── TICKET MODAL ──────────────────────────────────────────
@@ -2175,12 +2189,7 @@ function _updateMobFilterBadge(){
   }
 }
 
-// Hook into _renderBoardFilterChips to also update badge
-const _origRenderChips=_renderBoardFilterChips;
-_renderBoardFilterChips=function(){
-  _origRenderChips();
-  if(isMobile())_updateMobFilterBadge();
-};
+// _updateMobFilterBadge is called from _renderBoardFilterChips directly (see below)
 
 // ── 2. MOBILE COLUMN TABS ────────────────────────────────
 let mobActiveCol=DEV_STATUSES[0];
@@ -2245,12 +2254,7 @@ function execCardMove(newCol){
   if(isMobile()){mobActiveCol=newCol;buildMobColTabs();}
 }
 
-// ── 4. REBUILD TABS AFTER buildBoard ────────────────────
-const _origBuildBoard=buildBoard;
-buildBoard=function(){
-  _origBuildBoard();
-  if(isMobile())buildMobColTabs();
-};
+// ── 4. buildMobColTabs is now called directly from buildBoard end
 
 // ── 5. HANDLE RESIZE ────────────────────────────────────
 window.addEventListener('resize',()=>{
@@ -2262,23 +2266,7 @@ window.addEventListener('resize',()=>{
 });
 
 // ── 6. PREVENT FILTER PANELS CLIPPING ON MOBILE ─────────
-// Override toggleBfdPanel to reposition panels if they clip
-const _origToggleBfd=toggleBfdPanel;
-toggleBfdPanel=function(key){
-  _origToggleBfd(key);
-  if(!isMobile())return;
-  const panel=document.getElementById('bfdPanel-'+key);
-  if(!panel||!panel.classList.contains('open'))return;
-  // if panel would go off right edge, align right instead of left
-  const rect=panel.getBoundingClientRect();
-  if(rect.right>window.innerWidth){
-    panel.style.left='auto';
-    panel.style.right='0';
-  } else {
-    panel.style.left='';
-    panel.style.right='';
-  }
-};
+// Panel repositioning is handled via CSS min-width:100% on mob-expanded
 
 </script>
 </body>
