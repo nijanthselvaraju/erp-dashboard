@@ -2076,10 +2076,11 @@ async function applyBulkUpdate(){
   // ── Step 3: Reset dropdowns only — keep selection & bar visible ─
   ['bsDeveloperStatus','bsPriority','bsDevStage','bsStatus','bsDevelopedBy'].forEach(id=>{document.getElementById(id).value='';});
 
-  // ── Step 4: Single batched POST — Apps Script opens sheet once ──
+  // ── Step 4: Single batched POST — one round trip for all cards ──
+  // Apps Script batchUpdate reads the sheet once and writes all rows atomically
   const updates=refs.flatMap(refNo=>{
     const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return[];
-    const snap=snapshots[refNo];const items=[];
+    const items=[];
     if(devStatus)   items.push({action:'updateDevStatus',  reqNo:refNo,newDevStatus:devStatus,  author:boardUser,title:r.title,app:r.app});
     if(status)      items.push({action:'updateStatus',      reqNo:refNo,newStatus:status,        author:boardUser,title:r.title,app:r.app});
     if(priority)    items.push({action:'updateField',reqNo:refNo,field:'Priority',        newValue:priority,   author:boardUser,title:r.title,app:r.app});
@@ -2088,25 +2089,32 @@ async function applyBulkUpdate(){
     return items;
   });
 
-  // ── Step 4: Fire all updates in parallel ─────────────────
-  const tasks=updates.map(u=>{
-    return fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify(u)})
-      .then(r=>r.json())
-      .then(d=>{
-        // Apps Script may return error due to email sending failing AFTER
-        // the sheet write succeeds. Only rollback on explicit 'not found' errors.
-        if(d.success===false && d.error && d.error.toLowerCase().includes('not found')){
-          errors.push(u.reqNo);
-        }
-        // All other cases (including email errors) — sheet was written, treat as ok
-      })
-      .catch(e=>{
-        // True network failure — sheet write may not have happened
-        console.error('[Bulk] network error',u.reqNo,e);
-        errors.push(u.reqNo);
+  // Single POST — one Apps Script execution for all cards
+  try{
+    const res=await fetch(APPS_SCRIPT_URL,{
+      method:'POST',
+      keepalive:true,
+      body:JSON.stringify({action:'batchUpdate',updates})
+    });
+    const d=await res.json();
+    if(d.errors&&d.errors.length){
+      d.errors.forEach(refNo=>{
+        errors.push(refNo);
+        const r=RAW_DATA.find(x=>x.refNo===refNo);
+        const snap=snapshots[refNo];
+        if(r&&snap)Object.assign(r,snap);
       });
-  });
-  await Promise.all(tasks);
+    }
+  }catch(e){
+    console.error('[Bulk] batch network error',e);
+    // Full rollback on total network failure
+    refs.forEach(refNo=>{
+      const r=RAW_DATA.find(x=>x.refNo===refNo);
+      const snap=snapshots[refNo];
+      if(r&&snap)Object.assign(r,snap);
+      errors.push(refNo);
+    });
+  }
 
   btn.disabled=false;btn.textContent='Apply →';
   const msg=document.getElementById('bulkMsg');
