@@ -867,16 +867,21 @@ function getDocForReq(refNo){
 function openReqDoc(refNo){
   const doc=getDocForReq(refNo);
   if(!doc)return;
-  window.open(doc.url,'_blank');
-  const label=String(refNo).replace(/^EQ-/,'REQ-');
-  try{navigator.clipboard.writeText(label).then(()=>showCopyToast(label));}
-  catch(e){showCopyToast(label);}
+  // Extract clean REQ number — handles REQ-78, EQ-78, etc.
+  const num=String(refNo).replace(/[^0-9]/g,'');
+  const label='REQ-'+num;
+  // Use direct PDF URL with #search= so browser's native PDF viewer
+  // auto-highlights and jumps to the heading (works in Chrome & Edge)
+  const url='https://drive.google.com/uc?export=view&id='+doc.id+'#search='+encodeURIComponent(label);
+  window.open(url,'_blank');
+  // Show toast as fallback for browsers that don't support #search
+  showCopyToast(label);
 }
 
 function showCopyToast(label){
   const t=document.getElementById('copyToast');
   if(!t)return;
-  t.textContent='📋 '+label+' copied — use Ctrl+F to find it in the PDF';
+  t.textContent='🔍 Opening PDF and searching for '+label+'…';
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),3500);
 }
