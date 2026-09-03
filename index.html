@@ -1976,8 +1976,8 @@ function enterMultiSelect(){
   _applyMsMode();_updateMsUI();
   _updateColCheckboxes();
   _updateSelectAllBtn();
-  // Warm up Apps Script so it's not cold when Apply is clicked
-  fetch(APPS_SCRIPT_URL+'?action=ping',{method:'GET',keepalive:true}).catch(()=>{});
+  // Warm up Apps Script runtime with a POST so doPost is ready when Apply fires
+  fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify({action:'warmup'})}).catch(()=>{});
 }
 
 function exitMultiSelect(){
