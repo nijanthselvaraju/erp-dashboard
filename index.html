@@ -867,23 +867,18 @@ function getDocForReq(refNo){
 function openReqDoc(refNo){
   const doc=getDocForReq(refNo);
   if(!doc)return;
-  const num=String(refNo).replace(/[^0-9]/g,'');
-  const label='REQ-'+num;
-  // Google Docs viewer renders PDF in browser (no download)
-  // #search= works in Chrome's built-in viewer via this URL pattern
-  const pdfUrl='https://drive.google.com/file/d/'+doc.id+'/preview';
-  window.open(pdfUrl,'_blank');
-  // Copy label to clipboard so user can Ctrl+F immediately
-  try{navigator.clipboard.writeText(label);}catch(e){}
-  showCopyToast(label);
+  window.open(doc.url,'_blank');
+  const label=String(refNo).replace(/^EQ-/,'REQ-');
+  try{navigator.clipboard.writeText(label).then(()=>showCopyToast(label));}
+  catch(e){showCopyToast(label);}
 }
 
 function showCopyToast(label){
   const t=document.getElementById('copyToast');
   if(!t)return;
-  t.textContent='📋 '+label+' copied — press Ctrl+F and paste to jump to it';
+  t.textContent='📋 '+label+' copied — use Ctrl+F to find it in the PDF';
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),4000);
+  setTimeout(()=>t.classList.remove('show'),3500);
 }
 
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3F10vwaKIfxGarw68ed9KVU83HnCdTvKnPE2cfixdJfVw6yChwLV8I2_crS7_BWaRSQ/exec";
