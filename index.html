@@ -867,23 +867,23 @@ function getDocForReq(refNo){
 function openReqDoc(refNo){
   const doc=getDocForReq(refNo);
   if(!doc)return;
-  // Extract clean REQ number — handles REQ-78, EQ-78, etc.
   const num=String(refNo).replace(/[^0-9]/g,'');
   const label='REQ-'+num;
-  // Use direct PDF URL with #search= so browser's native PDF viewer
-  // auto-highlights and jumps to the heading (works in Chrome & Edge)
-  const url='https://drive.google.com/uc?export=view&id='+doc.id+'#search='+encodeURIComponent(label);
-  window.open(url,'_blank');
-  // Show toast as fallback for browsers that don't support #search
+  // Google Docs viewer renders PDF in browser (no download)
+  // #search= works in Chrome's built-in viewer via this URL pattern
+  const pdfUrl='https://drive.google.com/file/d/'+doc.id+'/preview';
+  window.open(pdfUrl,'_blank');
+  // Copy label to clipboard so user can Ctrl+F immediately
+  try{navigator.clipboard.writeText(label);}catch(e){}
   showCopyToast(label);
 }
 
 function showCopyToast(label){
   const t=document.getElementById('copyToast');
   if(!t)return;
-  t.textContent='🔍 Opening PDF and searching for '+label+'…';
+  t.textContent='📋 '+label+' copied — press Ctrl+F and paste to jump to it';
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3500);
+  setTimeout(()=>t.classList.remove('show'),4000);
 }
 
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3F10vwaKIfxGarw68ed9KVU83HnCdTvKnPE2cfixdJfVw6yChwLV8I2_crS7_BWaRSQ/exec";
