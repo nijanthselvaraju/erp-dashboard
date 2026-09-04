@@ -868,8 +868,8 @@ function openReqDoc(refNo){
   const doc=getDocForReq(refNo);
   if(!doc)return;
   const num=String(refNo).replace(/[^0-9]/g,'');
-  // Open dedicated viewer page — handles PDF load + auto-search
-  const viewerUrl='req-doc.html?req='+encodeURIComponent(num)+'&fid='+encodeURIComponent(doc.id);
+  const type=doc.type||'doc';
+  const viewerUrl='req-doc.html?req='+encodeURIComponent(num)+'&fid='+encodeURIComponent(doc.id)+'&type='+type;
   window.open(viewerUrl,'_blank');
 }
 
