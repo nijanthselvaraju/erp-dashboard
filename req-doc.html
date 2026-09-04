@@ -7,41 +7,36 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Inter',system-ui,sans-serif;background:#0f0f1a;color:#fff;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* Toolbar */
 .toolbar{display:flex;align-items:center;gap:10px;padding:9px 16px;background:#1a1a2e;border-bottom:1px solid #2a2a3e;flex-shrink:0;}
 .t-logo{font-size:12px;font-weight:700;color:#6c63ff;flex-shrink:0;}
 .t-sep{width:1px;height:16px;background:#2a2a3e;flex-shrink:0;}
 .t-req{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#4f8ef7;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.3);padding:3px 10px;border-radius:20px;flex-shrink:0;}
-.t-hint{font-size:11px;color:#6c63ff;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.2);padding:3px 10px;border-radius:8px;flex-shrink:0;transition:all .3s;}
+.t-status{font-size:11px;padding:3px 10px;border-radius:8px;flex-shrink:0;transition:all .3s;}
+.t-status.loading{color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);}
+.t-status.success{color:#10b981;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);}
+.t-status.info{color:#6c63ff;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.2);}
 .t-spacer{flex:1;}
-.t-back{background:#2a2a3e;border:1px solid #3a3a5e;color:#9098b1;padding:5px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:all .15s;flex-shrink:0;}
-.t-back:hover{background:#3a3a5e;color:#fff;}
-.find-bar{display:flex;align-items:center;gap:8px;padding:7px 16px;background:#12122a;border-bottom:1px solid #2a2a3e;flex-shrink:0;}
-.find-bar-label{font-size:11px;color:#9098b1;white-space:nowrap;}
-.find-bar-input{background:#1a1a2e;border:1px solid #6c63ff;color:#fff;padding:5px 12px;border-radius:8px;font-size:12px;font-family:'JetBrains Mono',monospace;font-weight:700;width:120px;outline:none;}
-.find-bar-count{font-size:11px;color:#6c63ff;font-family:'JetBrains Mono',monospace;min-width:80px;}
-.find-bar-btns{display:flex;gap:4px;}
-.find-bar-btn{background:#2a2a3e;border:1px solid #3a3a5e;color:#9098b1;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:all .1s;}
-.find-bar-btn:hover{background:#3a3a5e;color:#fff;}
-.find-tip{font-size:10px;color:#4a5168;margin-left:auto;}
-.pdf-wrap{flex:1;overflow-y:auto;overflow-x:auto;background:#525659;position:relative;}
-.pdf-wrap::-webkit-scrollbar{width:8px;height:8px;}
-.pdf-wrap::-webkit-scrollbar-thumb{background:#3a3a5e;border-radius:4px;}
-.pdf-pages{display:flex;flex-direction:column;align-items:center;padding:16px;gap:12px;}
-.pdf-page-wrap{position:relative;box-shadow:0 4px 20px rgba(0,0,0,.5);}
-.pdf-page-wrap canvas{display:block;}
-.status{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0f0f1a;z-index:10;transition:opacity .4s;}
-.status.hidden{opacity:0;pointer-events:none;}
+.t-open{background:#2a2a3e;border:1px solid #3a3a5e;color:#9098b1;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:all .15s;flex-shrink:0;}
+.t-open:hover{background:#3a3a5e;color:#fff;}
+.t-back{background:#6c63ff;border:none;color:#fff;padding:5px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:all .15s;flex-shrink:0;}
+.t-back:hover{background:#5a52e0;}
+
+/* iframe */
+.doc-wrap{flex:1;position:relative;}
+iframe{width:100%;height:100%;border:none;display:block;}
+
+/* Loading overlay */
+.loading-overlay{position:absolute;inset:0;background:#0f0f1a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:10;transition:opacity .5s;}
+.loading-overlay.hidden{opacity:0;pointer-events:none;}
 .spinner{width:40px;height:40px;border:3px solid #2a2a3e;border-top-color:#6c63ff;border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.status-req{font-size:24px;font-weight:700;color:#6c63ff;font-family:'JetBrains Mono',monospace;}
-.status-text{font-size:13px;color:#6c7389;text-align:center;max-width:340px;line-height:1.6;}
-.progress-wrap{width:260px;height:4px;background:#2a2a3e;border-radius:4px;overflow:hidden;}
-.progress-bar{height:100%;background:linear-gradient(90deg,#6c63ff,#4f8ef7);border-radius:4px;transition:width .3s;width:0%;}
+.loading-req{font-size:26px;font-weight:700;color:#6c63ff;font-family:'JetBrains Mono',monospace;}
+.loading-text{font-size:13px;color:#6c7389;}
 .error-box{background:#2a1a1a;border:1px solid #5a2a2a;border-radius:12px;padding:24px 32px;text-align:center;max-width:420px;}
-.error-box h3{color:#ff6b6b;margin-bottom:8px;font-size:16px;}
-.error-box p{color:#9098b1;font-size:13px;line-height:1.6;}
-.pdf-highlight{background:rgba(255,214,0,.35);border-radius:2px;position:absolute;pointer-events:none;}
-.pdf-highlight.active{background:rgba(255,140,0,.65);box-shadow:0 0 0 2px rgba(255,140,0,.4);}
+.error-box h3{color:#ff6b6b;margin-bottom:8px;}
+.error-box p{color:#9098b1;font-size:13px;line-height:1.7;}
 </style>
 </head>
 <body>
@@ -50,265 +45,79 @@ body{font-family:'Inter',system-ui,sans-serif;background:#0f0f1a;color:#fff;heig
   <span class="t-logo">📋 ERP Dev Tracker</span>
   <div class="t-sep"></div>
   <span class="t-req" id="tReq">REQ-??</span>
-  <span class="t-hint" id="tHint">⏳ Fetching PDF…</span>
+  <span class="t-status loading" id="tStatus">⏳ Opening document…</span>
   <div class="t-spacer"></div>
-  <a class="t-back" href="javascript:history.back()">← Back to Dashboard</a>
+  <a class="t-open" id="tOpen" href="#" target="_blank">↗ Open in Drive</a>
+  <a class="t-back" href="javascript:history.back()">← Back</a>
 </div>
 
-<div class="find-bar">
-  <span class="find-bar-label">Find in document:</span>
-  <input class="find-bar-input" id="findInput" type="text" value="" spellcheck="false">
-  <span class="find-bar-count" id="findCount"></span>
-  <div class="find-bar-btns">
-    <button class="find-bar-btn" onclick="findPrev()">▲ Prev</button>
-    <button class="find-bar-btn" onclick="findNext()">▼ Next</button>
-  </div>
-  <span class="find-tip">Results highlighted in orange</span>
-</div>
-
-<div class="pdf-wrap" id="pdfWrap">
-  <div class="status" id="statusBox">
-    <div class="status-req" id="statusReq">REQ-??</div>
+<div class="doc-wrap">
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-req" id="loadingReq">REQ-??</div>
     <div class="spinner"></div>
-    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
-    <div class="status-text" id="statusText">Fetching PDF via Apps Script…<br><small style="color:#4a5168">This may take 10–15 seconds on first load</small></div>
+    <div class="loading-text" id="loadingText">Opening document and navigating to requirement…</div>
   </div>
-  <div class="pdf-pages" id="pdfPages"></div>
+  <iframe id="docFrame" src="about:blank" allowfullscreen
+    sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation"></iframe>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
-// ── Config ───────────────────────────────────────────────
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw3F10vwaKIfxGarw68ed9KVU83HnCdTvKnPE2cfixdJfVw6yChwLV8I2_crS7_BWaRSQ/exec';
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-// ── Params ───────────────────────────────────────────────
 const params   = new URLSearchParams(location.search);
-const reqNum   = params.get('req') || '';
-const fileId   = params.get('fid') || '';
+const reqNum   = params.get('req')  || '';
+const fileId   = params.get('fid')  || '';
+const fileType = params.get('type') || 'doc'; // 'doc' or 'docx'
 const reqLabel = 'REQ-' + reqNum;
 
-// ── UI init ──────────────────────────────────────────────
+// Update UI
 document.title = reqLabel + ' — Requirement Viewer';
-document.getElementById('tReq').textContent      = reqLabel;
-document.getElementById('statusReq').textContent = reqLabel;
-document.getElementById('findInput').value       = reqLabel;
+document.getElementById('tReq').textContent        = reqLabel;
+document.getElementById('loadingReq').textContent  = reqLabel;
 
 if(!reqNum || !fileId){
-  showError('Missing Parameters',
-    'Please open this page from the ERP dashboard by clicking "View Requirement" on a card.');
+  document.getElementById('loadingOverlay').innerHTML =
+    '<div class="error-box"><h3>Missing Parameters</h3>' +
+    '<p>Please open this page from the ERP dashboard by clicking<br>"📄 View Requirement" on a request card.</p></div>';
 } else {
-  // Check sessionStorage cache first
-  const cacheKey = 'pdf_' + fileId;
-  const cached   = sessionStorage.getItem(cacheKey);
-  if(cached){
-    setProgress(60); setStatus('Rendering from cache…');
-    renderPdfFromBase64(cached);
-  } else {
-    fetchPdfViaProxy();
-  }
+  loadDoc();
 }
 
-// ── Fetch PDF bytes via Apps Script proxy ────────────────
-function fetchPdfViaProxy(){
-  setStatus('Fetching PDF via Apps Script…');
-  setProgress(10);
-  fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'getPdfBytes', fileId })
-  })
-  .then(r => r.json())
-  .then(d => {
-    if(!d.ok || !d.base64) throw new Error(d.error || 'No data returned');
-    setProgress(50);
-    setStatus('Rendering PDF…');
-    // Cache in sessionStorage so re-opens are instant
-    try{ sessionStorage.setItem('pdf_' + fileId, d.base64); }catch(e){}
-    renderPdfFromBase64(d.base64);
-  })
-  .catch(e => {
-    showError('Could not load PDF', e.message +
-      '<br><br>Make sure the Apps Script is deployed and Drive permission is granted.');
+function loadDoc(){
+  // Build Google Docs URL with heading anchor for auto-jump
+  // The heading in the doc is "REQ-27 | Title" styled as Heading 1
+  // Google Docs supports ?usp=sharing to open in view mode
+  const baseUrl = 'https://docs.google.com/document/d/' + fileId;
+
+  // Embedded view URL — opens doc inside iframe in view mode
+  // #heading= anchor jumps to the REQ heading automatically
+  const embedUrl = baseUrl + '/preview';
+
+  // Full view URL for "Open in Drive" button
+  const viewUrl  = baseUrl + '/view';
+
+  document.getElementById('tOpen').href = viewUrl;
+
+  const frame = document.getElementById('docFrame');
+
+  // Hide loading overlay once iframe loads
+  frame.addEventListener('load', function(){
+    setTimeout(()=>{
+      document.getElementById('loadingOverlay').classList.add('hidden');
+      document.getElementById('tStatus').className = 't-status success';
+      document.getElementById('tStatus').textContent = '✅ Opened at ' + reqLabel;
+    }, 800);
   });
-}
 
-// ── Render PDF from base64 ───────────────────────────────
-async function renderPdfFromBase64(base64){
-  try{
-    // Convert base64 → Uint8Array
-    const binary  = atob(base64);
-    const bytes   = new Uint8Array(binary.length);
-    for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+  // Set iframe src — Google Docs /preview supports heading anchors
+  frame.src = embedUrl + '#heading=' + encodeURIComponent(reqLabel);
 
-    setProgress(55);
-    const loadingTask = pdfjsLib.getDocument({data: bytes});
-    const pdf = await loadingTask.promise;
-    setProgress(60);
-    setStatus('Rendering ' + pdf.numPages + ' pages…');
-    await renderAllPages(pdf);
-    document.getElementById('statusBox').classList.add('hidden');
-    document.getElementById('tHint').textContent = '✅ PDF loaded';
-    // Build text index and auto-search
-    await buildTextIndex(pdf);
-    runFind(reqLabel, true);
-    const n = matches.length;
-    document.getElementById('tHint').textContent =
-      n > 0 ? '✅ ' + n + ' match' + (n>1?'es':'') + ' for ' + reqLabel
-             : '⚠️ ' + reqLabel + ' not found';
-    document.getElementById('findInput').focus();
-    document.getElementById('findInput').select();
-  }catch(e){
-    showError('Render Error', e.message);
-  }
-}
-
-// ── Render all pages ─────────────────────────────────────
-const SCALE = 1.5;
-async function renderAllPages(pdf){
-  const container = document.getElementById('pdfPages');
-  container.innerHTML = '';
-  for(let p=1; p<=pdf.numPages; p++){
-    const page     = await pdf.getPage(p);
-    const viewport = page.getViewport({scale: SCALE});
-    const wrap     = document.createElement('div');
-    wrap.className = 'pdf-page-wrap';
-    wrap.id        = 'page-' + p;
-    wrap.style.width  = viewport.width  + 'px';
-    wrap.style.height = viewport.height + 'px';
-    const canvas   = document.createElement('canvas');
-    canvas.width   = viewport.width;
-    canvas.height  = viewport.height;
-    wrap.appendChild(canvas);
-    container.appendChild(wrap);
-    await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
-    const pct = 60 + Math.round((p / pdf.numPages) * 35);
-    setProgress(pct);
-    setStatus('Rendering page ' + p + ' of ' + pdf.numPages + '…');
-    // Store page ref for text index
-    wrap._pdfPage = page;
-    wrap._viewport = viewport;
-  }
-}
-
-// ── Text index ───────────────────────────────────────────
-let allText = [];
-let matches = [];
-let matchIdx = -1;
-
-async function buildTextIndex(pdf){
-  allText = [];
-  setStatus('Indexing text…');
-  for(let p=1; p<=pdf.numPages; p++){
-    const page     = await pdf.getPage(p);
-    const viewport = page.getViewport({scale: SCALE});
-    const content  = await page.getTextContent();
-    const items = content.items.map(item => {
-      const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
-      return {
-        str: item.str,
-        x:   tx[4],
-        y:   tx[5] - item.height * SCALE,
-        w:   item.width * SCALE,
-        h:   item.height * SCALE,
-      };
-    });
-    allText.push({pageNum: p, items});
-  }
-  setProgress(98);
-}
-
-// ── Find ─────────────────────────────────────────────────
-function runFind(query, autoJump=false){
-  clearHighlights();
-  matches = [];
-  matchIdx = -1;
-  if(!query.trim()){ updateFindCount(); return; }
-  const q = query.trim().toUpperCase();
-
-  allText.forEach(({pageNum, items}) => {
-    let full = '', positions = [];
-    items.forEach((item, idx) => {
-      const start = full.length;
-      full += item.str;
-      for(let c=0; c<item.str.length; c++) positions.push({idx, charInItem: c});
-    });
-    const upper = full.toUpperCase();
-    let pos = 0;
-    while((pos = upper.indexOf(q, pos)) !== -1){
-      matches.push({pageNum, pos, len: q.length, positions, items});
-      pos += q.length;
+  // Fallback: if iframe doesn't load in 10s show message
+  setTimeout(()=>{
+    const overlay = document.getElementById('loadingOverlay');
+    if(!overlay.classList.contains('hidden')){
+      document.getElementById('loadingText').textContent =
+        'Taking longer than expected — the document may be large.';
     }
-  });
-
-  updateFindCount();
-  matches.forEach((m, i) => drawHighlight(m, i));
-  if(autoJump && matches.length > 0){ matchIdx = 0; scrollToMatch(0); }
-}
-
-function drawHighlight(m, idx){
-  const wrap = document.getElementById('page-' + m.pageNum);
-  if(!wrap) return;
-  const p0 = m.positions[m.pos];
-  const p1 = m.positions[Math.min(m.pos + m.len - 1, m.positions.length - 1)];
-  if(!p0 || !p1) return;
-  const i0 = m.items[p0.idx];
-  const i1 = m.items[p1.idx];
-  if(!i0) return;
-  const x = i0.x;
-  const y = i0.y;
-  const w = (i1.x + i1.w) - x;
-  const h = Math.max(i0.h, i1.h) * 1.2;
-  const hl = document.createElement('div');
-  hl.className = 'pdf-highlight' + (idx === matchIdx ? ' active' : '');
-  hl.dataset.matchIdx = idx;
-  hl.style.cssText = 'left:'+x+'px;top:'+y+'px;width:'+Math.max(w,60)+'px;height:'+h+'px';
-  wrap.appendChild(hl);
-}
-
-function clearHighlights(){
-  document.querySelectorAll('.pdf-highlight').forEach(el => el.remove());
-}
-
-function updateFindCount(){
-  const el = document.getElementById('findCount');
-  if(!matches.length) el.textContent = 'No results';
-  else el.textContent = (matchIdx + 1) + ' of ' + matches.length;
-}
-
-function scrollToMatch(idx){
-  if(idx < 0 || idx >= matches.length) return;
-  matchIdx = idx;
-  document.querySelectorAll('.pdf-highlight').forEach(el => {
-    el.classList.toggle('active', parseInt(el.dataset.matchIdx) === idx);
-  });
-  updateFindCount();
-  const m   = matches[idx];
-  const p0  = m.positions[m.pos];
-  const i0  = p0 ? m.items[p0.idx] : null;
-  const wrap = document.getElementById('page-' + m.pageNum);
-  if(wrap && i0){
-    const pdfWrap = document.getElementById('pdfWrap');
-    pdfWrap.scrollTop = wrap.offsetTop + i0.y - 140;
-  } else if(wrap){
-    wrap.scrollIntoView({behavior:'smooth', block:'start'});
-  }
-}
-
-function findNext(){ if(matches.length) scrollToMatch((matchIdx+1) % matches.length); }
-function findPrev(){ if(matches.length) scrollToMatch((matchIdx-1+matches.length) % matches.length); }
-
-document.getElementById('findInput').addEventListener('input', function(){ runFind(this.value); });
-document.getElementById('findInput').addEventListener('keydown', function(e){
-  if(e.key === 'Enter'){ e.shiftKey ? findPrev() : findNext(); }
-});
-
-// ── Helpers ──────────────────────────────────────────────
-function setStatus(msg){ document.getElementById('statusText').innerHTML = msg; }
-function setProgress(pct){ document.getElementById('progressBar').style.width = pct + '%'; }
-function showError(title, msg){
-  document.getElementById('statusBox').innerHTML =
-    '<div class="error-box"><h3>' + title + '</h3><p>' + msg + '</p></div>';
+  }, 10000);
 }
 </script>
 </body>
