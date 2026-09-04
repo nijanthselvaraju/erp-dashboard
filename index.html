@@ -867,18 +867,18 @@ function getDocForReq(refNo){
 function openReqDoc(refNo){
   const doc=getDocForReq(refNo);
   if(!doc)return;
-  window.open(doc.url,'_blank');
-  const label=String(refNo).replace(/^EQ-/,'REQ-');
-  try{navigator.clipboard.writeText(label).then(()=>showCopyToast(label));}
-  catch(e){showCopyToast(label);}
+  const num=String(refNo).replace(/[^0-9]/g,'');
+  // Open dedicated viewer page — handles PDF load + auto-search
+  const viewerUrl='req-doc.html?req='+encodeURIComponent(num)+'&fid='+encodeURIComponent(doc.id);
+  window.open(viewerUrl,'_blank');
 }
 
 function showCopyToast(label){
   const t=document.getElementById('copyToast');
   if(!t)return;
-  t.textContent='📋 '+label+' copied — use Ctrl+F to find it in the PDF';
+  t.textContent='📋 '+label+' copied — press Ctrl+F and paste to jump to it';
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3500);
+  setTimeout(()=>t.classList.remove('show'),4000);
 }
 
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3F10vwaKIfxGarw68ed9KVU83HnCdTvKnPE2cfixdJfVw6yChwLV8I2_crS7_BWaRSQ/exec";
