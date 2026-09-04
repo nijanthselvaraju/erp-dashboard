@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Requirement Viewer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',system-ui,sans-serif;background:#0f0f1a;color:#fff;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;align-items:center;gap:10px;padding:9px 16px;background:#1a1a2e;border-bottom:1px solid #2a2a3e;flex-shrink:0;}
+.t-logo{font-size:12px;font-weight:700;color:#6c63ff;letter-spacing:.5px;flex-shrink:0;}
+.t-sep{width:1px;height:16px;background:#2a2a3e;flex-shrink:0;}
+.t-req{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#4f8ef7;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.3);padding:3px 10px;border-radius:20px;flex-shrink:0;}
+.t-hint{font-size:11px;color:#6c63ff;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.2);padding:3px 10px;border-radius:8px;flex-shrink:0;}
+.t-spacer{flex:1;}
+.t-back{background:#2a2a3e;border:1px solid #3a3a5e;color:#9098b1;padding:5px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:all .15s;flex-shrink:0;}
+.t-back:hover{background:#3a3a5e;color:#fff;}
+
+/* ── Find bar (our own, above PDF) ── */
+.find-bar{display:flex;align-items:center;gap:8px;padding:7px 16px;background:#12122a;border-bottom:1px solid #2a2a3e;flex-shrink:0;}
+.find-bar-label{font-size:11px;color:#9098b1;white-space:nowrap;}
+.find-bar-input{background:#1a1a2e;border:1px solid #6c63ff;color:#fff;padding:5px 12px;border-radius:8px;font-size:12px;font-family:'JetBrains Mono',monospace;font-weight:700;width:120px;outline:none;}
+.find-bar-count{font-size:11px;color:#6c63ff;font-family:'JetBrains Mono',monospace;min-width:60px;}
+.find-bar-btns{display:flex;gap:4px;}
+.find-bar-btn{background:#2a2a3e;border:1px solid #3a3a5e;color:#9098b1;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:all .1s;}
+.find-bar-btn:hover{background:#3a3a5e;color:#fff;}
+.find-tip{font-size:10px;color:#4a5168;margin-left:auto;}
+
+/* ── PDF canvas area ── */
+.pdf-wrap{flex:1;overflow-y:auto;overflow-x:auto;background:#525659;position:relative;}
+.pdf-wrap::-webkit-scrollbar{width:8px;height:8px;}
+.pdf-wrap::-webkit-scrollbar-thumb{background:#3a3a5e;border-radius:4px;}
+.pdf-pages{display:flex;flex-direction:column;align-items:center;padding:16px;gap:12px;}
+.pdf-page-wrap{position:relative;box-shadow:0 4px 20px rgba(0,0,0,.5);}
+.pdf-page-wrap canvas{display:block;}
+
+/* ── Status overlay ── */
+.status{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0f0f1a;z-index:10;transition:opacity .3s;}
+.status.hidden{opacity:0;pointer-events:none;}
+.spinner{width:40px;height:40px;border:3px solid #2a2a3e;border-top-color:#6c63ff;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.status-req{font-size:24px;font-weight:700;color:#6c63ff;font-family:'JetBrains Mono',monospace;}
+.status-text{font-size:13px;color:#6c7389;}
+.error-box{background:#2a1a1a;border:1px solid #5a2a2a;border-radius:12px;padding:24px 32px;text-align:center;max-width:420px;}
+.error-box h3{color:#ff6b6b;margin-bottom:8px;font-size:16px;}
+.error-box p{color:#9098b1;font-size:13px;line-height:1.6;}
+
+/* ── Highlight for found text ── */
+.pdf-highlight{background:rgba(255,214,0,.4);border-radius:2px;position:absolute;pointer-events:none;}
+.pdf-highlight.active{background:rgba(255,140,0,.6);}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="t-logo">📋 ERP Dev Tracker</span>
+  <div class="t-sep"></div>
+  <span class="t-req" id="tReq">REQ-??</span>
+  <span class="t-hint" id="tHint">🔍 Loading…</span>
+  <div class="t-spacer"></div>
+  <a class="t-back" href="javascript:history.back()">← Back to Dashboard</a>
+</div>
+
+<div class="find-bar">
+  <span class="find-bar-label">Find in document:</span>
+  <input class="find-bar-input" id="findInput" type="text" value="" spellcheck="false">
+  <span class="find-bar-count" id="findCount"></span>
+  <div class="find-bar-btns">
+    <button class="find-bar-btn" onclick="findPrev()">▲ Prev</button>
+    <button class="find-bar-btn" onclick="findNext()">▼ Next</button>
+  </div>
+  <span class="find-tip">Tip: Results are highlighted in orange</span>
+</div>
+
+<div class="pdf-wrap" id="pdfWrap">
+  <div class="status" id="statusBox">
+    <div class="status-req" id="statusReq">REQ-??</div>
+    <div class="spinner"></div>
+    <div class="status-text" id="statusText">Loading PDF…</div>
+  </div>
+  <div class="pdf-pages" id="pdfPages"></div>
+</div>
+
+<!-- PDF.js from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// ── Init PDF.js worker ────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── Parse params ─────────────────────────────────────────
+const params   = new URLSearchParams(location.search);
+const reqNum   = params.get('req') || '';
+const fileId   = params.get('fid') || '';
+const reqLabel = 'REQ-' + reqNum;
+
+// ── Update static UI ──────────────────────────────────────
+document.title = reqLabel + ' — Requirement Viewer';
+document.getElementById('tReq').textContent     = reqLabel;
+document.getElementById('statusReq').textContent= reqLabel;
+document.getElementById('findInput').value      = reqLabel;
+
+if(!reqNum || !fileId){
+  document.getElementById('statusBox').innerHTML =
+    '<div class="error-box"><h3>Missing Parameters</h3>' +
+    '<p>Please open this page from the ERP dashboard by clicking "View Requirement" on a card.</p></div>';
+} else {
+  loadAndRender();
+}
+
+// ── PDF state ─────────────────────────────────────────────
+let pdfDoc    = null;
+let allText   = []; // [{pageNum, items:[{str,x,y,w,h,pageW,pageH}]}]
+let matches   = []; // [{pageNum, itemIdx, charIdx}]
+let matchIdx  = -1;
+const SCALE   = 1.5;
+
+// ── Load PDF via PDF.js ───────────────────────────────────
+async function loadAndRender(){
+  const url = 'https://drive.google.com/uc?export=download&id=' + fileId;
+  document.getElementById('statusText').textContent = 'Fetching PDF…';
+  try{
+    const loadingTask = pdfjsLib.getDocument({url, withCredentials:false});
+    pdfDoc = await loadingTask.promise;
+    document.getElementById('statusText').textContent =
+      'Rendering ' + pdfDoc.numPages + ' pages…';
+    await renderAllPages();
+    document.getElementById('statusBox').classList.add('hidden');
+    document.getElementById('tHint').textContent = '✅ PDF loaded — navigating to ' + reqLabel;
+    // Auto-search after render
+    await buildTextIndex();
+    runFind(reqLabel, true); // true = auto-jump to first match
+    document.getElementById('tHint').textContent =
+      matches.length > 0
+        ? '✅ Found ' + matches.length + ' match' + (matches.length>1?'es':'') + ' for ' + reqLabel
+        : '⚠️ ' + reqLabel + ' not found in this document';
+  }catch(e){
+    console.error(e);
+    document.getElementById('statusBox').innerHTML =
+      '<div class="error-box"><h3>Could not load PDF</h3>' +
+      '<p>' + (e.message||'Unknown error') + '</p>' +
+      '<p style="margin-top:8px">Make sure the file is set to "Anyone with the link" in Google Drive.</p></div>';
+  }
+}
+
+// ── Render all pages to canvas ────────────────────────────
+async function renderAllPages(){
+  const container = document.getElementById('pdfPages');
+  container.innerHTML = '';
+  for(let p=1;p<=pdfDoc.numPages;p++){
+    const page     = await pdfDoc.getPage(p);
+    const viewport = page.getViewport({scale:SCALE});
+    const wrap     = document.createElement('div');
+    wrap.className = 'pdf-page-wrap';
+    wrap.id        = 'page-'+p;
+    wrap.style.width  = viewport.width+'px';
+    wrap.style.height = viewport.height+'px';
+    const canvas   = document.createElement('canvas');
+    canvas.width   = viewport.width;
+    canvas.height  = viewport.height;
+    wrap.appendChild(canvas);
+    container.appendChild(wrap);
+    const ctx = canvas.getContext('2d');
+    await page.render({canvasContext:ctx, viewport}).promise;
+    document.getElementById('statusText').textContent =
+      'Rendering page ' + p + ' of ' + pdfDoc.numPages + '…';
+  }
+}
+
+// ── Build text index for search ───────────────────────────
+async function buildTextIndex(){
+  allText = [];
+  for(let p=1;p<=pdfDoc.numPages;p++){
+    const page     = await pdfDoc.getPage(p);
+    const viewport = page.getViewport({scale:SCALE});
+    const content  = await page.getTextContent();
+    const items = content.items.map(item=>{
+      const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+      return {
+        str:   item.str,
+        x:     tx[4],
+        y:     tx[5] - item.height * SCALE,
+        w:     item.width * SCALE,
+        h:     item.height * SCALE,
+        pageW: viewport.width,
+        pageH: viewport.height,
+      };
+    });
+    allText.push({pageNum:p, items});
+  }
+}
+
+// ── Find logic ────────────────────────────────────────────
+function runFind(query, autoJump=false){
+  clearHighlights();
+  matches = [];
+  if(!query.trim()) return;
+  const q = query.trim().toUpperCase();
+  allText.forEach(({pageNum, items})=>{
+    // Join full page text to find multi-item matches
+    let full='', positions=[];
+    items.forEach((item,idx)=>{
+      const start=full.length;
+      full+=item.str;
+      for(let c=0;c<item.str.length;c++) positions.push({idx,char:c});
+    });
+    const upperFull = full.toUpperCase();
+    let pos = 0;
+    while((pos=upperFull.indexOf(q,pos))!==-1){
+      matches.push({pageNum, pos, len:q.length, positions, items});
+      pos += q.length;
+    }
+  });
+  updateFindCount();
+  // Draw all highlights
+  matches.forEach((m,i)=>drawHighlight(m,i));
+  // Jump to first match
+  if(autoJump && matches.length>0){matchIdx=0;scrollToMatch(0);}
+}
+
+function drawHighlight(m, idx){
+  const wrap = document.getElementById('page-'+m.pageNum);
+  if(!wrap) return;
+  // Find bounding boxes of all chars in match
+  const startPos = m.positions[m.pos];
+  const endPos   = m.positions[Math.min(m.pos+m.len-1, m.positions.length-1)];
+  if(!startPos||!endPos) return;
+  const startItem = m.items[startPos.idx];
+  const endItem   = m.items[endPos.idx];
+  if(!startItem) return;
+  // Approximate: highlight from startItem to endItem
+  const x      = startItem.x;
+  const y      = startItem.y;
+  const right  = endItem.x + endItem.w;
+  const bottom = endItem.y + endItem.h;
+  const hl = document.createElement('div');
+  hl.className = 'pdf-highlight' + (idx===matchIdx?' active':'');
+  hl.dataset.matchIdx = idx;
+  hl.style.left   = x+'px';
+  hl.style.top    = y+'px';
+  hl.style.width  = (right-x)+'px';
+  hl.style.height = (bottom-y+endItem.h)+'px';
+  wrap.appendChild(hl);
+}
+
+function clearHighlights(){
+  document.querySelectorAll('.pdf-highlight').forEach(el=>el.remove());
+}
+
+function updateFindCount(){
+  const el=document.getElementById('findCount');
+  if(matches.length===0){el.textContent='No results';}
+  else{el.textContent=(matchIdx+1)+' of '+matches.length;}
+}
+
+function scrollToMatch(idx){
+  if(idx<0||idx>=matches.length) return;
+  matchIdx=idx;
+  // Update active highlight
+  document.querySelectorAll('.pdf-highlight').forEach(el=>{
+    el.classList.toggle('active', parseInt(el.dataset.matchIdx)===idx);
+  });
+  updateFindCount();
+  // Scroll page into view
+  const m=matches[idx];
+  const wrap=document.getElementById('page-'+m.pageNum);
+  if(wrap){
+    // Scroll the wrap into view with offset
+    const pdfWrap=document.getElementById('pdfWrap');
+    const startItem=m.items[m.positions[m.pos]?.idx];
+    if(startItem){
+      const pageTop=wrap.offsetTop;
+      pdfWrap.scrollTop=pageTop+startItem.y-120;
+    } else {
+      wrap.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  }
+}
+
+function findNext(){
+  if(!matches.length) return;
+  scrollToMatch((matchIdx+1)%matches.length);
+}
+function findPrev(){
+  if(!matches.length) return;
+  scrollToMatch((matchIdx-1+matches.length)%matches.length);
+}
+
+// ── Find input listeners ──────────────────────────────────
+document.getElementById('findInput').addEventListener('input', function(){
+  runFind(this.value);
+});
+document.getElementById('findInput').addEventListener('keydown', function(e){
+  if(e.key==='Enter'){e.shiftKey?findPrev():findNext();}
+});
+// Focus find input on load
+window.addEventListener('load',()=>{
+  document.getElementById('findInput').focus();
+  document.getElementById('findInput').select();
+});
+</script>
+</body>
+</html>
