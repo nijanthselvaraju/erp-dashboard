@@ -226,6 +226,34 @@
     .trend-eq{background:rgba(107,114,128,.15);color:var(--muted);}
 
     /* ── BOARD ── */
+    /* ── VIEW TOGGLE ── */
+    .view-toggle{display:inline-flex;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px;flex-shrink:0;}
+    .view-toggle-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:none;color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;}
+    .view-toggle-btn:hover{color:var(--text);}
+    .view-toggle-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(108,99,255,.3);}
+
+    /* ── LIST VIEW ── */
+    .list-wrap{display:none;overflow-x:auto;}
+    .list-wrap.active{display:block;}
+    .list-table{width:100%;border-collapse:collapse;font-size:12px;}
+    .list-table th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;background:var(--surface2);}
+    .list-table th:hover{color:var(--accent2);}
+    .list-table th .sort-icon{margin-left:4px;opacity:.4;font-size:9px;}
+    .list-table th.sort-asc .sort-icon::after{content:'▲';opacity:1;}
+    .list-table th.sort-desc .sort-icon::after{content:'▼';opacity:1;}
+    .list-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text);}
+    .list-table tr{cursor:pointer;transition:background .1s;}
+    .list-table tr:hover td{background:var(--surface2);}
+    .list-table tr.ms-selected td{background:rgba(108,99,255,.08);}
+    .lt-ref{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent2);background:rgba(108,99,255,.12);padding:2px 7px;border-radius:4px;white-space:nowrap;display:inline-block;}
+    .lt-title{font-weight:600;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .lt-doc-btn{display:inline-flex;align-items:center;gap:3px;color:#4f8ef7;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.25);padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .12s;}
+    .lt-doc-btn:hover{background:rgba(79,142,247,.2);}
+    .lt-ms-chk{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s;cursor:pointer;}
+    .lt-ms-chk.checked{background:var(--accent);border-color:var(--accent);}
+    .lt-ms-chk.checked::after{content:'✓';color:#fff;font-size:9px;font-weight:700;}
+    .lt-empty{padding:40px;text-align:center;color:var(--muted);font-size:13px;}
+
     .board-cols-wrap{display:flex;gap:14px;overflow-x:auto;align-items:flex-start;padding-bottom:8px;}
     .board-col{background:var(--surface2);border:1px solid var(--border);border-radius:12px;min-width:240px;max-width:280px;flex:1;display:flex;flex-direction:column;transition:border-color .2s;height:580px;}
     .board-col.drag-over{border-color:var(--accent);background:rgba(108,99,255,.07);}
@@ -774,6 +802,16 @@
           <button class="ms-select-all-btn" id="msSelectAllBtn" onclick="toggleSelectAll()">⊞ Select All</button>
           <button class="ms-toggle-btn" id="msToggleBtn" onclick="toggleMultiSelect()">☐ Multi-select</button>
           <span class="bf-result-count" id="bfResultCount"></span>
+          <div class="view-toggle">
+            <button class="view-toggle-btn active" id="vtBoard" onclick="switchBoardView('board')">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="0" y="0" width="5" height="5" rx="1" fill="currentColor"/><rect x="7" y="0" width="5" height="5" rx="1" fill="currentColor"/><rect x="0" y="7" width="5" height="5" rx="1" fill="currentColor"/><rect x="7" y="7" width="5" height="5" rx="1" fill="currentColor"/></svg>
+              Board
+            </button>
+            <button class="view-toggle-btn" id="vtList" onclick="switchBoardView('list')">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><rect x="0" y="0" width="12" height="2" rx="1" fill="currentColor"/><rect x="0" y="4" width="12" height="2" rx="1" fill="currentColor"/><rect x="0" y="8" width="12" height="2" rx="1" fill="currentColor"/></svg>
+              List
+            </button>
+          </div>
         </div>
       </div>
       <!-- CHIP ROW: separate slim row below strip -->
@@ -781,6 +819,27 @@
       <!-- MOBILE: column tab strip -->
       <div class="mob-col-tabs" id="mobColTabs"></div>
       <div class="board-cols-wrap" id="boardCols"></div>
+      <!-- LIST VIEW -->
+      <div class="list-wrap" id="listWrap">
+        <table class="list-table" id="listTable">
+          <thead>
+            <tr>
+              <th id="lth-ms" style="width:32px"></th>
+              <th onclick="sortList('refNo')" id="lth-refNo">REQ<span class="sort-icon"></span></th>
+              <th onclick="sortList('title')" id="lth-title">Title<span class="sort-icon"></span></th>
+              <th onclick="sortList('module')" id="lth-module">Module<span class="sort-icon"></span></th>
+              <th onclick="sortList('priority')" id="lth-priority">Priority<span class="sort-icon"></span></th>
+              <th onclick="sortList('status')" id="lth-status">Status<span class="sort-icon"></span></th>
+              <th onclick="sortList('developerStatus')" id="lth-developerStatus">Dev Status<span class="sort-icon"></span></th>
+              <th onclick="sortList('devStage')" id="lth-devStage">Dev Stage<span class="sort-icon"></span></th>
+              <th onclick="sortList('developedBy')" id="lth-developedBy">Dev By<span class="sort-icon"></span></th>
+              <th onclick="sortList('date')" id="lth-date">Date<span class="sort-icon"></span></th>
+              <th>Doc</th>
+            </tr>
+          </thead>
+          <tbody id="listBody"></tbody>
+        </table>
+      </div>
       <!-- MOBILE: move card picker -->
       <div class="card-move-overlay" id="moveOverlay" onclick="closeMovePickerNow()"></div>
       <div class="card-move-picker" id="movePicker" style="display:none">
@@ -1463,6 +1522,8 @@ function buildBoard(){
   }
   // Mobile: rebuild column tabs after every board render
   if(typeof buildMobColTabs==='function')buildMobColTabs();
+  // List view: rebuild if active
+  if(boardView==='list')buildList();
 }
 
 // ── TICKET MODAL ──────────────────────────────────────────
@@ -2213,6 +2274,104 @@ async function loadData(){
   }
 }
 loadData();
+
+// ════════════════════════════════════════════════════════════
+// LIST VIEW
+// ════════════════════════════════════════════════════════════
+let boardView='board';
+let listSortCol='refNo';
+let listSortDir='asc';
+
+function switchBoardView(view){
+  boardView=view;
+  document.getElementById('vtBoard').classList.toggle('active',view==='board');
+  document.getElementById('vtList').classList.toggle('active',view==='list');
+  document.getElementById('boardCols').style.display=view==='board'?'':'none';
+  document.getElementById('listWrap').classList.toggle('active',view==='list');
+  const tabs=document.getElementById('mobColTabs');
+  if(tabs)tabs.style.display=view==='board'&&isMobile()?'flex':'none';
+  if(view==='list')buildList();
+}
+
+function sortList(col){
+  if(listSortCol===col)listSortDir=listSortDir==='asc'?'desc':'asc';
+  else{listSortCol=col;listSortDir='asc';}
+  buildList();
+}
+
+function buildList(){
+  const data=getBoardFiltered();
+  const dir=listSortDir==='asc'?1:-1;
+  const sorted=[...data].sort((a,b)=>{
+    const av=(a[listSortCol]||'').toString().toLowerCase();
+    const bv=(b[listSortCol]||'').toString().toLowerCase();
+    return av<bv?-dir:av>bv?dir:0;
+  });
+  // Update sort icons
+  document.querySelectorAll('.list-table th[id]').forEach(th=>{
+    const col=th.id.replace('lth-','');
+    th.className=col===listSortCol?'sort-'+listSortDir:'';
+  });
+  const PCOL={Critical:'#ef4444',High:'#f97316',Medium:'#eab308',Low:'#22c55e'};
+  const SCOL={Open:'var(--open)',Closed:'var(--closed)',Cancelled:'var(--cancelled)','On Hold':'var(--onhold)'};
+  const DCOL={'Not Started':'var(--notstarted)','In Progress':'var(--inprogress)',
+    'Incomplete':'var(--incomplete)','Completed':'var(--completed)','Deferred':'var(--deferred)'};
+  const tbody=document.getElementById('listBody');
+  if(!sorted.length){
+    tbody.innerHTML='<tr><td colspan="11" class="lt-empty">No requests match the current filters</td></tr>';
+    return;
+  }
+  tbody.innerHTML=sorted.map(r=>{
+    const isSel=msSelected.has(r.refNo);
+    const doc=getDocForReq(r.refNo);
+    const docBtn=doc
+      ?'<button class="lt-doc-btn" onclick="event.stopPropagation();openReqDoc(\''+r.refNo+'\')">📄 Doc</button>'
+      :'—';
+    const msChk=msActive
+      ?'<div class="lt-ms-chk'+(isSel?' checked':'')+'" onclick="event.stopPropagation();listCardClick(\''+r.refNo+'\')"></div>'
+      :'';
+    return'<tr class="'+(isSel?'ms-selected':'')+'" onclick="listRowClick(event,\''+r.refNo+'\')">'+
+      '<td>'+msChk+'</td>'+
+      '<td><span class="lt-ref">'+r.refNo+'</span></td>'+
+      '<td><div class="lt-title" title="'+r.title+'">'+r.title+'</div></td>'+
+      '<td>'+(r.module||'—')+'</td>'+
+      '<td style="color:'+(PCOL[r.priority]||'var(--muted)')+'">'+r.priority+'</td>'+
+      '<td style="color:'+(SCOL[r.status]||'var(--muted)')+'">'+r.status+'</td>'+
+      '<td style="color:'+(DCOL[r.developerStatus]||'var(--muted)')+'">'+r.developerStatus+'</td>'+
+      '<td>'+(r.devStage||'—')+'</td>'+
+      '<td>'+(r.developedBy||'—')+'</td>'+
+      '<td style="font-family:\'JetBrains Mono\',monospace;font-size:10px">'+r.date+'</td>'+
+      '<td>'+docBtn+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+function listRowClick(event,refNo){
+  if(msActive){listCardClick(refNo);return;}
+  const r=RAW_DATA.find(x=>x.refNo===refNo);
+  if(r)openModal(r);
+}
+
+function listCardClick(refNo){
+  if(!msActive)return;
+  if(msSelected.has(refNo)){
+    msSelected.delete(refNo);
+    const row=document.querySelector('#listBody tr[onclick*="\''+refNo+'\'"]');
+    if(row){row.classList.remove('ms-selected');row.querySelector('.lt-ms-chk')?.classList.remove('checked');}
+  } else {
+    msSelected.add(refNo);
+    const row=document.querySelector('#listBody tr[onclick*="\''+refNo+'\'"]');
+    if(row){row.classList.add('ms-selected');row.querySelector('.lt-ms-chk')?.classList.add('checked');}
+  }
+  _updateMsUI();_updateColCheckboxes();_updateSelectAllBtn();
+}
+
+// Rebuild list when filters change (if list view is active)
+const _origRenderChipsForList=_renderBoardFilterChips;
+_renderBoardFilterChips=function(){
+  _origRenderChipsForList();
+  if(boardView==='list')buildList();
+};
 
 // ════════════════════════════════════════════════════════════
 // MOBILE BOARD ENHANCEMENTS
