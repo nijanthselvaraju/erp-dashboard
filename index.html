@@ -253,20 +253,6 @@
     .lt-ms-chk.checked{background:var(--accent);border-color:var(--accent);}
     .lt-ms-chk.checked::after{content:'✓';color:#fff;font-size:9px;font-weight:700;}
     .lt-empty{padding:40px;text-align:center;color:var(--muted);font-size:13px;}
-    /* inline editable cells */
-    .lt-editable{cursor:pointer;border-radius:5px;padding:2px 6px;transition:background .12s;display:inline-block;}
-    .lt-editable:hover{background:var(--surface2);}
-    /* inline dropdown */
-    .lt-dropdown{position:fixed;z-index:400;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);min-width:160px;padding:5px 0;max-height:220px;overflow-y:auto;}
-    .lt-dropdown::-webkit-scrollbar{width:4px;}
-    .lt-dropdown::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
-    .lt-dropdown-item{display:flex;align-items:center;gap:8px;padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;}
-    .lt-dropdown-item:hover{background:var(--surface2);}
-    .lt-dropdown-item.current{color:var(--accent2);font-weight:700;}
-    .lt-dropdown-item.current::before{content:'✓';font-size:10px;}
-    /* saving flash */
-    @keyframes ltSave{0%{background:rgba(16,185,129,.2);}100%{background:transparent;}}
-    .lt-saving td{animation:ltSave .8s ease;}
 
     .board-cols-wrap{display:flex;gap:14px;overflow-x:auto;align-items:flex-start;padding-bottom:8px;}
     .board-col{background:var(--surface2);border:1px solid var(--border);border-radius:12px;min-width:240px;max-width:280px;flex:1;display:flex;flex-direction:column;transition:border-color .2s;height:580px;}
@@ -478,6 +464,8 @@
     .kanban-dev-badge:hover{color:var(--accent2);}
 
     /* KANBAN CLICKABLE BADGES */
+    .kanban-cycle-badge{cursor:pointer;transition:all .15s;user-select:none;}
+    .kanban-cycle-badge:hover{opacity:.8;transform:scale(1.05);}
     .kanban-row-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;margin-top:6px;}
 
     /* DEV STAGE badge colors */
@@ -758,6 +746,21 @@
             <div class="bfd-option" onclick="toggleBfdValue('priority','Critical')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Critical</div>
           </div>
         </div>
+        <!-- Dev Stage -->
+        <div class="bfd-wrap" id="bfdWrap-devStage">
+          <div class="bfd-btn" id="bfdBtn-devStage" onclick="toggleBfdPanel('devStage')">
+            <span id="bfdLabel-devStage">Dev Stage</span>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="bfd-panel" id="bfdPanel-devStage">
+            <div class="bfd-option" onclick="toggleBfdValue('devStage','Development')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Development</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStage','Testing')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Testing</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStage','Ready to deploy')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Ready to deploy</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStage','Deployed (Staging)')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Deployed (Staging)</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStage','On Hold')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>On Hold</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStage','Deployed (Prod)')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Deployed (Prod)</div>
+          </div>
+        </div>
         <!-- Developer Status -->
         <div class="bfd-wrap" id="bfdWrap-devStatus">
           <div class="bfd-btn" id="bfdBtn-devStatus" onclick="toggleBfdPanel('devStatus')">
@@ -767,10 +770,9 @@
           <div class="bfd-panel" id="bfdPanel-devStatus">
             <div class="bfd-option" onclick="toggleBfdValue('devStatus','Not Started')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Not Started</div>
             <div class="bfd-option" onclick="toggleBfdValue('devStatus','In Progress')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>In Progress</div>
-            <div class="bfd-option" onclick="toggleBfdValue('devStatus','Reopened')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Reopened</div>
-            <div class="bfd-option" onclick="toggleBfdValue('devStatus','Ready to Deploy')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Ready to Deploy</div>
-            <div class="bfd-option" onclick="toggleBfdValue('devStatus','Deployed')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Deployed</div>
-            <div class="bfd-option" onclick="toggleBfdValue('devStatus','On Hold')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>On Hold</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStatus','Incomplete')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Incomplete</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStatus','Completed')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Completed</div>
+            <div class="bfd-option" onclick="toggleBfdValue('devStatus','Deferred')"><span class="bfd-checkbox"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Deferred</div>
           </div>
         </div>
         <!-- Module (dynamic) -->
@@ -783,6 +785,7 @@
             <!-- options injected by buildBoardModuleOptions() -->
           </div>
         </div>
+        <!-- Dev By (dynamic) -->
         <div class="bfd-wrap" id="bfdWrap-devBy">
           <div class="bfd-btn" id="bfdBtn-devBy" onclick="toggleBfdPanel('devBy')">
             <span id="bfdLabel-devBy">Dev By</span>
@@ -828,7 +831,7 @@
               <th onclick="sortList('priority')" id="lth-priority">Priority<span class="sort-icon"></span></th>
               <th onclick="sortList('status')" id="lth-status">Status<span class="sort-icon"></span></th>
               <th onclick="sortList('developerStatus')" id="lth-developerStatus">Dev Status<span class="sort-icon"></span></th>
-              
+              <th onclick="sortList('devStage')" id="lth-devStage">Dev Stage<span class="sort-icon"></span></th>
               <th onclick="sortList('developedBy')" id="lth-developedBy">Dev By<span class="sort-icon"></span></th>
               <th onclick="sortList('date')" id="lth-date">Date<span class="sort-icon"></span></th>
               <th>Doc</th>
@@ -850,9 +853,9 @@
 <div class="bulk-bar" id="bulkBar">
   <div class="bulk-bar-inner">
     <span class="bulk-bar-label">Bulk update <span id="bulkCountLabel">0</span> requests:</span>
-    <select class="bulk-select" id="bsDeveloperStatus"><option value="">— Dev Status —</option><option>Not Started</option><option>In Progress</option><option>Reopened</option><option>Ready to Deploy</option><option>Deployed</option><option>On Hold</option></select>
+    <select class="bulk-select" id="bsDeveloperStatus"><option value="">— Dev Status —</option><option>Not Started</option><option>In Progress</option><option>Incomplete</option><option>Completed</option><option>Deferred</option></select>
     <select class="bulk-select" id="bsPriority"><option value="">— Priority —</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select>
-    
+    <select class="bulk-select" id="bsDevStage"><option value="">— Dev Stage —</option><option>Development</option><option>Testing</option><option>Ready to deploy</option><option>Deployed (Staging)</option><option>On Hold</option><option>Deployed (Prod)</option></select>
     <select class="bulk-select" id="bsStatus"><option value="">— Request Status —</option><option>Open</option><option>Closed</option><option>Cancelled</option></select>
     <select class="bulk-select" id="bsDevelopedBy"><option value="">— Developed By —</option><option>Devi Priya</option><option>Madhan</option></select>
     <button class="bulk-apply-btn" id="bulkApplyBtn" onclick="applyBulkUpdate()">Apply →</button>
@@ -940,14 +943,15 @@ function showCopyToast(label){
 
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3F10vwaKIfxGarw68ed9KVU83HnCdTvKnPE2cfixdJfVw6yChwLV8I2_crS7_BWaRSQ/exec";
 
-const DEV_STATUSES = ['Not Started','In Progress','Reopened','Ready to Deploy','Deployed','On Hold'];
-const COL_CLASS    = {'Not Started':'col-notstarted','In Progress':'col-inprogress','Reopened':'col-incomplete','Ready to Deploy':'col-ready','Deployed':'col-completed','On Hold':'col-onhold'};
+const DEV_STATUSES = ['Not Started','In Progress','Incomplete','Completed','Deferred'];
+const COL_CLASS    = {'Not Started':'col-notstarted','In Progress':'col-inprogress','Incomplete':'col-incomplete','Completed':'col-completed','Deferred':'col-deferred'};
 const STATUSES     = ['Open','Closed','Cancelled'];
 
 const MATRICES_DEF = {
   status:    {title:'Request Status',   rowField:'module',      colField:'status',         cols:[{k:'Open',l:'Open',p:'cp-open'},{k:'Closed',l:'Closed',p:'cp-closed'},{k:'Cancelled',l:'Cancelled',p:'cp-cancelled'}]},
   priority:  {title:'Priority',         rowField:'module',      colField:'priority',        cols:[{k:'Low',l:'Low',p:'cp-low'},{k:'Medium',l:'Medium',p:'cp-medium'},{k:'High',l:'High',p:'cp-high'},{k:'Critical',l:'Critical',p:'cp-critical'}]},
-  devStatus: {title:'Developer Status', rowField:'module',      colField:'developerStatus', cols:[{k:'Not Started',l:'Not Started',p:'cp-notstarted'},{k:'In Progress',l:'In Progress',p:'cp-inprogress'},{k:'Reopened',l:'Reopened',p:'cp-incomplete'},{k:'Ready to Deploy',l:'Ready to Deploy',p:'cp-rdeploy'},{k:'Deployed',l:'Deployed',p:'cp-completed'},{k:'On Hold',l:'On Hold',p:'cp-onhold'}]},
+  stage:     {title:'Development Stage',rowField:'module',      colField:'devStage',        cols:[{k:'Development',l:'Development',p:'cp-devstage'},{k:'Testing',l:'Testing',p:'cp-testing'},{k:'Ready to deploy',l:'Ready to Deploy',p:'cp-rdeploy'},{k:'Deployed (Staging)',l:'Deployed (Staging)',p:'cp-deployed'},{k:'On Hold',l:'On Hold',p:'cp-onhold'},{k:'Deployed (Prod)',l:'Deployed (Prod)',p:'cp-completed'}]},
+  devStatus: {title:'Developer Status', rowField:'module',      colField:'developerStatus', cols:[{k:'Not Started',l:'Not Started',p:'cp-notstarted'},{k:'In Progress',l:'In Progress',p:'cp-inprogress'},{k:'Incomplete',l:'Incomplete',p:'cp-incomplete'},{k:'Completed',l:'Completed',p:'cp-completed'},{k:'Deferred',l:'Deferred',p:'cp-deferred'}]},
   developer: {title:'Developer Workload',rowField:'developedBy',colField:'status',          cols:[{k:'Open',l:'Open',p:'cp-open'},{k:'Closed',l:'Closed',p:'cp-closed'},{k:'Cancelled',l:'Cancelled',p:'cp-cancelled'}]},
   month:     {title:'Month-wise Status',rowField:'_monthKey',   colField:'status',          cols:[{k:'Open',l:'Open',p:'cp-open'},{k:'Closed',l:'Closed',p:'cp-closed'},{k:'Cancelled',l:'Cancelled',p:'cp-cancelled'}]},
 };
@@ -1053,8 +1057,8 @@ function buildStatBar(){
   const total=d.length,open=d.filter(r=>r.status==='Open').length;
   const hc=d.filter(r=>(r.priority==='High'||r.priority==='Critical')&&(r.status==='Open'||r.status==='On Hold')).length;
   const ns=d.filter(r=>r.developerStatus==='Not Started').length;
-  const dev=d.filter(r=>r.developerStatus==='In Progress').length;
-  const rdy=d.filter(r=>r.developerStatus==='Ready to Deploy').length;
+  const dev=d.filter(r=>r.devStage==='Development').length;
+  const rdy=d.filter(r=>r.devStage==='Ready to deploy').length;
   document.getElementById('statBar').innerHTML=
     sc('sc-total','Total Requests',total,'All development items')+sc('sc-open','Open',open,'Pending resolution')+
     sc('sc-highcrit','High + Critical',hc,'Active - Open or On Hold')+sc('sc-notstart','Not Started',ns,'Development pending')+
@@ -1094,7 +1098,7 @@ function buildMatrix(cid,key){
     '<div class="matrix-table-wrap"><table class="matrix-table"><thead><tr><th style="min-width:100px">'+rl+'</th><th style="min-width:52px">Total</th>'+def.cols.map(c=>'<th style="min-width:70px">'+c.l+'</th>').join('')+'</tr></thead>'+
     '<tbody>'+bodyRows+'<tr class="total-row"><td>Total</td><td>'+pill(grand,'cp-total')+'</td>'+totalCells+'</tr></tbody></table></div>';
 }
-function buildAllMatrices(){Object.entries({status:'mxStatus',priority:'mxPriority',devStatus:'mxStage',developer:'mxDeveloper',month:'mxMonth'}).forEach(([k,id])=>buildMatrix(id,k));}
+function buildAllMatrices(){Object.entries({status:'mxStatus',priority:'mxPriority',stage:'mxStage',devStatus:'mxDevStatus',developer:'mxDeveloper',month:'mxMonth'}).forEach(([k,id])=>buildMatrix(id,k));}
 
 function buildWeekBtns(){document.getElementById('weekBtns').innerHTML=[1,2,3,4,5].map(w=>'<button class="week-btn '+(staleWeeks===w?'active':'')+'" onclick="setStaleWeeks('+w+')">'+w+'W</button>').join('');}
 function setStaleWeeks(w){staleWeeks=w;buildWeekBtns();renderTable();}
@@ -1298,15 +1302,16 @@ function onDrop(e,newDevStatus,mobileRefNo){
 const boardFilters={
   status:   new Set(),
   priority: new Set(),
+  devStage: new Set(),
   devStatus:new Set(),
   module:   new Set(),
   devBy:    new Set(),
 };
 
 // Filter key → data field mapping
-const BF_FIELD={status:'status',priority:'priority',devStatus:'developerStatus',module:'module',devBy:'developedBy'};
+const BF_FIELD={status:'status',priority:'priority',devStage:'devStage',devStatus:'developerStatus',module:'module',devBy:'developedBy'};
 // Filter key → display label
-const BF_LABEL={status:'Request Status',priority:'Priority',devStatus:'Dev Status',module:'Module',devBy:'Dev By'};
+const BF_LABEL={status:'Request Status',priority:'Priority',devStage:'Dev Stage',devStatus:'Dev Status',module:'Module',devBy:'Dev By'};
 
 // ── Panel open/close ─────────────────────────────────────
 function toggleBfdPanel(key){
@@ -1363,7 +1368,6 @@ function buildBoardModuleOptions(){
   const seen=new Set();
   RAW_DATA.forEach(r=>{if(r.module&&r.module.trim())seen.add(r.module.trim());});
   const panel=document.getElementById('bfdPanel-module');
-  if(!panel)return;
   const SVG='<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   panel.innerHTML=[...seen].sort().map(m=>{
     const safe=m.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
@@ -1464,6 +1468,9 @@ function buildBoard(){
       const stale=isStale(r);const days=daysSince(r.date);
       const sc_cls=r.status==='Closed'?'sc-closed':r.status==='Cancelled'?'sc-cancelled':'sc-open';
       const sc_sym=r.status==='Closed'?'✓':r.status==='Cancelled'?'✕':'';
+      const stageBadge=r.devStage
+        ?'<span class="badge '+getStageCls(r.devStage)+' kanban-cycle-badge" onclick="cycleStage(event,\''+r.refNo+'\')" title="Dev Stage: '+r.devStage+' (click to cycle)">'+r.devStage+'</span>'
+        :'<span class="badge devstage-none kanban-cycle-badge" onclick="cycleStage(event,\''+r.refNo+'\')" title="No stage set (click to cycle)">No Stage</span>';
       return'<div class="kanban-card'+(msActive?' ms-mode':'')+(msSelected.has(r.refNo)?' ms-selected':'')+'" data-ref="'+r.refNo+'" draggable="'+(msActive?'false':'true')+'"'+
         ' ondragstart="onDragStart(event,\''+r.refNo+'\',\''+st+'\')"'+
         ' ondragend="onDragEnd(event)"'+
@@ -1476,6 +1483,7 @@ function buildBoard(){
             '<div class="status-circle '+sc_cls+'" onclick="cycleStatus(\''+r.refNo+'\',\''+r.status+'\',event)" title="Status: '+r.status+' (click to change)">'+sc_sym+'</div>'+
           '</div>'+
         '</div>'+
+        stageBadge+
         '<div class="kanban-title">'+r.title+'</div>'+
         '<div class="kanban-meta">'+
           '<span class="kanban-assignee kanban-dev-badge" onclick="cycleDeveloper(event,\''+r.refNo+'\')" title="Click to change developer">👤 '+r.developedBy+'</span>'+
@@ -1549,6 +1557,7 @@ function openTicketModal(refNo){
         (r.priority?'<span id="modal-priority-badge" class="badge '+getPriorityCls(r.priority)+'">'+r.priority+' Priority</span>':'')+
         (r.status?'<span class="badge '+getStatusCls(r.status)+'">'+r.status+'</span>':'')+
         (r.developerStatus?'<span class="badge '+getDevCls(r.developerStatus)+'">'+r.developerStatus+'</span>':'')+
+        '<span id="modal-stage-badge" class="badge '+getStageCls(r.devStage)+'">'+( r.devStage||'No Stage')+'</span>'+
         (canUpdate?'<button class="settings-gear-btn" onclick="toggleQuickEdit()" title="Quick edit all fields">⚙️</button>':'')+
       '</div>'+
       (canUpdate?
@@ -1582,17 +1591,20 @@ function openTicketModal(refNo){
         '\',\'Developer Status\',this.value,\''+
         r.title.replace(/'/g,"\\'")+
         '\',\'developerStatus\')">'+
-        ['Not Started','In Progress','Reopened','Ready to Deploy','Deployed','On Hold'].map(function(v){
+        ['Not Started','In Progress','Incomplete','Completed','Deferred'].map(function(v){
           return '<option'+(r.developerStatus===v?' selected':'')+'>'+v+'</option>';
         }).join('')+
       '</select></div>'+
 
     '<div class="qe-row"><label class="qe-label">Dev Stage</label>'+
+      '<select id="qe-stage-select" class="qe-select" onchange="quickSaveField(\''+
         refNo+
         '\',\'Development Stage\',this.value,\''+
         r.title.replace(/'/g,"\\'")+
         '\',\'devStage\')">'+
-        [].join('')+
+        ['Development','Testing','Ready to deploy','Deployed (Staging)','On Hold','Deployed (Prod)'].map(function(v){
+          return '<option'+(r.devStage===v?' selected':'')+'>'+v+'</option>';
+        }).join('')+
       '</select></div>'+
 
     '<div class="qe-save-msg" id="qeSaveMsg"></div>'+
@@ -1834,6 +1846,17 @@ function buildAllCharts(){buildWeekChart();buildDevChart();buildModuleChart();}
 
 
 // ── DEV STAGE BADGE CLASS ─────────────────────────────────
+function getStageCls(stage){
+  if(!stage)return'devstage-none';
+  const s=stage.toLowerCase().replace(/\s+/g,'').replace(/[()]/g,'');
+  if(s==='development')return'devstage-development';
+  if(s==='testing')return'devstage-testing';
+  if(s==='readytodeploy')return'devstage-readytodeploy';
+  if(s==='deployedstaging')return'devstage-deployedstaging';
+  if(s==='onhold')return'devstage-onhold';
+  if(s==='deployedprod')return'devstage-deployedprod';
+  return'devstage-none';
+}
 
 // ── PATCH A SINGLE CARD IN-PLACE (no scroll jump) ────────
 function _patchCard(refNo){
@@ -1844,8 +1867,8 @@ function _patchCard(refNo){
   const pb=card.querySelector('.kanban-cycle-badge[onclick*="cyclePriority"]');
   if(pb&&r.priority){pb.className='badge '+getPriorityCls(r.priority)+' kanban-cycle-badge';pb.textContent=r.priority;pb.title='Priority: '+r.priority+' (click to cycle)';}
   // Stage badge
-  const sb=null; // Dev Stage removed
-  // Dev Stage removed
+  const sb=card.querySelector('.kanban-cycle-badge[onclick*="cycleStage"]');
+  if(sb){sb.className='badge '+getStageCls(r.devStage)+' kanban-cycle-badge';sb.textContent=r.devStage||'No Stage';sb.title='Dev Stage: '+(r.devStage||'No Stage')+' (click to cycle)';}
   // Status circle
   const sc=card.querySelector('.status-circle');
   if(sc){
@@ -1871,7 +1894,29 @@ function _refreshColCounts(){
   });
 }
 
+// ── PRIORITY CYCLE on kanban card ────────────────────────
+const PRIORITY_CYCLE = ['Low','Medium','High','Critical'];
+function cyclePriority(event, refNo){
+  event.stopPropagation();
+  if(boardIsGuest){alert('Sign in to change priority.');return;}
   const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
+  const idx=PRIORITY_CYCLE.indexOf(r.priority);
+  const next=PRIORITY_CYCLE[(idx===-1?0:idx+1)%PRIORITY_CYCLE.length];
+  const old=r.priority;r.priority=next;
+  _patchCard(refNo);
+  _syncModalBadges(refNo);
+  fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify({action:'updateField',reqNo:refNo,field:'Priority',newValue:next,author:boardUser,title:r.title,app:r.app})})
+    .catch(()=>{r.priority=old;_patchCard(refNo);alert('Failed to update priority.');});
+}
+
+// ── DEV STAGE CYCLE on kanban card ───────────────────────
+const STAGE_CYCLE = ['Development','Testing','Ready to deploy','Deployed (Staging)','On Hold','Deployed (Prod)'];
+function cycleStage(event, refNo){
+  event.stopPropagation();
+  if(boardIsGuest){alert('Sign in to change development stage.');return;}
+  const r=RAW_DATA.find(x=>x.refNo===refNo);if(!r)return;
+  const idx=STAGE_CYCLE.indexOf(r.devStage);
+  const next=STAGE_CYCLE[(idx===-1?0:idx+1)%STAGE_CYCLE.length];
   const old=r.devStage;r.devStage=next;
   _patchCard(refNo);
   _syncModalBadges(refNo);
@@ -1889,7 +1934,7 @@ function _syncModalBadges(refNo){
   if(pb){pb.className='badge '+getPriorityCls(r.priority);pb.textContent=r.priority+' Priority';}
   // Update dev stage badge in modal-meta
   const sb=document.getElementById('modal-stage-badge');
-  // Dev Stage removed
+  if(sb){sb.className='badge '+getStageCls(r.devStage);sb.textContent=r.devStage||'No Stage';}
   // Update Dev Stage field-value in modal-fields
   const sfv=document.getElementById('modal-stage-field-value');
   if(sfv)sfv.textContent=r.devStage||'—';
@@ -2254,14 +2299,6 @@ function sortList(col){
   buildList();
 }
 
-// ── Editable cell renderer ───────────────────────────────
-function editCell(refNo,field,value,color,optsJson){
-  const safe=value.replace(/'/g,"\\'");
-  const safeOpts=optsJson.replace(/'/g,'&apos;');
-  return'<span class="lt-editable" style="color:'+color+'" '+
-    'onclick="event.stopPropagation();openLtDropdown(event,\''+refNo+'\',\''+field+'\',\''+safe+'\',\''+safeOpts+'\')" title="Click to edit">'+value+'</span>';
-}
-
 function buildList(){
   const data=getBoardFiltered();
   const dir=listSortDir==='asc'?1:-1;
@@ -2278,12 +2315,7 @@ function buildList(){
   const PCOL={Critical:'#ef4444',High:'#f97316',Medium:'#eab308',Low:'#22c55e'};
   const SCOL={Open:'var(--open)',Closed:'var(--closed)',Cancelled:'var(--cancelled)','On Hold':'var(--onhold)'};
   const DCOL={'Not Started':'var(--notstarted)','In Progress':'var(--inprogress)',
-    'Reopened':'var(--incomplete)','Ready to Deploy':'#4f8ef7',
-    'Deployed':'var(--completed)','On Hold':'var(--onhold)'};
-
-  // Dev By options — dynamic from data
-  const devByOpts=JSON.stringify([...new Set(RAW_DATA.map(r=>r.developedBy).filter(Boolean).sort())]);
-
+    'Incomplete':'var(--incomplete)','Completed':'var(--completed)','Deferred':'var(--deferred)'};
   const tbody=document.getElementById('listBody');
   if(!sorted.length){
     tbody.innerHTML='<tr><td colspan="11" class="lt-empty">No requests match the current filters</td></tr>';
@@ -2298,115 +2330,20 @@ function buildList(){
     const msChk=msActive
       ?'<div class="lt-ms-chk'+(isSel?' checked':'')+'" onclick="event.stopPropagation();listCardClick(\''+r.refNo+'\')"></div>'
       :'';
-    const prioOpts='["Low","Medium","High","Critical"]';
-    const statOpts='["Open","Closed","Cancelled"]';
-    const devStatOpts='["Not Started","In Progress","Reopened","Ready to Deploy","Deployed","On Hold"]';
-    const devStgOpts='[]';
-    return'<tr id="ltr-'+r.refNo+'" class="'+(isSel?'ms-selected':'')+'" onclick="listRowClick(event,\''+r.refNo+'\')">'+
+    return'<tr class="'+(isSel?'ms-selected':'')+'" onclick="listRowClick(event,\''+r.refNo+'\')">'+
       '<td>'+msChk+'</td>'+
       '<td><span class="lt-ref">'+r.refNo+'</span></td>'+
       '<td><div class="lt-title" title="'+r.title+'">'+r.title+'</div></td>'+
       '<td>'+(r.module||'—')+'</td>'+
-      '<td>'+editCell(r.refNo,'priority',r.priority||'',PCOL[r.priority]||'var(--muted)',prioOpts)+'</td>'+
-      '<td>'+editCell(r.refNo,'status',r.status||'',SCOL[r.status]||'var(--muted)',statOpts)+'</td>'+
-      '<td>'+editCell(r.refNo,'devStatus',r.developerStatus||'',DCOL[r.developerStatus]||'var(--muted)',devStatOpts)+'</td>'+
-      '<td>'+editCell(r.refNo,'devStage',r.devStage||'',DCOL[r.devStage]||'var(--muted)',devStgOpts)+'</td>'+
-      '<td>'+editCell(r.refNo,'devBy',r.developedBy||'',DCOL[r.developedBy]||'var(--muted)',devByOpts)+'</td>'+
+      '<td style="color:'+(PCOL[r.priority]||'var(--muted)')+'">'+r.priority+'</td>'+
+      '<td style="color:'+(SCOL[r.status]||'var(--muted)')+'">'+r.status+'</td>'+
+      '<td style="color:'+(DCOL[r.developerStatus]||'var(--muted)')+'">'+r.developerStatus+'</td>'+
+      '<td>'+(r.devStage||'—')+'</td>'+
+      '<td>'+(r.developedBy||'—')+'</td>'+
       '<td style="font-family:\'JetBrains Mono\',monospace;font-size:10px">'+r.date+'</td>'+
       '<td>'+docBtn+'</td>'+
     '</tr>';
   }).join('');
-}
-
-// ── INLINE LIST DROPDOWN ─────────────────────────────────
-let _ltDropEl=null;
-
-function openLtDropdown(event,refNo,field,current,optsJson){
-  event.stopPropagation();
-  if(boardIsGuest){alert('Sign in to edit.');return;}
-  closeLtDropdown();
-  const opts=JSON.parse(optsJson);
-  const dd=document.createElement('div');
-  dd.className='lt-dropdown';
-  dd.id='ltDropdown';
-  dd.innerHTML=opts.map(o=>
-    '<div class="lt-dropdown-item'+(o===current?' current':'')+'" onclick="selectLtOption(\''+refNo+'\',\''+field+'\',\''+o.replace(/'/g,"\\'")+'\')">'
-    +o+'</div>'
-  ).join('');
-  document.body.appendChild(dd);
-  _ltDropEl=dd;
-  // Position near click
-  const x=event.clientX, y=event.clientY;
-  const pw=dd.offsetWidth||170, ph=dd.offsetHeight||200;
-  dd.style.left=(x+pw>window.innerWidth?window.innerWidth-pw-8:x)+'px';
-  dd.style.top=(y+ph>window.innerHeight?y-ph:y+4)+'px';
-  setTimeout(()=>document.addEventListener('click',closeLtDropdown,{once:true}),10);
-}
-
-function closeLtDropdown(){
-  if(_ltDropEl){_ltDropEl.remove();_ltDropEl=null;}
-}
-
-async function selectLtOption(refNo,field,newValue){
-  closeLtDropdown();
-  if(boardIsGuest)return;
-  const r=RAW_DATA.find(x=>x.refNo===refNo);
-  if(!r)return;
-
-  // Optimistic update in RAW_DATA
-  const FIELD_MAP={
-    priority:'priority',status:'status',
-    devStatus:'developerStatus',devStage:'devStage',devBy:'developedBy'
-  };
-  const dataField=FIELD_MAP[field];
-  if(!dataField)return;
-  const oldValue=r[dataField];
-  if(oldValue===newValue)return;
-  r[dataField]=newValue;
-
-  // Flash row saving
-  const row=document.getElementById('ltr-'+refNo);
-  if(row)row.classList.add('lt-saving');
-  setTimeout(()=>{if(row)row.classList.remove('lt-saving');},800);
-
-  // Rebuild list to show new value
-  buildList();
-
-  // Also update kanban card if visible
-  _patchCard(refNo);
-
-  // Persist to Apps Script
-  const AS_MAP={
-    priority:{action:'updateField',field:'Priority'},
-    status:{action:'updateStatus'},
-    devStatus:{action:'updateDevStatus'},
-    devStage:{action:'updateField',field:'Development Stage'},
-    devBy:{action:'updateField',field:'Developed By'},
-  };
-  const cfg=AS_MAP[field];
-  if(!cfg)return;
-
-  let body;
-  if(cfg.action==='updateStatus'){
-    body={action:'updateStatus',reqNo:refNo,newStatus:newValue,author:boardUser,title:r.title,app:r.app};
-  } else if(cfg.action==='updateDevStatus'){
-    body={action:'updateDevStatus',reqNo:refNo,newDevStatus:newValue,author:boardUser,title:r.title,app:r.app};
-    // handle completed date
-    if(newValue==='Deployed'){const today=new Date();r.completedDate=today.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-');}
-    else r.completedDate='';
-  } else {
-    body={action:'updateField',reqNo:refNo,field:cfg.field,newValue,author:boardUser,title:r.title,app:r.app};
-  }
-
-  try{
-    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',keepalive:true,body:JSON.stringify(body)});
-    const d=await res.json();
-    if(d.success===false){
-      r[dataField]=oldValue;buildList();_patchCard(refNo);
-    }
-  }catch(e){
-    r[dataField]=oldValue;buildList();_patchCard(refNo);
-  }
 }
 
 function listRowClick(event,refNo){
