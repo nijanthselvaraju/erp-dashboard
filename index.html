@@ -1464,8 +1464,7 @@ function buildBoard(){
       const stale=isStale(r);const days=daysSince(r.date);
       const sc_cls=r.status==='Closed'?'sc-closed':r.status==='Cancelled'?'sc-cancelled':'sc-open';
       const sc_sym=r.status==='Closed'?'✓':r.status==='Cancelled'?'✕':'';
-      const stageBadge=r.devStage
-        ?      return'<div class="kanban-card'+(msActive?' ms-mode':'')+(msSelected.has(r.refNo)?' ms-selected':'')+'" data-ref="'+r.refNo+'" draggable="'+(msActive?'false':'true')+'"'+
+      return'<div class="kanban-card'+(msActive?' ms-mode':'')+(msSelected.has(r.refNo)?' ms-selected':'')+'" data-ref="'+r.refNo+'" draggable="'+(msActive?'false':'true')+'"'+
         ' ondragstart="onDragStart(event,\''+r.refNo+'\',\''+st+'\')"'+
         ' ondragend="onDragEnd(event)"'+
         ' onclick="if(handleCardClick(event,\''+r.refNo+'\'))return;openTicketModal(\''+r.refNo+'\')">'+
