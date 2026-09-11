@@ -1265,6 +1265,8 @@ function onDrop(e,newDevStatus,mobileRefNo){
         // Update draggable column reference in ondragstart
         card.setAttribute('ondragstart','onDragStart(event,\''+dragSrcRefNo+'\',\''+newDevStatus+'\')');
         dstCards.appendChild(card);
+        // Re-sort destination column immediately after drop
+        _sortCol(newDevStatus);
       }
 
       // Update column count badges
@@ -1288,6 +1290,19 @@ function onDrop(e,newDevStatus,mobileRefNo){
     });
 
   dragSrcRefNo=null;dragSrcStatus=null;
+}
+
+// ── Sort a column's cards by REQ number ascending ────────
+function _sortCol(devStatus){
+  const col=document.querySelector('.board-col[data-col="'+devStatus+'"] .board-cards');
+  if(!col)return;
+  const cards=[...col.querySelectorAll('.kanban-card')];
+  cards.sort((a,b)=>{
+    const na=parseInt((a.dataset.ref||'').replace(/[^0-9]/g,''),10)||0;
+    const nb=parseInt((b.dataset.ref||'').replace(/[^0-9]/g,''),10)||0;
+    return na-nb;
+  });
+  cards.forEach(c=>col.appendChild(c));
 }
 
 // ════════════════════════════════════════════════════════════
