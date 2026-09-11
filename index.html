@@ -1457,6 +1457,12 @@ function buildBoard(){
   const cols={};
   DEV_STATUSES.forEach(s=>{cols[s]=[];});
   data.forEach(r=>{if(cols[r.developerStatus])cols[r.developerStatus].push(r);});
+  // Sort each column ascending by REQ number
+  Object.values(cols).forEach(arr=>arr.sort((a,b)=>{
+    const na=parseInt((a.refNo||'').replace(/[^0-9]/g,''),10)||0;
+    const nb=parseInt((b.refNo||'').replace(/[^0-9]/g,''),10)||0;
+    return na-nb;
+  }));
 
   document.getElementById('boardCols').innerHTML=DEV_STATUSES.map(st=>{
     const cards=cols[st];
