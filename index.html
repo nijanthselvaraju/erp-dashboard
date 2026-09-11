@@ -2064,7 +2064,7 @@ function exitMultiSelect(){
   document.getElementById('bulkBar').classList.remove('visible');
   document.getElementById('msCounter').classList.remove('visible');
   // Reset bulk selects
-  ['bsDeveloperStatus','bsPriority','bsDevStage','bsStatus','bsDevelopedBy'].forEach(id=>{document.getElementById(id).value='';});
+  ['bsDeveloperStatus','bsPriority','bsStatus','bsDevelopedBy'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('bulkMsg').textContent='';
   _applyMsMode();
 }
@@ -2149,7 +2149,7 @@ async function applyBulkUpdate(){
   }
 
   // ── Step 3: Reset dropdowns only — keep selection & bar visible ─
-  ['bsDeveloperStatus','bsPriority','bsDevStage','bsStatus','bsDevelopedBy'].forEach(id=>{document.getElementById(id).value='';});
+  ['bsDeveloperStatus','bsPriority','bsStatus','bsDevelopedBy'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 
   // ── Step 4: Single batched POST — one round trip for all cards ──
   // Apps Script batchUpdate reads the sheet once and writes all rows atomically
