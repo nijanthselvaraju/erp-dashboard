@@ -652,6 +652,7 @@
         <div class="matrix-card" id="mxStatus"></div>
         <div class="matrix-card" id="mxPriority"></div>
         <div class="matrix-card" id="mxStage"></div>
+        <div class="matrix-card" id="mxDevByModule"></div>
         <div class="matrix-card" id="mxDevStatus"></div>
         <div class="matrix-card" id="mxDeveloper"></div>
         <div class="matrix-card" id="mxMonth"></div>
@@ -949,6 +950,7 @@ const MATRICES_DEF = {
   priority:  {title:'Priority',         rowField:'module',      colField:'priority',        cols:[{k:'Low',l:'Low',p:'cp-low'},{k:'Medium',l:'Medium',p:'cp-medium'},{k:'High',l:'High',p:'cp-high'},{k:'Critical',l:'Critical',p:'cp-critical'}]},
   devStatus: {title:'Developer Status', rowField:'module',      colField:'developerStatus', cols:[{k:'Not Started',l:'Not Started',p:'cp-notstarted'},{k:'In Progress',l:'In Progress',p:'cp-inprogress'},{k:'Reopened',l:'Reopened',p:'cp-incomplete'},{k:'Ready to Deploy',l:'Ready to Deploy',p:'cp-rdeploy'},{k:'Deployed',l:'Deployed',p:'cp-completed'},{k:'On Hold',l:'On Hold',p:'cp-onhold'}]},
   developer: {title:'Developer Workload',rowField:'developedBy',colField:'status',          cols:[{k:'Open',l:'Open',p:'cp-open'},{k:'Closed',l:'Closed',p:'cp-closed'},{k:'Cancelled',l:'Cancelled',p:'cp-cancelled'}]},
+  devByModule:{title:'Developer by Module', rowField:'module',     colField:'developedBy',    cols:'dynamic'},
   month:     {title:'Month-wise Status',rowField:'_monthKey',   colField:'status',          cols:[{k:'Open',l:'Open',p:'cp-open'},{k:'Closed',l:'Closed',p:'cp-closed'},{k:'Cancelled',l:'Cancelled',p:'cp-cancelled'}]},
 };
 
@@ -1073,28 +1075,47 @@ function setMonth(m){activeMonth=m;activeCell=null;activePriority=null;buildMont
 // ── MATRIX ────────────────────────────────────────────────
 function buildMatrix(cid,key){
   const def=MATRICES_DEF[key],data=getMonthFiltered();
+  const el=document.getElementById(cid);if(!el)return;
+
+  // ── Dynamic columns: build from data (e.g. Developer by Module) ──
+  let cols=def.cols;
+  if(cols==='dynamic'){
+    const colVals=[...new Set(data.map(r=>(r[def.colField]||'').trim()).filter(Boolean))].sort();
+    cols=colVals.map(v=>({k:v,l:v,p:'cp-total'}));
+  }
+  if(!cols.length){el.innerHTML='';return;}
+
   const getRow=r=>{const v=r[def.rowField];return(v&&v.trim())?v.trim():(def.rowField==='module'?'(No Module)':null);};
   const rowVals=[...new Set(data.map(getRow).filter(Boolean))].sort();
   const counts={},colTotals={};let grand=0;
-  def.cols.forEach(c=>{colTotals[c.k]=0;});
-  rowVals.forEach(rv=>{counts[rv]={};def.cols.forEach(c=>{counts[rv][c.k]=0;});});
+  cols.forEach(c=>{colTotals[c.k]=0;});
+  rowVals.forEach(rv=>{counts[rv]={};cols.forEach(c=>{counts[rv][c.k]=0;});});
   data.forEach(r=>{
     const rv=getRow(r);if(!rv)return;
-    def.cols.forEach(c=>{if(r[def.colField]===c.k){counts[rv][c.k]++;colTotals[c.k]++;grand++;}});
+    cols.forEach(c=>{if(r[def.colField]===c.k){counts[rv][c.k]++;colTotals[c.k]++;grand++;}});
   });
-  const rowTotals={};rowVals.forEach(rv=>{rowTotals[rv]=def.cols.reduce((s,c)=>s+counts[rv][c.k],0);});
+  const rowTotals={};rowVals.forEach(rv=>{rowTotals[rv]=cols.reduce((s,c)=>s+counts[rv][c.k],0);});
   function pill(n,p){if(n===0)return'<span class="cp zero">&mdash;</span>';return'<span class="cp '+p+'">'+n+'</span>';}
   const bodyRows=rowVals.map(rv=>{
-    const cells=def.cols.map(c=>{const isAct=activeCell&&activeCell.rowField===def.rowField&&activeCell.rowVal===rv&&activeCell.colField===def.colField&&activeCell.colVal===c.k;return'<td class="dc"'+(isAct?' style="background:rgba(108,99,255,.1)"':'')+' onclick="setCellFilter(\''+def.rowField+'\',\''+rv.replace(/'/g,"\\'")+'\',\''+def.colField+'\',\''+c.k.replace(/'/g,"\\'")+'\',\''+rv.replace(/'/g,"\\'")+' · '+c.l+'\')">'+pill(counts[rv][c.k],c.p)+'</td>';}).join('');
+    const cells=cols.map(c=>{
+      const isAct=activeCell&&activeCell.rowField===def.rowField&&activeCell.rowVal===rv&&activeCell.colField===def.colField&&activeCell.colVal===c.k;
+      return'<td class="dc"'+(isAct?' style="background:rgba(108,99,255,.1)"':'')+
+        ' onclick="setCellFilter(\''+def.rowField+'\',\''+rv.replace(/'/g,"\\'")+'\',\''+def.colField+'\',\''+c.k.replace(/'/g,"\\'")+'\',\''+rv.replace(/'/g,"\\'")+' · '+c.l+'\')">'+
+        pill(counts[rv][c.k],c.p)+'</td>';
+    }).join('');
     return'<tr><td>'+rv+'</td><td>'+pill(rowTotals[rv],'cp-total')+'</td>'+cells+'</tr>';
   }).join('');
-  const totalCells=def.cols.map(c=>'<td>'+pill(colTotals[c.k],c.p)+'</td>').join('');
+  const totalCells=cols.map(c=>'<td>'+pill(colTotals[c.k],c.p)+'</td>').join('');
   const rl=def.rowField==='_monthKey'?'Month':def.rowField==='developedBy'?'Developer':'Module';
-  document.getElementById(cid).innerHTML='<div class="matrix-card-header"><span class="matrix-card-title">'+def.title+'</span><span class="matrix-card-total">'+grand+' total</span></div>'+
-    '<div class="matrix-table-wrap"><table class="matrix-table"><thead><tr><th style="min-width:100px">'+rl+'</th><th style="min-width:52px">Total</th>'+def.cols.map(c=>'<th style="min-width:70px">'+c.l+'</th>').join('')+'</tr></thead>'+
+  el.innerHTML=
+    '<div class="matrix-card-header"><span class="matrix-card-title">'+def.title+'</span><span class="matrix-card-total">'+grand+' total</span></div>'+
+    '<div class="matrix-table-wrap"><table class="matrix-table"><thead><tr>'+
+      '<th style="min-width:100px">'+rl+'</th><th style="min-width:52px">Total</th>'+
+      cols.map(c=>'<th style="min-width:70px">'+c.l+'</th>').join('')+
+    '</tr></thead>'+
     '<tbody>'+bodyRows+'<tr class="total-row"><td>Total</td><td>'+pill(grand,'cp-total')+'</td>'+totalCells+'</tr></tbody></table></div>';
 }
-function buildAllMatrices(){Object.entries({status:'mxStatus',priority:'mxPriority',devStatus:'mxStage',developer:'mxDeveloper',month:'mxMonth'}).forEach(([k,id])=>buildMatrix(id,k));}
+function buildAllMatrices(){Object.entries({status:'mxStatus',priority:'mxPriority',devStatus:'mxStage',devByModule:'mxDevByModule',developer:'mxDeveloper',month:'mxMonth'}).forEach(([k,id])=>buildMatrix(id,k));}
 
 function buildWeekBtns(){document.getElementById('weekBtns').innerHTML=[1,2,3,4,5].map(w=>'<button class="week-btn '+(staleWeeks===w?'active':'')+'" onclick="setStaleWeeks('+w+')">'+w+'W</button>').join('');}
 function setStaleWeeks(w){staleWeeks=w;buildWeekBtns();renderTable();}
