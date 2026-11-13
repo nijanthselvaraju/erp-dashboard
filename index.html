@@ -252,6 +252,9 @@
     .lt-ms-chk{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s;cursor:pointer;}
     .lt-ms-chk.checked{background:var(--accent);border-color:var(--accent);}
     .lt-ms-chk.checked::after{content:'✓';color:#fff;font-size:9px;font-weight:700;}
+    .lt-ms-chk.some{border-color:var(--accent);background:rgba(108,99,255,.12);}
+    .lt-ms-chk.some::after{content:'–';color:var(--accent2);font-size:11px;font-weight:700;line-height:1;}
+    .list-table th:first-child,.list-table td:first-child{padding-right:0;}
     .lt-empty{padding:40px;text-align:center;color:var(--muted);font-size:13px;}
     /* inline editable cells */
     .lt-editable{cursor:pointer;border-radius:5px;padding:2px 6px;transition:background .12s;display:inline-block;}
@@ -821,7 +824,7 @@
         <table class="list-table" id="listTable">
           <thead>
             <tr>
-              <th id="lth-ms" style="width:32px"></th>
+              <th id="lth-ms" style="width:32px"><div class="lt-ms-chk" id="ltSelAll" title="Select all" onclick="event.stopPropagation();listSelectAll()"></div></th>
               <th onclick="sortList('refNo')" id="lth-refNo">REQ<span class="sort-icon"></span></th>
               <th onclick="sortList('title')" id="lth-title">Title<span class="sort-icon"></span></th>
               <th onclick="sortList('module')" id="lth-module">Module<span class="sort-icon"></span></th>
@@ -2087,6 +2090,7 @@ function exitMultiSelect(){
   ['bsDeveloperStatus','bsPriority','bsStatus','bsDevelopedBy'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('bulkMsg').textContent='';
   _applyMsMode();
+  _syncListChecks();
 }
 
 function _applyMsMode(){
@@ -2102,6 +2106,7 @@ function _applyMsMode(){
 }
 
 function _updateMsUI(){
+  _syncListChecks();
   const n=msSelected.size;
   document.getElementById('msCountNum').textContent=n;
   document.getElementById('bulkCountLabel').textContent=n;
@@ -2311,7 +2316,7 @@ function buildList(){
 
   const tbody=document.getElementById('listBody');
   if(!sorted.length){
-    tbody.innerHTML='<tr><td colspan="11" class="lt-empty">No requests match the current filters</td></tr>';
+    tbody.innerHTML='<tr><td colspan="10" class="lt-empty">No requests match the current filters</td></tr>';
     return;
   }
   tbody.innerHTML=sorted.map(r=>{
@@ -2320,13 +2325,10 @@ function buildList(){
     const docBtn=doc
       ?'<button class="lt-doc-btn" onclick="event.stopPropagation();openReqDoc(\''+r.refNo+'\')">📄 Doc</button>'
       :'—';
-    const msChk=msActive
-      ?'<div class="lt-ms-chk'+(isSel?' checked':'')+'" onclick="event.stopPropagation();listCardClick(\''+r.refNo+'\')"></div>'
-      :'';
+    const msChk='<div class="lt-ms-chk'+(isSel?' checked':'')+'" onclick="event.stopPropagation();listCheckClick(\''+r.refNo+'\')"></div>';
     const prioOpts='["Low","Medium","High","Critical"]';
     const statOpts='["Open","Closed","Cancelled"]';
     const devStatOpts='["Not Started","In Progress","Reopened","Ready to Deploy","Deployed","On Hold"]';
-    const devStgOpts='[]';
     return'<tr id="ltr-'+r.refNo+'" class="'+(isSel?'ms-selected':'')+'" onclick="listRowClick(event,\''+r.refNo+'\')">'+
       '<td>'+msChk+'</td>'+
       '<td><span class="lt-ref">'+r.refNo+'</span></td>'+
@@ -2335,7 +2337,6 @@ function buildList(){
       '<td>'+editCell(r.refNo,'priority',r.priority||'',PCOL[r.priority]||'var(--muted)',prioOpts)+'</td>'+
       '<td>'+editCell(r.refNo,'status',r.status||'',SCOL[r.status]||'var(--muted)',statOpts)+'</td>'+
       '<td>'+editCell(r.refNo,'devStatus',r.developerStatus||'',DCOL[r.developerStatus]||'var(--muted)',devStatOpts)+'</td>'+
-      '<td>'+editCell(r.refNo,'devStage',r.devStage||'',DCOL[r.devStage]||'var(--muted)',devStgOpts)+'</td>'+
       '<td>'+editCell(r.refNo,'devBy',r.developedBy||'',DCOL[r.developedBy]||'var(--muted)',devByOpts)+'</td>'+
       '<td style="font-family:\'JetBrains Mono\',monospace;font-size:10px">'+r.date+'</td>'+
       '<td>'+docBtn+'</td>'+
@@ -2451,6 +2452,40 @@ function listCardClick(refNo){
     if(row){row.classList.add('ms-selected');row.querySelector('.lt-ms-chk')?.classList.add('checked');}
   }
   _updateMsUI();_updateColCheckboxes();_updateSelectAllBtn();
+}
+
+// Row checkbox: first tick switches Multi-select on, then selects the row
+function listCheckClick(refNo){
+  if(!msActive){enterMultiSelect();if(!msActive)return;}
+  listCardClick(refNo);
+}
+
+// Header checkbox: select / deselect every row currently shown
+function listSelectAll(){
+  if(!msActive){enterMultiSelect();if(!msActive)return;}
+  toggleSelectAll();
+}
+
+// Keep list-row checkboxes and the header checkbox in step with msSelected
+function _syncListChecks(){
+  const body=document.getElementById('listBody');
+  if(!body)return;
+  const refs=[];
+  body.querySelectorAll('tr[id^="ltr-"]').forEach(tr=>{
+    const ref=tr.id.slice(4);
+    const sel=msSelected.has(ref);
+    refs.push(ref);
+    tr.classList.toggle('ms-selected',sel);
+    const c=tr.querySelector('.lt-ms-chk');
+    if(c)c.classList.toggle('checked',sel);
+  });
+  const h=document.getElementById('ltSelAll');
+  if(h){
+    const all=refs.length>0&&refs.every(r=>msSelected.has(r));
+    const some=!all&&refs.some(r=>msSelected.has(r));
+    h.classList.toggle('checked',all);
+    h.classList.toggle('some',some);
+  }
 }
 
 // Rebuild list when filters change (if list view is active)
