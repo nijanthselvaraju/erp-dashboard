@@ -1025,6 +1025,10 @@ function toWeekKey(s){const d=parseDate(s);if(!d)return null;const day=d.getDay(
 function daysSince(s){const d=parseDate(s);if(!d)return null;return Math.floor((Date.now()-d.getTime())/(1000*60*60*24));}
 function isStale(r){if(r.status!=='Open'||r.developerStatus!=='Not Started')return false;const days=daysSince(r.date);return days!==null&&days>=(staleWeeks*7);}
 
+// ── REQ NUMBER ORDER (REQ-1, REQ-2 … REQ-10, not REQ-1, REQ-10, REQ-100) ──
+function reqNum(ref){const m=String(ref||'').match(/(\d+)\s*$/);return m?parseInt(m[1],10):Infinity;}
+function cmpRef(a,b){const x=reqNum(a),y=reqNum(b);return x===y?String(a||'').localeCompare(String(b||'')):(x<y?-1:1);}
+
 // ── FILTERED ──────────────────────────────────────────────
 function getMonthFiltered(){if(activeMonth==='All')return RAW_DATA;return RAW_DATA.filter(r=>r._monthKey===activeMonth);}
 function getFiltered(){
@@ -1034,7 +1038,7 @@ function getFiltered(){
     if(activePriority&&r.priority!==activePriority)return false;
     if(q&&!r.title.toLowerCase().includes(q)&&!r.refNo.toLowerCase().includes(q)&&!r.module.toLowerCase().includes(q))return false;
     return true;
-  }).sort((a,b)=>{if(sortKey==='sl')return(a.sl-b.sl)*sortDir;return(a[sortKey]||'').localeCompare(b[sortKey]||'')*sortDir;});
+  }).sort((a,b)=>{if(sortKey==='sl')return(a.sl-b.sl)*sortDir;if(sortKey==='refNo')return cmpRef(a.refNo,b.refNo)*sortDir;return(a[sortKey]||'').localeCompare(b[sortKey]||'')*sortDir;});
 }
 
 // ── TAB ───────────────────────────────────────────────────
@@ -2296,6 +2300,7 @@ function buildList(){
   const data=getBoardFiltered();
   const dir=listSortDir==='asc'?1:-1;
   const sorted=[...data].sort((a,b)=>{
+    if(listSortCol==='refNo')return cmpRef(a.refNo,b.refNo)*dir;
     const av=(a[listSortCol]||'').toString().toLowerCase();
     const bv=(b[listSortCol]||'').toString().toLowerCase();
     return av<bv?-dir:av>bv?dir:0;
