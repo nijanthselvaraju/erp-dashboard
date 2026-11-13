@@ -923,14 +923,39 @@ function getDocForReq(refNo){
   return DRIVE_FILES.find(f=>num>=f.from&&num<=f.to)||null;
 }
 
+// Deep link to the REQ heading. Google Docs only accepts its generated heading id
+// (#heading=h.xxxx), which the Apps Script looks up and sends in doc.headings[number].
+function _docHeadingUrl(doc,num){
+  const e=doc.headings&&doc.headings[num];
+  if(!e||!e.h)return null;
+  return 'https://docs.google.com/document/d/'+doc.id+'/edit'+(e.t?'?tab='+encodeURIComponent(e.t):'')+'#heading='+encodeURIComponent(e.h);
+}
+
 function openReqDoc(refNo){
   const doc=getDocForReq(refNo);
   if(!doc)return;
-  const num=String(refNo).replace(/[^0-9]/g,'');
-  const label='REQ-'+num;
-  // Open Google Doc directly in browser with heading anchor — auto-jumps to REQ heading
-  const url='https://docs.google.com/document/d/'+doc.id+'/view#heading='+encodeURIComponent(label);
-  window.open(url,'_blank');
+  const num=parseInt(String(refNo).replace(/[^0-9]/g,''),10);
+  const fallback=doc.url||('https://docs.google.com/document/d/'+doc.id+'/view');
+
+  // 1) heading id already known → jump straight to it
+  const direct=_docHeadingUrl(doc,num);
+  if(direct){window.open(direct,'_blank');return;}
+
+  // 2) .docx (not converted) or already tried → open the file as before
+  if(doc.type!=='doc'||doc.headingsLoaded){window.open(fallback,'_blank');return;}
+
+  // 3) first click on this file → fetch heading ids once, then jump
+  const win=window.open('','_blank');
+  if(win){try{win.document.write('<p style="font:15px sans-serif;padding:28px;color:#555">Opening REQ-'+num+'…</p>');}catch(e){}}
+  const go=function(url){if(win)win.location.href=url;else window.open(url,'_blank');};
+  fetch(APPS_SCRIPT_URL+'?action=getDocHeadings&id='+encodeURIComponent(doc.id))
+    .then(r=>r.json())
+    .then(d=>{
+      doc.headingsLoaded=true;
+      if(d&&d.ok&&d.headings)doc.headings=d.headings;
+      go(_docHeadingUrl(doc,num)||fallback);
+    })
+    .catch(()=>{doc.headingsLoaded=true;go(fallback);});
 }
 
 function showCopyToast(label){
